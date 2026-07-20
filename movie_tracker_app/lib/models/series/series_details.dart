@@ -1,9 +1,14 @@
-import 'movie_details.dart';
+import '../common/media_base.dart';
 import '../common/cast_member.dart';
 
-class SeriesDetails extends MovieDetails {
-  final int? nSeasons;
-  final int? nEpisodes;
+import 'season_model.dart';
+
+class SeriesDetails extends MediaBase {
+  final int? seasonCount;
+  final int? episodeCount;
+  final List<SeasonModel> seasons;
+  final int? endYear;
+  final String status;
 
   const SeriesDetails({
     required super.id,
@@ -17,10 +22,12 @@ class SeriesDetails extends MovieDetails {
     super.genres,
     super.country,
     super.cast = const [],
-    super.isFinished = false,
-    this.nSeasons,
-    this.nEpisodes
-  });
+    this.seasonCount,
+    this.episodeCount,
+    this.seasons = const [],
+    this.endYear,
+    required this.status
+  }) : super(mediaType: MediaType.series);
 
   factory SeriesDetails.fromJson(Map<String, dynamic> json) {
     return SeriesDetails(
@@ -40,16 +47,24 @@ class SeriesDetails extends MovieDetails {
           ?.map((e) => CastMember.fromJson(e as Map<String, dynamic>))
           .toList() ??
           const [],
-      isFinished: json['is_adult'] ?? false,
-      nSeasons: json['nSeasons'],
-      nEpisodes: json['nEpisodes']
+      seasonCount: json['season_count'],
+      episodeCount: json['episode_count'],
+      seasons: (json['seasons'] as List<dynamic>?)
+          ?.map((e) => SeasonModel.fromJson(e))
+          .toList() ??
+          const [],
+      endYear: json['end_year'],
+      status: json['status'] ?? false,
     );
   }
 
   @override
   Map<String, dynamic> toJson() => {
     ...super.toJson(),
-    'nSeasons': nSeasons,
-    'nEpisodes': nEpisodes
+    'season_count': seasonCount,
+    'episode_count': episodeCount,
+    'seasons': seasons.map((e) => e.toJson()).toList(),
+    'end_year': endYear,
+    'status': status,
   };
 }
