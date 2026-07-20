@@ -1,5 +1,6 @@
 import '../common/media_base.dart';
 import '../common/cast_member.dart';
+import '../common/media_type.dart';
 
 import 'season_model.dart';
 

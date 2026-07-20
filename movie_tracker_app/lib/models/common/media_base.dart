@@ -1,9 +1,5 @@
 import 'cast_member.dart';
-
-enum MediaType {
-  movie,
-  series,
-}
+import 'media_type.dart';
 
 class MediaBase {
   final int id;
@@ -45,7 +41,7 @@ class MediaBase {
   factory MediaBase.fromJson(Map<String, dynamic> json) {
     return MediaBase(
       id: json['id'],
-      mediaType: json['media_type'],
+      mediaType: MediaTypeExtension.fromString(json['media_type']),
       imdbId: json['imdb_id'],
       title: json['title'],
       originalTitle: json['original_title'],
@@ -71,7 +67,7 @@ class MediaBase {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'media_type': mediaType,
+      'media_type': mediaType.value,
       'imdb_id': imdbId,
       'title': title,
       'original_title': originalTitle,
