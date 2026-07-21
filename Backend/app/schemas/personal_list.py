@@ -1,16 +1,15 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional
 
 
 class PersonalListCreate(BaseModel):
     name: str
-    description: Optional[str]
+    description: str | None
 
 
 class PersonalListUpdate(BaseModel):
-    name: Optional[str]
-    description: Optional[str]
+    name: str | None
+    description: str | None
 
 
 class PersonalListItemCreate(BaseModel):
@@ -20,7 +19,7 @@ class PersonalListItemCreate(BaseModel):
 class PersonalListResponse(BaseModel):
     id: int
     name: str
-    description: Optional[str]
+    description: str | None
     created_at: datetime
 
     class Config:

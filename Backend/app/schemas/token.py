@@ -1,5 +1,4 @@
 from pydantic import BaseModel
-from typing import Optional
 
 
 class Token(BaseModel):
@@ -9,5 +8,5 @@ class Token(BaseModel):
 
 
 class TokenData(BaseModel):
-    username: Optional[str] = None
-    user_id: Optional[int] = None
+    username: str | None = None
+    user_id: int | None = None

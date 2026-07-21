@@ -1,12 +1,11 @@
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
-from typing import Optional
 
 
 class UserBase(BaseModel):
     username: str
     email: EmailStr
-    full_name: Optional[str] = None
+    full_name: str | None = None
 
 
 class UserCreate(UserBase):
@@ -14,11 +13,11 @@ class UserCreate(UserBase):
 
 
 class UserUpdate(BaseModel):
-    username: Optional[str] = None
-    email: Optional[EmailStr] = None
-    full_name: Optional[str] = None
-    bio: Optional[str] = None
-    avatar_url: Optional[str] = None
+    username: str | None = None
+    email: EmailStr | None = None
+    full_name: str | None = None
+    bio: str | None = None
+    avatar_url: str | None = None
 
 
 class PasswordChange(BaseModel):
@@ -30,9 +29,9 @@ class PasswordChange(BaseModel):
 class PublicUser(BaseModel):
     id: int
     username: str
-    full_name: Optional[str] = None
-    avatar_url: Optional[str] = None
-    bio: Optional[str] = None
+    full_name: str | None = None
+    avatar_url: str | None = None
+    bio: str | None = None
     created_at: datetime
 
     class Config:
@@ -41,8 +40,8 @@ class PublicUser(BaseModel):
 
 class UserResponse(UserBase):
     id: int
-    avatar_url: Optional[str] = None
-    bio: Optional[str] = None
+    avatar_url: str | None = None
+    bio: str | None = None
     is_admin: bool = False
     created_at: datetime
 

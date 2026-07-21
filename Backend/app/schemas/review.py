@@ -1,6 +1,5 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional
 
 
 class ReviewCreate(BaseModel):
@@ -10,8 +9,8 @@ class ReviewCreate(BaseModel):
 
 
 class ReviewUpdate(BaseModel):
-    review: Optional[str] = None
-    contains_spoiler: Optional[bool] = None
+    review: str | None = None
+    contains_spoiler: bool | None = None
 
 
 class ReviewResponse(BaseModel):
