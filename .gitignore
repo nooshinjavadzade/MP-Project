@@ -46,3 +46,4 @@ app.*.map.json
 
 # Python
 Backend/.venv/
+Backend/.env
