@@ -3,7 +3,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from ..core.db import Base
-from media import WatchStatus
+from .media import WatchStatus
 
 
 class WatchProgress(Base):
