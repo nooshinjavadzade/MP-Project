@@ -1,3 +1,4 @@
+import '../user_content/watch_status.dart';
 import 'cast_member.dart';
 import 'media_type.dart';
 
@@ -12,12 +13,12 @@ class MediaBase {
   final String? overview;
   final int? releaseYear;
   final double? imdbRating;
-  final double? userRating;
   final double? communityRating;
   final String? originalLanguage;
   final String? country;
   final List<CastMember> cast;
   final List<String> genres;
+  final WatchStatus? watchStatus;
 
   const MediaBase({
     required this.id,
@@ -30,12 +31,12 @@ class MediaBase {
     this.overview,
     this.releaseYear,
     this.imdbRating,
-    this.userRating,
     this.communityRating,
     this.originalLanguage,
     this.country,
     this.cast = const [],
     this.genres = const [],
+    this.watchStatus,
   });
 
   factory MediaBase.fromJson(Map<String, dynamic> json) {
@@ -50,8 +51,7 @@ class MediaBase {
       overview: json['overview'],
       releaseYear: json['release_year'],
       imdbRating: (json['imdb_rating'] as num?)?.toDouble(),
-      userRating: (json['user_rating'] as num?)?.toDouble(),
-      communityRating: json['community_rating'],
+      communityRating: (json['community_rating'] as num?)?.toDouble(),
       genres: json['genres'] != null
           ? List<String>.from(json['genres'])
           : const [],
@@ -61,6 +61,9 @@ class MediaBase {
           ?.map((e) => CastMember.fromJson(e as Map<String, dynamic>))
           .toList() ??
           const [],
+      watchStatus: json['watch_status'] != null
+          ? WatchStatusExtension.fromString(json['watch_status'])
+          : null,
     );
   }
 
@@ -76,12 +79,12 @@ class MediaBase {
       'overview': overview,
       'release_year': releaseYear,
       'imdb_rating': imdbRating,
-      'user_rating': userRating,
       'community_rating': communityRating,
       'original_language': originalLanguage,
       'country': country,
       'cast': cast.map((e) => e.toJson()).toList(),
       'genres': genres,
+      'watch_status': watchStatus?.value,
     };
   }
 }

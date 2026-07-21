@@ -1,6 +1,7 @@
 import '../common/media_base.dart';
 import '../common/cast_member.dart';
 import '../common/media_type.dart';
+import '../user_content/watch_status.dart';
 
 import 'season_model.dart';
 
@@ -20,9 +21,11 @@ class SeriesDetails extends MediaBase {
     super.overview,
     super.releaseYear,
     super.imdbRating,
+    super.communityRating,
     super.genres,
     super.country,
     super.cast = const [],
+    super.watchStatus,
     this.seasonCount,
     this.episodeCount,
     this.seasons = const [],
@@ -40,6 +43,7 @@ class SeriesDetails extends MediaBase {
       overview: json['overview'],
       releaseYear: json['release_year'],
       imdbRating: (json['imdb_rating'] as num?)?.toDouble(),
+      communityRating: (json['community_rating'] as num?)?.toDouble(),
       genres: json['genres'] != null
           ? List<String>.from(json['genres'])
           : const [],
@@ -48,6 +52,9 @@ class SeriesDetails extends MediaBase {
           ?.map((e) => CastMember.fromJson(e as Map<String, dynamic>))
           .toList() ??
           const [],
+      watchStatus: json['watch_status'] != null
+          ? WatchStatusExtension.fromString(json['watch_status'])
+          : null,
       seasonCount: json['season_count'],
       episodeCount: json['episode_count'],
       seasons: (json['seasons'] as List<dynamic>?)
@@ -55,7 +62,7 @@ class SeriesDetails extends MediaBase {
           .toList() ??
           const [],
       endYear: json['end_year'],
-      status: json['status'] ?? false,
+      status: json['status'] ?? '',
     );
   }
 

@@ -1,10 +1,12 @@
+import '../user_content/watch_status.dart';
+
 class EpisodeModel {
   final int episodeNumber;
   final String title;
   final String? overview;
   final DateTime? releaseDate;
   final int? runtime;
-  final bool watched;
+  final WatchStatus? watchStatus;
 
   const EpisodeModel({
     required this.episodeNumber,
@@ -12,7 +14,7 @@ class EpisodeModel {
     this.overview,
     this.releaseDate,
     this.runtime,
-    this.watched = false,
+    this.watchStatus
   });
 
   factory EpisodeModel.fromJson(Map<String, dynamic> json) {
@@ -24,7 +26,9 @@ class EpisodeModel {
           ? DateTime.parse(json['release_date'])
           : null,
       runtime: json['runtime'],
-      watched: json['watched'] ?? false,
+      watchStatus: json['watch_status'] != null
+          ? WatchStatusExtension.fromString(json['watch_status'])
+          : null,
     );
   }
 
@@ -34,7 +38,7 @@ class EpisodeModel {
     'overview': overview,
     'release_date': releaseDate?.toIso8601String(),
     'runtime': runtime,
-    'watched': watched,
+    'watch_status': watchStatus?.value,
   };
 
   EpisodeModel copyWith({
@@ -43,7 +47,7 @@ class EpisodeModel {
     String? overview,
     DateTime? releaseDate,
     int? runtime,
-    bool? watched,
+    WatchStatus? watchStatus
   }) {
     return EpisodeModel(
       episodeNumber: episodeNumber ?? this.episodeNumber,
@@ -51,7 +55,7 @@ class EpisodeModel {
       overview: overview ?? this.overview,
       releaseDate: releaseDate ?? this.releaseDate,
       runtime: runtime ?? this.runtime,
-      watched: watched ?? this.watched,
+      watchStatus: watchStatus ?? this.watchStatus
     );
   }
 }
