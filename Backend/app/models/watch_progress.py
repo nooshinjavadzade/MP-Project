@@ -2,8 +2,8 @@ from sqlalchemy import Column, Integer, ForeignKey, Float, DateTime, Enum as SQL
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
-from ..core.db import Base
-from media import WatchStatus
+from app.core.db import Base
+from app.models.media import WatchStatus
 
 
 class WatchProgress(Base):
