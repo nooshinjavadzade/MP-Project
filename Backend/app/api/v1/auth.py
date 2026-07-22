@@ -3,12 +3,18 @@ from sqlalchemy.orm import Session
 from datetime import timedelta, datetime
 
 from app.core.db import get_db
-from app.core.security import verify_password, get_password_hash, create_access_token, create_refresh_token
 from app.schemas.user import UserCreate, UserResponse, UserLogin
 from app.schemas.auth import AuthResponse
 from app.schemas.token import Token
 from app.models.user import User
 from app.models.refresh_token import RefreshToken
+from app.core.security import (
+    verify_password,
+    get_password_hash,
+    create_access_token,
+    create_refresh_token,
+    hash_refresh_token   # ← Add this
+)
 
 
 router = APIRouter(tags=["auth"])
@@ -61,16 +67,17 @@ def login(user_in: UserLogin, db: Session = Depends(get_db)):
 
 
 def create_tokens_and_save_refresh(db: Session, user: User) -> Token:
-    from datetime import timedelta
-
     access_token = create_access_token(data={"sub": user.id})
     refresh_token_str = create_refresh_token(data={"sub": user.id})
 
-    # Save refresh token
+    # Hash the refresh token before saving
+    token_hash = hash_refresh_token(refresh_token_str)
+
     refresh_token_obj = RefreshToken(
         user_id=user.id,
-        token=refresh_token_str,
-        expires_at=datetime.utcnow() + timedelta(days=30)
+        token_hash=token_hash,           # ← Use token_hash
+        expires_at=datetime.utcnow() + timedelta(days=30),
+        revoked=False
     )
     db.add(refresh_token_obj)
     db.commit()
