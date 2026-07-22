@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
-from user import UserResponse
-from token import Token
+from app.schemas.user import UserResponse
+from app.schemas.token import Token
 
 
 class AuthResponse(BaseModel):
