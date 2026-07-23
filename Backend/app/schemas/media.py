@@ -37,6 +37,20 @@ class MediaBase(BaseModel):
         from_attributes = True
 
 
+class Pagination(BaseModel):
+    page: int
+    per_page: int = 20
+    total_items: int
+    total_pages: int
+    has_next_page: bool
+    has_previous_page: bool
+
+
+class MediaSearchResult(BaseModel):
+    items: List[MediaBase]
+    pagination: Pagination
+
+
 class MovieDetails(MediaBase):
     runtime: int | None = None
 

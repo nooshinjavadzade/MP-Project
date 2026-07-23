@@ -6,6 +6,7 @@ from datetime import datetime
 
 from sqlalchemy import DateTime, Enum as SQLEnum, Float, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 
 from ..core.db import Base
 
@@ -41,10 +42,14 @@ class Media(Base):
     overview: Mapped[str | None] = mapped_column(Text, nullable=True)
     release_year: Mapped[int | None] = mapped_column(Integer, nullable=True)
     tmdb_rating: Mapped[float | None] = mapped_column(Float, nullable=True)
+    country: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    original_language: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    community_rating: Mapped[float | None] = mapped_column(Float, nullable=True)
+    genres: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=False, default=list)
+    cast: Mapped[list[dict]] = mapped_column(JSONB, nullable=False, default=list)
 
     # Movie
     runtime: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    watch_status: Mapped[WatchStatus | None] = mapped_column(SQLEnum(WatchStatus), nullable=True)
 
     # Series
     season_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
@@ -53,11 +58,13 @@ class Media(Base):
     status: Mapped[str | None] = mapped_column(String(50), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    last_fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
 
     reviews: Mapped[list["Review"]] = relationship(back_populates="media", cascade="all, delete-orphan")
     ratings: Mapped[list["UserRating"]] = relationship(back_populates="media", cascade="all, delete-orphan")
     watch_progress: Mapped[list["WatchProgress"]] = relationship(back_populates="media", cascade="all, delete-orphan")
     list_items: Mapped[list["PersonalListItem"]] = relationship(back_populates="media", cascade="all, delete-orphan")
+
 
     def __repr__(self) -> str:
         return f"<Media {self.media_type.value}: {self.title}>"
