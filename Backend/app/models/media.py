@@ -11,7 +11,7 @@ from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from ..core.db import Base
 
 if TYPE_CHECKING:
-    from . import Review, UserRating, WatchProgress, PersonalListItem
+    from . import Review, UserRating, WatchProgress, PersonalListItem, Season
 
 
 class MediaType(Enum):
@@ -64,6 +64,7 @@ class Media(Base):
     ratings: Mapped[list["UserRating"]] = relationship(back_populates="media", cascade="all, delete-orphan")
     watch_progress: Mapped[list["WatchProgress"]] = relationship(back_populates="media", cascade="all, delete-orphan")
     list_items: Mapped[list["PersonalListItem"]] = relationship(back_populates="media", cascade="all, delete-orphan")
+    seasons: Mapped[list["Season"]] = relationship(back_populates="media", cascade="all, delete-orphan")
 
 
     def __repr__(self) -> str:

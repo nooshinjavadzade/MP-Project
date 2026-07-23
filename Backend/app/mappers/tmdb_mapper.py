@@ -4,6 +4,7 @@ from app.schemas.media import (
     MediaBase, MovieDetails, SeriesDetails,
     CastMember, Season, Episode, MediaType
 )
+from core import tmdb
 
 
 class TMDBMapper:
@@ -97,6 +98,31 @@ class TMDBMapper:
             status=data.get("status", "Unknown")
         )
 
+
+    @staticmethod
+    def to_season(data: Dict) -> Season:
+        return Season(
+            season_number=int(data.get("season_number")),
+            title=data.get("name"),
+            episodes=[TMDBMapper.to_episode(ep) for ep in data.get("episodes", [])],
+            overview=data.get("overview"),
+            tmdb_rating=data.get("vote_average"),
+            release_date=data.get("air_date")
+        )
+
+
+    @staticmethod
+    def to_episode(data: Dict) -> Episode:
+        return Episode(
+            episode_number=data.get("episode_number"),
+            title=data.get("name"),
+            overview=data.get("overview"),
+            release_date=data.get("air_date"),
+            runtime=data.get("runtime"),
+            tmdb_rating=data.get("vote_average")
+        )
+
+
     @staticmethod
     def map_cast(cast_list: List[Dict], is_media: bool = False) -> List[CastMember | Dict]:
         if is_media:
@@ -121,6 +147,7 @@ class TMDBMapper:
             )
             for person in cast_list[:10]
         ]
+
 
     @staticmethod
     def _map_seasons(seasons_data: List[Dict]) -> List[Season]:

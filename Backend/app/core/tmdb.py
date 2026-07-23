@@ -32,14 +32,19 @@ class TMDBClient:
         return await self._get("/search/tv", {"query": query, "page": page})
 
     # Details
-    async def get_movie_details(self, movie_id: int) -> Dict:
-        return await self._get(f"/movie/{movie_id}", {"append_to_response": "credits,images"})
-
-    async def get_tv_details(self, tv_id: int) -> Dict:
-        return await self._get(f"/tv/{tv_id}", {"append_to_response": "credits,images,seasons"})
+    async def get_media_details(self, media_id: int, media_type: str) -> Dict:
+        if media_type == "movie":
+            return await self._get_movie_details(media_id)
+        elif media_type == "tv":
+            return await self._get_tv_details(media_id)
+        else:
+            raise ValueError("Invalid media type")
 
     async def get_season_details(self, tv_id: int, season_number: int) -> Dict:
         return await self._get(f"/tv/{tv_id}/season/{season_number}")
+
+    async def get_episode_details(self, tv_id: int, season_number: int, episode_number: int) -> Dict:
+        return await self._get(f"/tv/{tv_id}/season/{season_number}/episode/{episode_number}")
 
     # Popular / Trending
     async def get_popular_movies(self, page: int = 1) -> Dict:
@@ -50,3 +55,10 @@ class TMDBClient:
 
     async def get_trending(self, media_type: str = "all", time_window: str = "week") -> Dict:
         return await self._get(f"/trending/{media_type}/{time_window}")
+
+    # Helpers
+    async def _get_movie_details(self, movie_id: int) -> Dict:
+        return await self._get(f"/movie/{movie_id}", {"append_to_response": "credits,images"})
+
+    async def _get_tv_details(self, tv_id: int) -> Dict:
+        return await self._get(f"/tv/{tv_id}", {"append_to_response": "credits,images,seasons"})

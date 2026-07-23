@@ -61,6 +61,7 @@ class Episode(BaseModel):
     overview: str | None = None
     release_date: datetime | None = None
     runtime: int | None = None
+    tmdb_rating: float | None = None
 
 
 class Season(BaseModel):
@@ -68,6 +69,7 @@ class Season(BaseModel):
     title: str | None = None
     overview: str | None = None
     release_date: datetime | None = None
+    tmdb_rating: float | None = None
     episodes: List[Episode] = []
 
 
