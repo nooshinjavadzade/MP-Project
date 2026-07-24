@@ -23,8 +23,8 @@ class OTPPurpose(str, Enum):
     reset_password = "reset_password"
 
 
-class EmailVerification(Base):
-    __tablename__ = "email_verifications"
+class OTPCodes(Base):
+    __tablename__ = "otp_codes"
 
     id: Mapped[int] = mapped_column(primary_key=True)
 

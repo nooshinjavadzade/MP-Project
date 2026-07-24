@@ -28,6 +28,15 @@ class Settings(BaseSettings):
     # Redis for cache
     REDIS_URL: str = "redis://localhost:6379/0"
 
+    # SMTP
+    SMTP_HOST: str
+    SMTP_PORT: int
+    SMTP_USER: str
+    SMTP_PASS: str
+
+    EMAIL_FROM: str
+    EMAIL_FROM_NAME: str
+
     class Config:
         env_file = ".env"
         case_sensitive = True

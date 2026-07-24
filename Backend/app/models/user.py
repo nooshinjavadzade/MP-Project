@@ -8,7 +8,11 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from ..core.db import Base
 
 if TYPE_CHECKING:
-    from . import Review, UserRating, PersonalList, WatchProgress, RefreshToken
+    from . import (
+        Review, UserRating, PersonalList,
+        WatchProgress, RefreshToken,
+        OTPCodes
+    )
 
 
 class User(Base):
@@ -27,6 +31,7 @@ class User(Base):
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), onupdate=func.now(), nullable=True)
+    is_verified: Mapped[bool] = mapped_column(default=False, nullable=False)
 
     # Relationships
     reviews: Mapped[list["Review"]] = relationship(back_populates="user", cascade="all, delete-orphan")
@@ -34,6 +39,8 @@ class User(Base):
     personal_lists: Mapped[list["PersonalList"]] = relationship(back_populates="user", cascade="all, delete-orphan")
     watch_progress: Mapped[list["WatchProgress"]] = relationship(back_populates="user", cascade="all, delete-orphan")
     refresh_tokens: Mapped[list["RefreshToken"]] = relationship(back_populates="user", cascade="all, delete-orphan")
+
+    email_verifications: Mapped[list["OTPCodes"]] = relationship(back_populates="user", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
         return f"<User {self.username}>"

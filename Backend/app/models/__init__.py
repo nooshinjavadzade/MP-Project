@@ -8,7 +8,8 @@ from app.models.watch_progress import WatchProgress
 from app.models.refresh_token import RefreshToken
 from app.models.season import Season
 from app.models.episode import Episode
+from .otp_codes import OTPCodes
 
 __all__ = ["User", "Media", "MediaType", "Review", "UserRating",
            "PersonalList", "PersonalListItem", "WatchProgress",
-           "RefreshToken", "Season", "Episode"]
+           "RefreshToken", "Season", "Episode", "OTPCodes"]
