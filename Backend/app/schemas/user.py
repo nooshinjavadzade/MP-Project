@@ -18,6 +18,7 @@ class UserUpdate(BaseModel):
     full_name: str | None = None
     bio: str | None = None
     avatar_url: str | None = None
+    is_verified: bool = False
 
 
 class PasswordChange(BaseModel):
@@ -42,6 +43,7 @@ class UserResponse(UserBase):
     avatar_url: str | None = None
     bio: str | None = None
     is_admin: bool = False
+    is_verified: bool = False
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)

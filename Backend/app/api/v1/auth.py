@@ -111,7 +111,7 @@ def refresh_token(request: RefreshRequest, db: Session = Depends(get_db)):
 
 
 def create_tokens_and_save_refresh(db: Session, user: User) -> Token:
-    access_token = create_access_token(data={"sub": user.id})
+    access_token = create_access_token(data={"sub": str(user.id)})
     refresh_token_str = create_refresh_token(data={"sub": str(user.id)})
 
     # Hash the refresh token before saving
