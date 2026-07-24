@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from app.core.db import get_db
 from app.core.email import send_email
 from app.core.otp import generate_otp, hash_otp
-from app.core.security import get_password_hash
+from app.core.security import get_password_hash, verify_password
 from app.api.v1.auth import create_tokens_and_save_refresh
 from app.dependencies.auth import get_current_user
 from app.models.otp_codes import OTPCodes, OTPPurpose
@@ -20,6 +20,7 @@ from app.schemas.verification import (
     ResetPasswordConfirm,
     VerifyEmailConfirm,
     VerifyEmailResponse,
+    ChangePasswordRequest
 )
 from app.services.rate_limiter import rate_limit_otp_request, rate_limit_otp_verify
 
@@ -313,3 +314,80 @@ async def confirm_password_reset(
     )
 
     return VerifyEmailResponse(message="Password reset successfully", tokens=tokens)
+
+
+@router.post("/password/change", response_model=VerifyEmailResponse)
+async def change_password(
+    request: ChangePasswordRequest,
+    http_request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Change password for an authenticated user.
+    Requires the current password.
+    Revokes all refresh tokens and returns new tokens.
+    """
+    client_ip = http_request.client.host if http_request.client else "unknown"
+    user_agent = http_request.headers.get("user-agent")
+
+    # Verify current password
+    if not verify_password(
+        request.current_password,
+        current_user.hashed_password,
+    ):
+        log_audit_event(
+            db,
+            event_type="password_change",
+            user_id=current_user.id,
+            email=current_user.email,
+            ip=client_ip,
+            user_agent=user_agent,
+            success=False,
+        )
+
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect",
+        )
+
+    # Prevent reusing the current password
+    if verify_password(
+        request.new_password,
+        current_user.hashed_password,
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New password must be different from the current password",
+        )
+
+    # Update password
+    current_user.hashed_password = get_password_hash(
+        request.new_password
+    )
+    db.commit()
+    db.refresh(current_user)
+
+    # Revoke all refresh tokens
+    revoke_all_refresh_tokens(db, current_user.id)
+
+    # Generate new tokens
+    tokens = create_tokens_and_save_refresh(
+        db,
+        current_user,
+    )
+
+    log_audit_event(
+        db,
+        event_type="password_change",
+        user_id=current_user.id,
+        email=current_user.email,
+        ip=client_ip,
+        user_agent=user_agent,
+        success=True,
+    )
+
+    return VerifyEmailResponse(
+        message="Password changed successfully",
+        tokens=tokens,
+    )

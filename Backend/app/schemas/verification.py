@@ -11,9 +11,7 @@ class ForgotPasswordRequest(BaseModel):
     email: EmailStr
 
 
-class ResetPasswordConfirm(BaseModel):
-    email: EmailStr
-    otp: str = Field(min_length=6, max_length=6, pattern=r"^\d{6}$")
+class PasswordChangeBase(BaseModel):
     new_password: str = Field(min_length=8)
     confirm_password: str
 
@@ -39,6 +37,15 @@ class ResetPasswordConfirm(BaseModel):
         if "new_password" in info.data and v != info.data["new_password"]:
             raise ValueError("Passwords do not match")
         return v
+
+
+class ResetPasswordConfirm(PasswordChangeBase):
+    email: EmailStr
+    otp: str = Field(min_length=6, max_length=6, pattern=r"^\d{6}$")
+
+
+class ChangePasswordRequest(PasswordChangeBase):
+    current_password: str
 
 
 class GenericResponse(BaseModel):
