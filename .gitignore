@@ -47,3 +47,5 @@ app.*.map.json
 # Python
 Backend/.venv/
 Backend/.env
+Backend/CLAUDE.md
+Backend/PLAN.md
