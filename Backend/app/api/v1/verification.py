@@ -24,7 +24,7 @@ from app.schemas.verification import (
 )
 from app.services.rate_limiter import rate_limit_otp_request, rate_limit_otp_verify
 
-router = APIRouter(prefix="/auth", tags=["auth"])
+router = APIRouter(tags=["auth"])
 
 
 def constant_time_compare(a: str, b: str) -> bool:

@@ -1,17 +1,17 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
 
 
 class RatingCreate(BaseModel):
-    media_id: int
-    rating: float
+    rating: float = Field(ge=1, le=5)
 
 
 class RatingResponse(BaseModel):
     id: int
     media_id: int
+    user_id: int
     rating: float
-    created_at: datetime
+    rated_at: datetime
+    updated_at: datetime | None = None
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}

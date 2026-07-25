@@ -1,16 +1,24 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, HTTPException, Depends, Query, status
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta, timezone
 from typing import List, Dict
 
+from app.dependencies.auth import get_current_user
+from app.models import (
+    User, MediaType, UserRating, Review, Media,
+    Season, Episode, PersonalListItem, PersonalList
+)
 from app.core.db import get_db
 from app.core.tmdb import TMDBClient
 from app.mappers.tmdb_mapper import TMDBMapper
+from app.schemas.review import ReviewCreate, ReviewResponse
+from app.schemas.rating import RatingCreate, RatingResponse
+from app.schemas.interactions import LikeToggleResponse
 from app.schemas.media import (
-    MediaBase, MovieDetails, SeriesDetails, MediaSearchResult, Pagination,
-    Season as SeasonSchema, Episode as EpisodeSchema
+    MediaBase, MovieDetails, SeriesDetails, MediaSearchResult,
+    Pagination, Season as SeasonSchema, Episode as EpisodeSchema
 )
-from app.models import Media, Season, Episode
+
 
 router = APIRouter(tags=["media"])
 
@@ -56,10 +64,45 @@ async def search_media(
     )
 
 
+@router.get("/popular/movies", response_model=List[MediaBase])
+async def get_popular_movies(page: int = 1, db: Session = Depends(get_db)):
+    tmdb_data = await tmdb_client.get_popular_movies(page)
+    results = []
+    for item in tmdb_data.get("results", []):
+        item["media_type"] = "movie"
+        await _save_or_update_media(db, item)
+        results.append(TMDBMapper.to_media_base(item))
+
+    return results
+
+
+@router.get("/popular/series", response_model=List[MediaBase])
+async def get_popular_series(page: int = 1, db: Session = Depends(get_db)):
+    tmdb_data = await tmdb_client.get_popular_tv(page)
+    results = []
+    for item in tmdb_data.get("results", []):
+        item["media_type"] = "series"
+        await _save_or_update_media(db, item)
+        results.append(TMDBMapper.to_media_base(item))
+
+    return results
+
+
+@router.get("/trending", response_model=List[MediaBase])
+async def get_trending(media_type: str = "all", time_window: str = "week", db: Session = Depends(get_db)):
+    tmdb_data = await tmdb_client.get_trending(media_type, time_window)
+    results = []
+    for item in tmdb_data.get("results", []):
+        await _save_or_update_media(db, item)
+        results.append(TMDBMapper.to_media_base(item))
+
+    return results
+
+
 @router.get("/movies/{tmdb_id}", response_model=MovieDetails)
 async def get_movie_details(tmdb_id: int, db: Session = Depends(get_db)):
     """Details with 24h cache"""
-    media = db.query(Media).filter(Media.tmdb_id == str(tmdb_id)).first()
+    media = _get_media_by_tmdb_id_and_type(db, str(tmdb_id), "movie")
 
     STALE_AFTER = timedelta(days=1)
     needs_refresh = (
@@ -81,7 +124,7 @@ async def get_movie_details(tmdb_id: int, db: Session = Depends(get_db)):
 
 @router.get("/series/{tmdb_id}", response_model=SeriesDetails)
 async def get_series_details(tmdb_id: int, db: Session = Depends(get_db)):
-    media = db.query(Media).filter(Media.tmdb_id == str(tmdb_id)).first()
+    media = _get_media_by_tmdb_id_and_type(db, str(tmdb_id), "series")
 
     STALE_AFTER = timedelta(days=1)
     needs_refresh = (
@@ -92,6 +135,7 @@ async def get_series_details(tmdb_id: int, db: Session = Depends(get_db)):
 
     if needs_refresh:
         tmdb_data = await tmdb_client.get_media_details(tmdb_id, media_type="tv")
+        print('hi')
         tmdb_data["media_type"] = "series"
         await _save_or_update_media(db, tmdb_data, is_full_fetch=True)
 
@@ -100,39 +144,162 @@ async def get_series_details(tmdb_id: int, db: Session = Depends(get_db)):
     return SeriesDetails.model_validate(media)
 
 
-@router.get("/popular/movies", response_model=List[MediaBase])
-async def get_popular_movies(page: int = 1, db: Session = Depends(get_db)):
-    tmdb_data = await tmdb_client.get_popular_movies(page)
-    results = []
-    for item in tmdb_data.get("results", []):
-        item["media_type"] = "movie"
-        await _save_or_update_media(db, item)
-        results.append(TMDBMapper.to_media_base(item))
-    
-    return results
+@router.post("/{media_type}/{tmdb_id}/like", response_model=LikeToggleResponse)
+async def toggle_like(
+    tmdb_id: str,
+    media_type: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Toggle like on a media item."""
+    media = _get_media_by_tmdb_id_and_type(db, tmdb_id, media_type, is_needed=True)
+
+    liked_list = get_default_personal_list(
+        db,
+        current_user.id,
+        "Liked",
+    )
+
+    if not liked_list:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Liked list not found."
+        )
+
+    existing_item = (
+        db.query(PersonalListItem)
+        .filter(
+            PersonalListItem.list_id == liked_list.id,
+            PersonalListItem.media_id == media.id,
+        )
+        .first()
+    )
+
+    if existing_item:
+        db.delete(existing_item)
+        db.commit()
+        return LikeToggleResponse(liked=False)
+
+    new_item = PersonalListItem(
+        list_id=liked_list.id,
+        media_id=media.id,
+    )
+    db.add(new_item)
+    db.commit()
+
+    return LikeToggleResponse(liked=True)
 
 
-@router.get("/popular/series", response_model=List[MediaBase])
-async def get_popular_series(page: int = 1, db: Session = Depends(get_db)):
-    tmdb_data = await tmdb_client.get_popular_tv(page)
-    results = []
-    for item in tmdb_data.get("results", []):
-        item["media_type"] = "series"
-        await _save_or_update_media(db, item)
-        results.append(TMDBMapper.to_media_base(item))
-        
-    return results
+@router.post("/{media_type}/{tmdb_id}/rating", response_model=RatingResponse)
+async def upsert_rating_media(
+    tmdb_id: str,
+    media_type: str,
+    rating_in: RatingCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Create or update a rating for a media item."""
+    media = _get_media_by_tmdb_id_and_type(db, tmdb_id, media_type, is_needed=True)
+
+    current_average = media.community_rating or 0.0
+    current_count = media.community_ratings_count or 0
+
+    existing_rating = (
+        db.query(UserRating)
+        .filter(
+            UserRating.user_id == current_user.id,
+            UserRating.media_id == media.id,
+        )
+        .first()
+    )
+
+    if existing_rating:
+        old_rating = existing_rating.rating
+
+        media.community_rating = round(
+            (current_average * current_count - old_rating + rating_in.rating)
+            / current_count,
+            2
+        )
+
+        existing_rating.rating = rating_in.rating
+
+        db.commit()
+        db.refresh(existing_rating)
+        return existing_rating
+
+    new_rating = UserRating(
+        user_id=current_user.id,
+        media_id=media.id,
+        rating=rating_in.rating,
+    )
+
+    media.community_rating = round(
+        (current_average * current_count + rating_in.rating)
+        / (current_count + 1),
+        2
+    )
+    media.community_ratings_count = current_count + 1
+
+    db.add(new_rating)
+    db.commit()
+    db.refresh(new_rating)
+
+    return new_rating
+
+@router.post("/{media_type}/{tmdb_id}/reviews", response_model=ReviewResponse)
+async def create_review_movie(
+    tmdb_id: str,
+    media_type: str,
+    review_in: ReviewCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Create a review for a movie"""
+    media = _get_media_by_tmdb_id_and_type(db, tmdb_id, media_type, is_needed=True)
+
+    existing_review = db.query(Review).filter(
+        Review.user_id == current_user.id,
+        Review.media_id == media.id
+    ).first()
+
+    if existing_review:
+        existing_review.review = review_in.review
+        existing_review.contains_spoiler = review_in.contains_spoiler
+
+        db.commit()
+        db.refresh(existing_review)
+        return existing_review
+
+    new_review = Review(
+        user_id=current_user.id,
+        media_id=media.id,
+        review=review_in.review,
+        contains_spoiler=review_in.contains_spoiler
+    )
+    db.add(new_review)
+    db.commit()
+    db.refresh(new_review)
+    return new_review
 
 
-@router.get("/trending", response_model=List[MediaBase])
-async def get_trending(media_type: str = "all", time_window: str = "week", db: Session = Depends(get_db)):
-    tmdb_data = await tmdb_client.get_trending(media_type, time_window)
-    results = []
-    for item in tmdb_data.get("results", []):
-        await _save_or_update_media(db, item)
-        results.append(TMDBMapper.to_media_base(item))
-        
-    return results
+@router.get("/{media_type}/{tmdb_id}/reviews", response_model=List[ReviewResponse])
+async def get_movie_reviews(
+    tmdb_id: str,
+    media_type: str,
+    page: int = Query(1, ge=1),
+    per_page: int = Query(20, ge=1, le=100),
+    db: Session = Depends(get_db),
+):
+    """Get public reviews for a movie (paginated)"""
+    media = _get_media_by_tmdb_id_and_type(db, tmdb_id, media_type, is_needed=True)
+
+    offset = (page - 1) * per_page
+    reviews = db.query(Review).filter(Review.media_id == media.id).order_by(
+        Review.created_at.desc()
+    ).offset(offset).limit(per_page).all()
+
+    return reviews
 
 
 @router.get("/series/{tmdb_id}/season/{season_number}", response_model=SeasonSchema)
@@ -221,13 +388,65 @@ async def get_episode_details(tmdb_id: int, season_number: int, episode_number: 
 
 
 # ==================== Helper ====================
+def _get_media_by_tmdb_id_and_type(db: Session, tmdb_id: str, media_type: str, is_needed: bool = False) -> Media | None:
+    """Get media by tmdb_id AND media_type to prevent cross-type confusion."""
+    try :
+        media = db.query(Media).filter(
+            Media.tmdb_id == tmdb_id,
+            Media.media_type == MediaType(media_type)
+        ).first()
+        if not media:
+            if is_needed:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Media with type: {media_type} and tmdb_id {tmdb_id} not found.",
+                )
+            return None
+
+        return media
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid media type: {media_type}. Must be 'movie' or 'series'."
+        )
+
+
+def get_default_personal_list(
+    db: Session,
+    user_id: int,
+    name: str,
+) -> PersonalList:
+    personal_list = (
+        db.query(PersonalList)
+        .filter(
+            PersonalList.user_id == user_id,
+            PersonalList.is_default == True,
+            PersonalList.name == name,
+        )
+        .first()
+    )
+
+    if not personal_list:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Default list '{name}' not found.",
+        )
+
+    return personal_list
+
+
 async def _save_or_update_media(db: Session, tmdb_data: Dict, is_full_fetch: bool = False) -> Media:
     """Save or update media using TMDBMapper"""
     tmdb_id = str(tmdb_data.get("id"))
+    media_type = tmdb_data.get("media_type")
+
     media_obj = TMDBMapper.to_media_base(tmdb_data)
 
     # Check if exists
-    media = db.query(Media).filter(Media.tmdb_id == tmdb_id).first()
+    media = db.query(Media).filter(
+        Media.tmdb_id == tmdb_id,
+        Media.media_type == media_type
+    ).first()
 
     if media:
         # Update existing record

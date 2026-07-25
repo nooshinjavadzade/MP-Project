@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from . import (
         Review, UserRating, PersonalList,
         WatchProgress, RefreshToken,
-        OTPCodes
+        OTPCodes, Like
     )
 
 
@@ -39,8 +39,8 @@ class User(Base):
     personal_lists: Mapped[list["PersonalList"]] = relationship(back_populates="user", cascade="all, delete-orphan")
     watch_progress: Mapped[list["WatchProgress"]] = relationship(back_populates="user", cascade="all, delete-orphan")
     refresh_tokens: Mapped[list["RefreshToken"]] = relationship(back_populates="user", cascade="all, delete-orphan")
-
     email_verifications: Mapped[list["OTPCodes"]] = relationship(back_populates="user", cascade="all, delete-orphan")
+    likes: Mapped[list["Like"]] = relationship(back_populates="user", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
         return f"<User {self.username}>"

@@ -21,20 +21,23 @@ class MediaBase(BaseModel):
     media_type: MediaType
     tmdb_id: str
     title: str
-    original_title: str | None = None
     poster_url: str | None = None
     backdrop_url: str | None = None
-    overview: str | None = None
     release_year: int | None = None
     tmdb_rating: float | None = None
     community_rating: float | None = None
+
+    class Config:
+        from_attributes = True
+
+
+class MediaDetails(MediaBase):
+    original_title: str | None = None
+    overview: str | None = None
     original_language: str | None = None
     country: str | None = None
     cast: List[CastMember] = []
     genres: List[str] = []
-
-    class Config:
-        from_attributes = True
 
 
 class Pagination(BaseModel):
@@ -51,7 +54,7 @@ class MediaSearchResult(BaseModel):
     pagination: Pagination
 
 
-class MovieDetails(MediaBase):
+class MovieDetails(MediaDetails):
     runtime: int | None = None
 
 
@@ -73,7 +76,7 @@ class Season(BaseModel):
     episodes: List[Episode] = []
 
 
-class SeriesDetails(MediaBase):
+class SeriesDetails(MediaDetails):
     season_count: int | None = None
     episode_count: int | None = None
     seasons: List[Season] = []

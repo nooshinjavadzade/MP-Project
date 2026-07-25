@@ -9,6 +9,7 @@ from app.schemas.auth import AuthResponse
 from app.schemas.token import Token
 from app.models.user import User
 from app.models.refresh_token import RefreshToken
+from app.models.personal_list import PersonalList
 from app.core.security import (
     verify_password,
     get_password_hash,
@@ -45,6 +46,23 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)):
     db.add(user)
     db.commit()
     db.refresh(user)
+
+    # Create default lists
+    liked_list = PersonalList(
+        user_id=user.id,
+        name="Liked",
+        description="Media you've liked",
+        is_default=True
+    )
+    watchlist = PersonalList(
+        user_id=user.id,
+        name="Watchlist",
+        description="Media you plan to watch",
+        is_default=True
+    )
+    db.add(liked_list)
+    db.add(watchlist)
+    db.commit()
 
     tokens = create_tokens_and_save_refresh(db, user)
 
@@ -102,7 +120,7 @@ def refresh_token(request: RefreshRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="User not found or inactive")
 
     # Create new access token
-    new_access_token = create_access_token(data={"sub": user.id})
+    new_access_token = create_access_token(data={"sub": str(user.id)})
 
     return Token(
         access_token=new_access_token,
