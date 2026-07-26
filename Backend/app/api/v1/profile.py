@@ -8,11 +8,35 @@ from app.models import User, UserRating, Review, Media, PersonalListItem
 from app.schemas.review import ReviewUpdate, ReviewResponse
 from app.schemas.rating import RatingResponse
 from app.schemas.media import MediaBase
+from app.schemas.user import UserResponse, UserUpdate
 
 from .media import get_default_personal_list
 
 
 router = APIRouter(tags=["profile"])
+
+
+@router.get("/", response_model=UserResponse)
+async def get_user(current_user: User = Depends(get_current_user)):
+    return current_user
+
+
+@router.patch("/", response_model=UserResponse)
+async def update_user(
+    user_update: UserUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if user_update.bio is not None:
+        current_user.bio = user_update.bio
+    if user_update.avatar_url is not None:
+        current_user.avatar_url = user_update.avatar_url
+    if user_update.full_name is not None:
+        current_user.full_name = user_update.full_name
+
+    db.commit()
+    db.refresh(current_user)
+    return current_user
 
 
 @router.get("/likes", response_model=List[MediaBase])

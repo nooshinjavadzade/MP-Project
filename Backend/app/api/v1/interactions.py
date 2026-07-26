@@ -163,7 +163,6 @@ async def add_media_to_list(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Add media to a personal list"""
     lst = db.query(PersonalList).filter(
         PersonalList.id == list_id,
         PersonalList.user_id == current_user.id

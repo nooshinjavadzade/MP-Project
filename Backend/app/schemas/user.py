@@ -18,7 +18,6 @@ class UserUpdate(BaseModel):
     full_name: str | None = None
     bio: str | None = None
     avatar_url: str | None = None
-    is_verified: bool = False
 
 
 class PasswordChange(BaseModel):

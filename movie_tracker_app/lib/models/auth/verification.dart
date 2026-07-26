@@ -1,4 +1,5 @@
 import 'token.dart';
+import 'user.dart';
 
 class PasswordChangeBase {
   final String newPassword;
@@ -112,19 +113,22 @@ class GenericResponse {
 
 class VerifyEmailResponse {
   final String message;
-  final Token tokens;
+  final Token? tokens;
+  final User? user;
 
-  const VerifyEmailResponse({required this.message, required this.tokens});
+  const VerifyEmailResponse({required this.message, this.tokens, this.user});
 
   factory VerifyEmailResponse.fromJson(Map<String, dynamic> json) {
     return VerifyEmailResponse(
       message: json['message'],
-      tokens: Token.fromJson(json['tokens']),
+      tokens: json['tokens'] != null ? Token.fromJson(json['tokens']) : null,
+      user: json['user'] != null ? User.fromJson(json['user']) : null,
     );
   }
 
   Map<String, dynamic> toJson() => {
     'message': message,
-    'tokens': tokens.toJson(),
+    'tokens': tokens?.toJson(),
+    'user': user?.toJson(),
   };
 }

@@ -13,7 +13,6 @@ class ForgotPasswordRequest(BaseModel):
 
 class PasswordChangeBase(BaseModel):
     new_password: str = Field(min_length=8)
-    confirm_password: str
 
     @field_validator("new_password")
     @classmethod
@@ -29,13 +28,6 @@ class PasswordChangeBase(BaseModel):
             raise ValueError("Password must contain at least one digit")
         if not any(not c.isalnum() for c in v):
             raise ValueError("Password must contain at least one special character")
-        return v
-
-    @field_validator("confirm_password")
-    @classmethod
-    def passwords_match(cls, v: str, info) -> str:
-        if "new_password" in info.data and v != info.data["new_password"]:
-            raise ValueError("Passwords do not match")
         return v
 
 
