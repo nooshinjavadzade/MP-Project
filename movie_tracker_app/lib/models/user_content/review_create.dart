@@ -1,24 +1,49 @@
-class ReviewModel {
+class ReviewCreate {
+  final String review;
+  final bool containsSpoiler;
+
+  const ReviewCreate({
+    required this.review,
+    this.containsSpoiler = false,
+  });
+
+  factory ReviewCreate.fromJson(Map<String, dynamic> json) {
+    return ReviewCreate(
+      review: json['review'],
+      containsSpoiler: json['contains_spoiler'] ?? false,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'review': review,
+    'contains_spoiler': containsSpoiler,
+  };
+}
+
+class ReviewResponse {
   final int id;
   final int mediaId;
+  final int userId;
   final String review;
   final bool containsSpoiler;
   final DateTime createdAt;
   final DateTime? updatedAt;
 
-  const ReviewModel({
+  const ReviewResponse({
     required this.id,
     required this.mediaId,
+    required this.userId,
     required this.review,
-    this.containsSpoiler = false,
+    required this.containsSpoiler,
     required this.createdAt,
     this.updatedAt,
   });
 
-  factory ReviewModel.fromJson(Map<String, dynamic> json) {
-    return ReviewModel(
+  factory ReviewResponse.fromJson(Map<String, dynamic> json) {
+    return ReviewResponse(
       id: json['id'],
       mediaId: json['media_id'],
+      userId: json['user_id'],
       review: json['review'],
       containsSpoiler: json['contains_spoiler'] ?? false,
       createdAt: DateTime.parse(json['created_at']),
@@ -31,6 +56,7 @@ class ReviewModel {
   Map<String, dynamic> toJson() => {
     'id': id,
     'media_id': mediaId,
+    'user_id': userId,
     'review': review,
     'contains_spoiler': containsSpoiler,
     'created_at': createdAt.toIso8601String(),

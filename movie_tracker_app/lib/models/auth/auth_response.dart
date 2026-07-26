@@ -1,31 +1,25 @@
-import 'login_response.dart';
+import 'token.dart';
 import 'user.dart';
 
 class AuthResponse {
-  final LoginResponse tokens;
+  final Token tokens;
   final User user;
 
-  const AuthResponse({
-    required this.tokens,
-    required this.user,
-  });
+  const AuthResponse({required this.tokens, required this.user});
 
   factory AuthResponse.fromJson(Map<String, dynamic> json) {
     return AuthResponse(
-      tokens: LoginResponse.fromJson(json),
+      tokens: Token.fromJson(json['tokens']),
       user: User.fromJson(json['user']),
     );
   }
 
   Map<String, dynamic> toJson() => {
-    ...tokens.toJson(),
+    'tokens': tokens.toJson(),
     'user': user.toJson(),
   };
 
-  AuthResponse copyWith({
-    LoginResponse? tokens,
-    User? user,
-  }) {
+  AuthResponse copyWith({Token? tokens, User? user}) {
     return AuthResponse(
       tokens: tokens ?? this.tokens,
       user: user ?? this.user,

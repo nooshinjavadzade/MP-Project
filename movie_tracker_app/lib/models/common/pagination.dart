@@ -18,7 +18,7 @@ class Pagination {
   factory Pagination.fromJson(Map<String, dynamic> json) {
     return Pagination(
       page: json['page'],
-      perPage: json['per_page'],
+      perPage: json['per_page'] ?? 20,
       totalItems: json['total_items'],
       totalPages: json['total_pages'],
       hasNextPage: json['has_next_page'],

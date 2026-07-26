@@ -1,31 +1,37 @@
-class LoginResponse {
+class Token {
   final String accessToken;
   final String refreshToken;
+  final String tokenType;
 
-  const LoginResponse({
+  const Token({
     required this.accessToken,
     required this.refreshToken,
+    this.tokenType = 'bearer',
   });
 
-  factory LoginResponse.fromJson(Map<String, dynamic> json) {
-    return LoginResponse(
+  factory Token.fromJson(Map<String, dynamic> json) {
+    return Token(
       accessToken: json['access_token'],
       refreshToken: json['refresh_token'],
+      tokenType: json['token_type'] ?? 'bearer',
     );
   }
 
   Map<String, dynamic> toJson() => {
     'access_token': accessToken,
     'refresh_token': refreshToken,
+    'token_type': tokenType,
   };
 
-  LoginResponse copyWith({
+  Token copyWith({
     String? accessToken,
     String? refreshToken,
+    String? tokenType,
   }) {
-    return LoginResponse(
+    return Token(
       accessToken: accessToken ?? this.accessToken,
       refreshToken: refreshToken ?? this.refreshToken,
+      tokenType: tokenType ?? this.tokenType,
     );
   }
 }

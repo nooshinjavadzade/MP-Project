@@ -1,3 +1,4 @@
+/// Media Type enum matching backend: "movie" | "series"
 enum MediaType {
   movie,
   series,

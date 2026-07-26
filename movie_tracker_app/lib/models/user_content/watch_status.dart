@@ -1,10 +1,11 @@
+/// Watch status enum matching backend schema
 enum WatchStatus {
   planToWatch,
   watching,
   completed,
   onHold,
   dropped,
-  loved
+  loved,
 }
 
 extension WatchStatusExtension on WatchStatus {

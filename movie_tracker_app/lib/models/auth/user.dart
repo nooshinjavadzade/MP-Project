@@ -6,6 +6,8 @@ class User {
   final String? avatarUrl;
   final String? bio;
   final bool isAdmin;
+  final bool isVerified;
+  final DateTime createdAt;
 
   const User({
     required this.id,
@@ -15,6 +17,8 @@ class User {
     this.avatarUrl,
     this.bio,
     this.isAdmin = false,
+    this.isVerified = false,
+    required this.createdAt,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -26,6 +30,11 @@ class User {
       avatarUrl: json['avatar_url'],
       bio: json['bio'],
       isAdmin: json['is_admin'] ?? false,
+      isVerified: json['is_verified'] ?? false,
+      createdAt:
+          json['created_at'] != null
+              ? DateTime.parse(json['created_at'])
+              : DateTime.now(),
     );
   }
 
@@ -37,6 +46,8 @@ class User {
     'avatar_url': avatarUrl,
     'bio': bio,
     'is_admin': isAdmin,
+    'is_verified': isVerified,
+    'created_at': createdAt.toIso8601String(),
   };
 
   User copyWith({
@@ -47,6 +58,8 @@ class User {
     String? avatarUrl,
     String? bio,
     bool? isAdmin,
+    bool? isVerified,
+    DateTime? createdAt,
   }) {
     return User(
       id: id ?? this.id,
@@ -56,6 +69,8 @@ class User {
       avatarUrl: avatarUrl ?? this.avatarUrl,
       bio: bio ?? this.bio,
       isAdmin: isAdmin ?? this.isAdmin,
+      isVerified: isVerified ?? this.isVerified,
+      createdAt: createdAt ?? this.createdAt,
     );
   }
 }
