@@ -4,11 +4,12 @@ from typing import List
 
 from app.core.db import get_db
 from app.dependencies.auth import get_current_user
-from app.models import User, UserRating, Review, Media, PersonalListItem
+from app.models import User, UserRating, Review, Media, PersonalListItem, PersonalList, Like, WatchProgress
 from app.schemas.review import ReviewUpdate, ReviewResponse
 from app.schemas.rating import RatingResponse
 from app.schemas.media import MediaBase
-from app.schemas.user import UserResponse, UserUpdate
+from app.schemas.user import UserResponse, UserUpdate, ProfileResponse, PublicProfileResponse
+from app.services.profile import get_profile_stats, get_recent_liked_media, get_public_profile_stats
 
 from .media import get_default_personal_list
 
@@ -16,9 +17,54 @@ from .media import get_default_personal_list
 router = APIRouter(tags=["profile"])
 
 
-@router.get("/", response_model=UserResponse)
-async def get_user(current_user: User = Depends(get_current_user)):
-    return current_user
+@router.get("/", response_model=ProfileResponse)
+async def get_user_profile(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Get authenticated user's full profile with stats"""
+    stats = get_profile_stats(db, current_user.id)
+    liked_media = get_recent_liked_media(db, current_user.id, limit=20)
+    
+    # Build response
+    response = ProfileResponse.model_validate(current_user)
+    response.watched_movies_count = stats["watched_movies_count"]
+    response.watched_series_count = stats["watched_series_count"]
+    response.liked_media = liked_media
+    response.ratings_count = stats["ratings_count"]
+    response.reviews_count = stats["reviews_count"]
+    response.lists_count = stats["lists_count"]
+    
+    return response
+
+
+@router.get("/{user_id}", response_model=PublicProfileResponse)
+async def get_public_profile(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Get public profile of another user with stats"""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if not user.is_active:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    stats = get_public_profile_stats(db, user_id)
+    liked_media = get_recent_liked_media(db, user_id, limit=20)
+    
+    # Build response (excludes email, is_admin, is_verified)
+    response = PublicProfileResponse.model_validate(user)
+    response.watched_movies_count = stats["watched_movies_count"]
+    response.watched_series_count = stats["watched_series_count"]
+    response.liked_media = liked_media
+    response.ratings_count = stats["ratings_count"]
+    response.reviews_count = stats["reviews_count"]
+    response.lists_count = stats["lists_count"]
+    
+    return response
 
 
 @router.patch("/", response_model=UserResponse)
@@ -27,9 +73,16 @@ async def update_user(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    # Only allow updating bio, avatar_url, full_name
+    # Email and username changes require separate verified flow
     if user_update.bio is not None:
         current_user.bio = user_update.bio
     if user_update.avatar_url is not None:
+        # Validate avatar URL is HTTPS
+        if user_update.avatar_url and not user_update.avatar_url.startswith("https://"):
+            raise HTTPException(status_code=400, detail="Avatar URL must use HTTPS")
+        if user_update.avatar_url and len(user_update.avatar_url) > 255:
+            raise HTTPException(status_code=400, detail="Avatar URL too long (max 255 characters)")
         current_user.avatar_url = user_update.avatar_url
     if user_update.full_name is not None:
         current_user.full_name = user_update.full_name

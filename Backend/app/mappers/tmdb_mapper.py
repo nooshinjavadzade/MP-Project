@@ -4,7 +4,7 @@ from app.schemas.media import (
     MediaBase, MovieDetails, SeriesDetails,
     CastMember, Season, Episode, MediaType
 )
-from core import tmdb
+from app.core import tmdb
 
 
 class TMDBMapper:
