@@ -36,17 +36,5 @@ class ResetPasswordConfirm(PasswordChangeBase):
     otp: str = Field(min_length=6, max_length=6, pattern=r"^\d{6}$")
 
 
-class ChangePasswordRequest(PasswordChangeBase):
-    current_password: str
-
-
 class GenericResponse(BaseModel):
     message: str
-
-
-class VerifyEmailResponse(BaseModel):
-    message: str
-    tokens: "Token"
-
-    class Config:
-        from_attributes = True

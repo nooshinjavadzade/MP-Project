@@ -1,11 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
 from sqlalchemy.orm import Session
-from datetime import timedelta, datetime
+from datetime import datetime
 from pydantic import BaseModel
 
+from app.services.auth_service import revoke_all_refresh_tokens, create_tokens_and_save_refresh
 from app.core.db import get_db
 from app.schemas.user import UserCreate, UserResponse, UserLogin
-from app.schemas.auth import AuthResponse
+from app.schemas.auth import AuthResponse, LogoutRequest, VerifyEmailResponse, ChangePasswordRequest
 from app.schemas.token import Token
 from app.models.user import User
 from app.models.refresh_token import RefreshToken
@@ -18,7 +19,8 @@ from app.core.security import (
     hash_refresh_token,
     decode_token
 )
-
+from app.dependencies.auth import get_current_user
+from app.services.rate_limiter import rate_limit_password_change
 
 router = APIRouter(tags=["auth"])
 
@@ -124,27 +126,98 @@ def refresh_token(request: RefreshRequest, db: Session = Depends(get_db)):
 
     return Token(
         access_token=new_access_token,
-        refresh_token=refresh_token_str   # Return the same refresh token
-    )
-
-
-def create_tokens_and_save_refresh(db: Session, user: User) -> Token:
-    access_token = create_access_token(data={"sub": str(user.id)})
-    refresh_token_str = create_refresh_token(data={"sub": str(user.id)})
-
-    # Hash the refresh token before saving
-    token_hash = hash_refresh_token(refresh_token_str)
-
-    refresh_token_obj = RefreshToken(
-        user_id=user.id,
-        token_hash=token_hash,           # ← Use token_hash
-        expires_at=datetime.utcnow() + timedelta(days=30),
-        revoked=False
-    )
-    db.add(refresh_token_obj)
-    db.commit()
-
-    return Token(
-        access_token=access_token,
         refresh_token=refresh_token_str
     )
+
+
+@router.post("/password/change", response_model=VerifyEmailResponse)
+async def change_password(
+    request: ChangePasswordRequest,
+    http_request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Change password for an authenticated user.
+    Requires the current password.
+    Revokes all refresh tokens and returns new tokens.
+    """
+    client_ip = http_request.client.host if http_request.client else "unknown"
+    user_agent = http_request.headers.get("user-agent")
+    await rate_limit_password_change(current_user.id)
+
+    # Verify current password
+    if not verify_password(
+        request.current_password,
+        current_user.hashed_password,
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect",
+        )
+
+    # Prevent reusing the current password
+    if verify_password(
+        request.new_password,
+        current_user.hashed_password,
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New password must be different from the current password",
+        )
+
+    # Update password
+    current_user.hashed_password = get_password_hash(
+        request.new_password
+    )
+    db.commit()
+    db.refresh(current_user)
+
+    # Revoke all refresh tokens
+    revoke_all_refresh_tokens(db, current_user.id)
+
+    # Generate new tokens
+    tokens = create_tokens_and_save_refresh(
+        db,
+        current_user,
+    )
+
+    return VerifyEmailResponse(
+        message="Password changed successfully",
+        tokens=tokens,
+    )
+
+
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+def logout(
+    request: LogoutRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    token_hash = hash_refresh_token(request.refresh_token)
+
+    refresh = (
+        db.query(RefreshToken)
+        .filter(
+            RefreshToken.user_id == current_user.id,
+            RefreshToken.token_hash == token_hash,
+            RefreshToken.revoked == False,
+        )
+        .first()
+    )
+
+    if refresh:
+        refresh.revoked = True
+        db.commit()
+
+    return Response(status_code=204)
+
+
+@router.post("/logout/all", status_code=status.HTTP_204_NO_CONTENT)
+def logout_all(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    revoke_all_refresh_tokens(db, current_user.id)
+
+    return Response(status_code=204)

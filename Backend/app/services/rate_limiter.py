@@ -1,5 +1,6 @@
 import redis
-from datetime import datetime, timedelta
+from datetime import datetime
+from fastapi import HTTPException, status
 
 from app.core.config import settings
 
@@ -15,7 +16,7 @@ def get_redis_client():
     return _redis_client
 
 
-async def rate_limit_otp_request(db, email: str, ip: str, purpose: str) -> None:
+async def rate_limit_otp_request(email: str, ip: str, purpose: str) -> None:
     """
     Rate limit OTP requests to max 3 per hour per email/IP combination.
     Uses Redis sliding window.
@@ -52,7 +53,7 @@ async def rate_limit_otp_request(db, email: str, ip: str, purpose: str) -> None:
     redis.expire(ip_key, 3600)
 
 
-async def rate_limit_otp_verify(db, email: str, purpose: str) -> None:
+async def rate_limit_otp_verify(email: str, purpose: str) -> None:
     """
     Rate limit OTP verification attempts to max 5 per hour per email.
     """
@@ -65,8 +66,6 @@ async def rate_limit_otp_verify(db, email: str, purpose: str) -> None:
     count = redis.zcount(key, window_start, current_time)
 
     if count >= 5:
-        from fastapi import HTTPException, status
-
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail="Too many verification attempts. Please try again later.",
@@ -74,4 +73,27 @@ async def rate_limit_otp_verify(db, email: str, purpose: str) -> None:
 
     request_id = f"{current_time}"
     redis.zadd(key, {request_id: current_time})
+    redis.expire(key, 3600)
+
+
+async def rate_limit_password_change(user_id: int):
+    """
+    Rate limit password change attempts to max 5 per hour per user.
+    """
+    redis = get_redis_client()
+
+    key = f"password_change:{user_id}"
+
+    current = datetime.utcnow().timestamp()
+    window = current - 3600
+
+    count = redis.zcount(key, window, current)
+
+    if count >= 5:
+        raise HTTPException(
+            status_code=429,
+            detail="Too many password change attempts."
+        )
+
+    redis.zadd(key, {str(current): current})
     redis.expire(key, 3600)
