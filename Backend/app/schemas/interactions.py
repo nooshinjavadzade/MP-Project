@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field, ConfigDict
-from typing import List, Optional
+from typing import List
 from datetime import datetime
-from enum import Enum
+
 
 from app.schemas.media import MediaBase
 

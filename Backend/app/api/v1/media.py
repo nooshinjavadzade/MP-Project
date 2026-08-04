@@ -451,15 +451,14 @@ async def _save_or_update_media(db: Session, tmdb_data: Dict, is_full_fetch: boo
     if media:
         # Update existing record
         media.title = media_obj.title
-        media.overview = media_obj.overview
+        media.overview = tmdb_data.get("overview"),
         media.poster_url = media_obj.poster_url
         media.backdrop_url = media_obj.backdrop_url
         media.tmdb_rating = media_obj.tmdb_rating
         media.release_year = media_obj.release_year
-        media.genres = media_obj.genres
-        media.original_language = media_obj.original_language
-        media.country = media_obj.country \
-            if media_obj.country else tmdb_data.get("origin_country")[0] \
+        media.genres = [g["name"] for g in tmdb_data.get("genres", [])]
+        media.original_language = tmdb_data.get("original_language")
+        media.country = tmdb_data.get("origin_country")[0] \
             if tmdb_data.get("origin_country") else None
 
         media.runtime = tmdb_data.get("runtime")
@@ -477,16 +476,15 @@ async def _save_or_update_media(db: Session, tmdb_data: Dict, is_full_fetch: boo
             tmdb_id=tmdb_id,
             media_type=media_obj.media_type,
             title=media_obj.title,
-            original_title=media_obj.original_title,
+            original_title=tmdb_data.get("original_title") or tmdb_data.get("original_name"),
             poster_url=media_obj.poster_url,
             backdrop_url=media_obj.backdrop_url,
-            overview=media_obj.overview,
+            overview=tmdb_data.get("overview"),
             release_year=media_obj.release_year,
             tmdb_rating=media_obj.tmdb_rating,
-            genres=media_obj.genres,
-            original_language=media_obj.original_language,
-            country=media_obj.country \
-                if media_obj.country else tmdb_data.get("origin_country")[0] \
+            genres=[g["name"] for g in tmdb_data.get("genres", [])],
+            original_language=tmdb_data.get("original_language"),
+            country=tmdb_data.get("origin_country")[0] \
                 if tmdb_data.get("origin_country") else None,
 
             runtime=tmdb_data.get("runtime"),
