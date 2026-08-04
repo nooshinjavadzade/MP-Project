@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, Query, status
+from fastapi import APIRouter, HTTPException, Depends, Query, status, Response
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta, timezone
 from typing import List, Dict
@@ -18,7 +18,8 @@ from app.schemas.media import (
     MediaBase, MovieDetails, SeriesDetails, MediaSearchResult,
     Pagination, Season as SeasonSchema, Episode as EpisodeSchema
 )
-
+from app.schemas.report import ReportResponse, ReportCreate
+from models import Report, ReportReason, ReportStatus
 
 router = APIRouter(tags=["media"])
 
@@ -384,6 +385,64 @@ async def get_episode_details(tmdb_id: int, season_number: int, episode_number: 
     )
 
     return episode
+
+
+@router.post(
+    "/{media_type}/{tmdb_id}/report",
+    response_model=ReportResponse,
+    status_code=status.HTTP_200_OK
+)
+async def report_media(
+    report: ReportCreate,
+    media_type: str,
+    tmdb_id: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user)
+):
+    # Check if the media exists
+    media = (
+        db.query(Media)
+        .filter(
+            Media.tmdb_id == tmdb_id,
+            Media.media_type == media_type,
+        )
+        .first()
+    )
+    if not media:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Media not found"
+        )
+
+    # Check if the user has already reported this media
+    existing_report = (
+        db.query(Report)
+        .filter(Report.media_id == media.id, Report.user_id == user.id)
+        .first()
+    )
+    if existing_report:
+        db.delete(existing_report)
+        db.commit()
+        return {
+            "message": "Report removed successfully.",
+            "report": existing_report
+        }
+
+    # Create the report
+    new_report = Report(
+        media_id=media.id,
+        user_id=user.id,
+        reason=ReportReason(report.reason),
+        description=report.description,
+        status=ReportStatus.pending,
+    )
+    db.add(new_report)
+    db.commit()
+    db.refresh(new_report)
+
+    return {
+        "message": "Report created successfully.",
+        "report": new_report
+    }
 
 
 

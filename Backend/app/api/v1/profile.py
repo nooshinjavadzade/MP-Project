@@ -4,14 +4,16 @@ from typing import List
 
 from app.core.db import get_db
 from app.dependencies.auth import get_current_user
-from app.models import User, UserRating, Review, Media, PersonalListItem, PersonalList, Like, WatchProgress
+from app.models import User, UserRating, Review, Media, PersonalListItem
 from app.schemas.review import ReviewUpdate, ReviewResponse
 from app.schemas.rating import RatingResponse
-from app.schemas.media import MediaBase
+from app.schemas.media import MediaBase, Pagination
 from app.schemas.user import UserResponse, UserUpdate, ProfileResponse, PublicProfileResponse
 from app.services.profile import get_profile_stats, get_recent_liked_media, get_public_profile_stats
+from app.models import Report
+from app.schemas.report import ReportListResponse, ReportResponseBase
 
-from .media import get_default_personal_list
+from app.api.v1.media import get_default_personal_list
 
 
 router = APIRouter(tags=["profile"])
@@ -28,35 +30,6 @@ async def get_user_profile(
     
     # Build response
     response = ProfileResponse.model_validate(current_user)
-    response.watched_movies_count = stats["watched_movies_count"]
-    response.watched_series_count = stats["watched_series_count"]
-    response.liked_media = liked_media
-    response.ratings_count = stats["ratings_count"]
-    response.reviews_count = stats["reviews_count"]
-    response.lists_count = stats["lists_count"]
-    
-    return response
-
-
-@router.get("/{user_id}", response_model=PublicProfileResponse)
-async def get_public_profile(
-    user_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    """Get public profile of another user with stats"""
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    if not user.is_active:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    stats = get_public_profile_stats(db, user_id)
-    liked_media = get_recent_liked_media(db, user_id, limit=20)
-    
-    # Build response (excludes email, is_admin, is_verified)
-    response = PublicProfileResponse.model_validate(user)
     response.watched_movies_count = stats["watched_movies_count"]
     response.watched_series_count = stats["watched_series_count"]
     response.liked_media = liked_media
@@ -204,3 +177,59 @@ async def delete_review(
 
     db.delete(review)
     db.commit()
+
+@router.get("/reports", status_code=status.HTTP_200_OK)
+async def get_user_reports(
+    page: int = Query(1, ge=1),
+    per_page: int = Query(20, ge=1, le=100),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    offset = (page - 1) * per_page
+    q = db.query(Report).filter(Report.user_id == current_user.id)
+    reports = q.order_by(
+        Report.created_at.desc()
+    ).offset(offset).limit(per_page).all()
+
+    total = q.count()
+
+    return ReportListResponse(
+        items=[ReportResponseBase.model_validate(r) for r in reports],
+        pagination=Pagination(
+            page=page,
+            per_page=per_page,
+            total_items=total,
+            total_pages=(total + per_page - 1) // per_page if total else 0,
+            has_next_page=page * per_page < total,
+            has_previous_page=page > 1,
+        ),
+    )
+
+
+@router.get("/{user_id}", response_model=PublicProfileResponse)
+async def get_public_profile(
+        user_id: int,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user),
+):
+    """Get public profile of another user with stats"""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if not user.is_active:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    stats = get_public_profile_stats(db, user_id)
+    liked_media = get_recent_liked_media(db, user_id, limit=20)
+
+    # Build response (excludes email, is_admin, is_verified)
+    response = PublicProfileResponse.model_validate(user)
+    response.watched_movies_count = stats["watched_movies_count"]
+    response.watched_series_count = stats["watched_series_count"]
+    response.liked_media = liked_media
+    response.ratings_count = stats["ratings_count"]
+    response.reviews_count = stats["reviews_count"]
+    response.lists_count = stats["lists_count"]
+
+    return response
