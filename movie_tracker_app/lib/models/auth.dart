@@ -4,3 +4,4 @@ export 'auth/register_request.dart';
 export 'auth/token.dart';
 export 'auth/user.dart';
 export 'auth/verification.dart';
+export 'auth/profile_response.dart';

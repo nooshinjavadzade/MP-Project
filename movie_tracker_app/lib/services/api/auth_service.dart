@@ -166,4 +166,8 @@ class AuthService {
   Future<void> logout() async {
     await _apiClient.logout();
   }
+
+  Future<void> logoutAll() async {
+    await _apiClient.logoutAll();
+  }
 }

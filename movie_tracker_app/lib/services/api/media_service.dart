@@ -4,6 +4,7 @@ import '../../models/common.dart';
 import '../../models/movie.dart';
 import '../../models/series.dart';
 import '../../models/user_content.dart';
+import '../../models/report.dart';
 
 import 'api_client.dart';
 import 'error_handler.dart';
@@ -240,6 +241,26 @@ class MediaService {
         return (response.data as List)
             .map((e) => ReviewResponse.fromJson(e as Map<String, dynamic>))
             .toList();
+      }
+      throw ErrorHandler.handleError(response);
+    } on DioException catch (e) {
+      throw ErrorHandler.handleDioError(e);
+    }
+  }
+
+  Future<ReportResponse> reportMedia({
+    required String tmdbId,
+    required String mediaType,
+    required ReportCreate request,
+  }) async {
+    try {
+      final response = await _apiClient.dio.post(
+        '$_baseEndpoint/$mediaType/$tmdbId/report',
+        data: request.toJson(),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return ReportResponse.fromJson(response.data);
       }
       throw ErrorHandler.handleError(response);
     } on DioException catch (e) {

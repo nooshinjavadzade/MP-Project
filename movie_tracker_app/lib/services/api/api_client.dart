@@ -126,6 +126,20 @@ class ApiClient {
   }
 
   Future<void> logout() async {
+    final refreshToken = await getRefreshToken();
+    await _dio.post(
+      '/auth/logout',
+      data: {'refresh_token': refreshToken},
+      options: Options(headers: {'Content-Type': 'application/json'})
+    );
+    await _clearTokens();
+  }
+
+  Future<void> logoutAll() async {
+    await _dio.post(
+        '/auth/logout/all',
+        options: Options(headers: {'Content-Type': 'application/json'})
+    );
     await _clearTokens();
   }
 

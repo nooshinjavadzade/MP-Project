@@ -4,6 +4,8 @@ import '../../models/common/media_base.dart';
 import '../../models/user_content/rating_response.dart';
 import '../../models/user_content/review_response.dart';
 import '../../models/auth/user.dart';
+import '../../models/auth/profile_response.dart';
+import '../../models/report.dart';
 
 import 'api_client.dart';
 import 'error_handler.dart';
@@ -155,6 +157,54 @@ class ProfileService {
       if (response.statusCode != 204) {
         throw ErrorHandler.handleError(response);
       }
+    } on DioException catch (e) {
+      throw ErrorHandler.handleDioError(e);
+    }
+  }
+
+  Future<ProfileResponse> getProfileFull() async {
+    try {
+      final response = await _apiClient.dio.get(_baseEndpoint);
+
+      if (response.statusCode == 200) {
+        return ProfileResponse.fromJson(response.data);
+      }
+      throw ErrorHandler.handleError(response);
+    } on DioException catch (e) {
+      throw ErrorHandler.handleDioError(e);
+    }
+  }
+
+  Future<PublicProfileResponse> getPublicProfile(int userId) async {
+    try {
+      final response = await _apiClient.dio.get('$_baseEndpoint/$userId');
+
+      if (response.statusCode == 200) {
+        return PublicProfileResponse.fromJson(response.data);
+      }
+      throw ErrorHandler.handleError(response);
+    } on DioException catch (e) {
+      throw ErrorHandler.handleDioError(e);
+    }
+  }
+
+  Future<ReportListResponse> getMyReports({
+    int page = 1,
+    int perPage = 20,
+  }) async {
+    try {
+      final response = await _apiClient.dio.get(
+        '$_baseEndpoint/reports',
+        queryParameters: {
+          'page': page,
+          'per_page': perPage,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return ReportListResponse.fromJson(response.data);
+      }
+      throw ErrorHandler.handleError(response);
     } on DioException catch (e) {
       throw ErrorHandler.handleDioError(e);
     }

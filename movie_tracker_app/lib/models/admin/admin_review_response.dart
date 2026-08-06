@@ -1,0 +1,80 @@
+import '../common/media_base.dart';
+import '../common/pagination.dart';
+import '../auth/user.dart';
+
+class AdminReviewResponse {
+  final int id;
+  final int userId;
+  final int mediaId;
+  final String review;
+  final bool containsSpoiler;
+  final DateTime createdAt;
+  final DateTime? updatedAt;
+  final User user;
+  final MediaBase media;
+
+  const AdminReviewResponse({
+    required this.id,
+    required this.userId,
+    required this.mediaId,
+    required this.review,
+    required this.containsSpoiler,
+    required this.createdAt,
+    this.updatedAt,
+    required this.user,
+    required this.media,
+  });
+
+  factory AdminReviewResponse.fromJson(Map<String, dynamic> json) {
+    return AdminReviewResponse(
+      id: json['id'],
+      userId: json['user_id'],
+      mediaId: json['media_id'],
+      review: json['review'],
+      containsSpoiler: json['contains_spoiler'] ?? false,
+      createdAt: DateTime.parse(json['created_at']),
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'])
+          : null,
+      user: User.fromJson(json['user']),
+      media: MediaBase.fromJson(json['media']),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'user_id': userId,
+    'media_id': mediaId,
+    'review': review,
+    'contains_spoiler': containsSpoiler,
+    'created_at': createdAt.toIso8601String(),
+    'updated_at': updatedAt?.toIso8601String(),
+    'user': user.toJson(),
+    'media': media.toJson(),
+  };
+}
+
+class AdminReviewListResponse {
+  final List<AdminReviewResponse> items;
+  final Pagination pagination;
+
+  const AdminReviewListResponse({
+    required this.items,
+    required this.pagination,
+  });
+
+  factory AdminReviewListResponse.fromJson(Map<String, dynamic> json) {
+    return AdminReviewListResponse(
+      items: (json['items'] as List<dynamic>?)
+              ?.map((e) => AdminReviewResponse.fromJson(e))
+              .toList() ??
+          const [],
+      pagination: Pagination.fromJson(json['pagination']),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'items': items.map((e) => e.toJson()).toList(),
+    'pagination': pagination.toJson(),
+  };
+}
