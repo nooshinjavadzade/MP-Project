@@ -187,7 +187,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: GestureDetector(
         onTap: () {
           // کلیک روی این بخش، کاربر را به صفحه جستجو می‌برد
-          // Navigator.pushNamed(context, '/search');
+          Navigator.pushNamed(context, '/search');
         },
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
