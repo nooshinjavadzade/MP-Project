@@ -5,13 +5,13 @@ from typing import TYPE_CHECKING
 from sqlalchemy import Boolean, DateTime, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from ..core.db import Base
+from app.core.db import Base
 
 if TYPE_CHECKING:
-    from . import (
+    from app.models import (
         Review, UserRating, PersonalList,
         WatchProgress, RefreshToken,
-        OTPCodes, Like
+        OTPCodes, Like, EpisodeWatchProgress
     )
 
 
@@ -41,6 +41,7 @@ class User(Base):
     refresh_tokens: Mapped[list["RefreshToken"]] = relationship(back_populates="user", cascade="all, delete-orphan")
     email_verifications: Mapped[list["OTPCodes"]] = relationship(back_populates="user", cascade="all, delete-orphan")
     likes: Mapped[list["Like"]] = relationship(back_populates="user", cascade="all, delete-orphan")
+    episode_watch_progress: Mapped[list["EpisodeWatchProgress"]] = relationship(back_populates="user", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
         return f"<User {self.username}>"

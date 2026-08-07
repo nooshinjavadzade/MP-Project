@@ -11,7 +11,8 @@ from app.models.episode import Episode
 from app.models.like import Like
 from app.models.otp_codes import OTPCodes
 from app.models.report import ReportStatus, ReportReason, Report
+from app.models.episode_watch_progress import EpisodeWatchProgress
 
 __all__ = ["User", "Media", "MediaType", "WatchStatus", "Review", "UserRating", "PersonalList",
            "PersonalListItem", "WatchProgress", "RefreshToken", "Season", "Episode", "Like",
-           "OTPCodes", "ReportStatus", "ReportReason", "Report"]
+           "OTPCodes", "ReportStatus", "ReportReason", "Report", "EpisodeWatchProgress"]

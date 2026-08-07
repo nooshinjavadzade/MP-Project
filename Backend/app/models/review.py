@@ -6,10 +6,10 @@ from typing import TYPE_CHECKING
 from sqlalchemy import Boolean, DateTime, ForeignKey, Text, func, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from ..core.db import Base
+from app.core.db import Base
 
 if TYPE_CHECKING:
-    from . import User, Media
+    from app.models import User, Media
 
 
 class Review(Base):

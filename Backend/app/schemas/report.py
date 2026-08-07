@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from datetime import datetime
 
 from app.schemas.media import Pagination
-from models import ReportReason, ReportStatus
+from app.models import ReportReason, ReportStatus
 
 
 class ReportCreate(BaseModel):
