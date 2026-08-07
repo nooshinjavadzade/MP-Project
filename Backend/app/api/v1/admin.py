@@ -22,7 +22,6 @@ from app.schemas.admin import (
     AdminUserResponse,
     AdminUserUpdate,
     AdminUserListResponse,
-    AdminUserDeleteRequest,
     AdminReviewResponse,
     AdminReviewListResponse,
     AdminReportResponse,
@@ -35,6 +34,7 @@ from app.schemas.admin import (
 )
 from app.schemas.media import Pagination
 from app.api.v1.media import _save_or_update_media
+
 
 router = APIRouter(tags=["admin"])
 
@@ -80,7 +80,7 @@ async def list_users(
     admin: User = Depends(get_current_admin),
 ):
     if not admin.is_admin:
-        return HTTPException(
+        raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin privileges required"
         )
@@ -125,7 +125,7 @@ async def update_user(
     admin: User = Depends(get_current_admin),
 ):
     if not admin.is_admin:
-        return HTTPException(
+        raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin privileges required"
         )
@@ -182,7 +182,7 @@ async def delete_user(
     admin: User = Depends(get_current_admin),
 ):
     if not admin.is_admin:
-        return HTTPException(
+        raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin privileges required"
         )
@@ -234,7 +234,7 @@ async def list_reviews(
     admin: User = Depends(get_current_admin),
 ):
     if not admin.is_admin:
-        return HTTPException(
+        raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin privileges required"
         )
@@ -277,7 +277,7 @@ async def delete_review(
     admin: User = Depends(get_current_admin),
 ):
     if not admin.is_admin:
-        return HTTPException(
+        raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin privileges required"
         )
@@ -315,7 +315,7 @@ async def list_reports(
     admin: User = Depends(get_current_admin),
 ):
     if not admin.is_admin:
-        return HTTPException(
+        raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin privileges required"
         )
@@ -359,7 +359,7 @@ async def update_report(
     admin: User = Depends(get_current_admin),
 ):
     if not admin.is_admin:
-        return HTTPException(
+        raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin privileges required"
         )
@@ -404,7 +404,7 @@ async def list_cached_media(
     admin: User = Depends(get_current_admin),
 ):
     if not admin.is_admin:
-        return HTTPException(
+        raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin privileges required"
         )
@@ -468,7 +468,7 @@ async def refresh_media(
     admin: User = Depends(get_current_admin),
 ):
     if not admin.is_admin:
-        return HTTPException(
+        raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin privileges required"
         )
@@ -502,7 +502,7 @@ async def delete_cached_media(
     admin: User = Depends(get_current_admin),
 ):
     if not admin.is_admin:
-        return HTTPException(
+        raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin privileges required"
         )
@@ -537,7 +537,7 @@ async def get_stats(
     admin: User = Depends(get_current_admin),
 ):
     if not admin.is_admin:
-        return HTTPException(
+        raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin privileges required"
         )

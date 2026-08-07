@@ -31,7 +31,7 @@ async def create_list(
     )
 
     if existing:
-        return HTTPException(status_code=400, detail="A list with this name already exists")
+        raise HTTPException(status_code=400, detail="A list with this name already exists")
 
     new_list = PersonalList(
         user_id=current_user.id,

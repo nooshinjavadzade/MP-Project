@@ -6,10 +6,10 @@ from typing import TYPE_CHECKING
 from sqlalchemy import ForeignKeyConstraint, PrimaryKeyConstraint, Date, Integer, String, Text, Float
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from ..core.db import Base
+from app.core.db import Base
 
 if TYPE_CHECKING:
-    from . import Season
+    from app.models import Season
 
 
 class Episode(Base):

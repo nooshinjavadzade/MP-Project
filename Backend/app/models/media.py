@@ -8,10 +8,10 @@ from sqlalchemy import DateTime, Enum as SQLEnum, Float, Integer, String, Text, 
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 
-from ..core.db import Base
+from app.core.db import Base
 
 if TYPE_CHECKING:
-    from . import Review, UserRating, WatchProgress, PersonalListItem, Season, Like
+    from app.models import Review, UserRating, WatchProgress, PersonalListItem, Season, Like, EpisodeWatchProgress
 
 
 class MediaType(Enum):
@@ -71,6 +71,7 @@ class Media(Base):
     list_items: Mapped[list["PersonalListItem"]] = relationship(back_populates="media", cascade="all, delete-orphan")
     seasons: Mapped[list["Season"]] = relationship(back_populates="media", cascade="all, delete-orphan")
     likes: Mapped[list["Like"]] = relationship(back_populates="media", cascade="all, delete-orphan")
+    episode_watch_progress: Mapped[list["EpisodeWatchProgress"]] = relationship(back_populates="media", cascade="all, delete-orphan")
 
 
     def __repr__(self) -> str:

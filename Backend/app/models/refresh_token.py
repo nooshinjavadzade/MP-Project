@@ -6,10 +6,10 @@ from typing import TYPE_CHECKING
 from sqlalchemy import Boolean, DateTime, ForeignKey, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from ..core.db import Base
+from app.core.db import Base
 
 if TYPE_CHECKING:
-    from .user import User
+    from app.models.user import User
 
 
 class RefreshToken(Base):

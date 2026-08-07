@@ -6,10 +6,10 @@ from datetime import date
 from sqlalchemy import ForeignKeyConstraint, PrimaryKeyConstraint, String, Text, Date, Float
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from ..core.db import Base
+from app.core.db import Base
 
 if TYPE_CHECKING:
-    from . import Media, Episode
+    from app.models import Media, Episode
 
 
 class Season(Base):

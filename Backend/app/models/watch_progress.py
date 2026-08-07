@@ -6,11 +6,11 @@ from typing import TYPE_CHECKING
 from sqlalchemy import DateTime, Enum as SQLEnum, Float, ForeignKey, Integer, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from ..core.db import Base
-from .media import WatchStatus
+from app.core.db import Base
+from app.models.media import WatchStatus
 
 if TYPE_CHECKING:
-    from . import User, Media
+    from app.models import User, Media
 
 
 class WatchProgress(Base):

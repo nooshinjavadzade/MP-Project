@@ -1,6 +1,6 @@
 import httpx
 from typing import Dict, Any, Optional, List
-from .config import settings
+from app.core.config import settings
 
 class TMDBClient:
     def __init__(self):

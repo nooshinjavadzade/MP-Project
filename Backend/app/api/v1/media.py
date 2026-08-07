@@ -19,7 +19,7 @@ from app.schemas.media import (
     Pagination, Season as SeasonSchema, Episode as EpisodeSchema
 )
 from app.schemas.report import ReportResponse, ReportCreate
-from models import Report, ReportReason, ReportStatus
+from app.models import Report, ReportReason, ReportStatus
 
 router = APIRouter(tags=["media"])
 
@@ -36,7 +36,7 @@ async def search_media(
     try:
         tmdb_data = await tmdb_client.search_multi(query, page)
     except Exception as e:
-        return {"error": str(e)}
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
     results = []
     for item in tmdb_data.get("results", []):
@@ -136,7 +136,6 @@ async def get_series_details(tmdb_id: int, db: Session = Depends(get_db)):
 
     if needs_refresh:
         tmdb_data = await tmdb_client.get_media_details(tmdb_id, media_type="tv")
-        print('hi')
         tmdb_data["media_type"] = "series"
         await _save_or_update_media(db, tmdb_data, is_full_fetch=True)
 
