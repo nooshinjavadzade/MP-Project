@@ -46,7 +46,7 @@ class TMDBClient:
     async def get_episode_details(self, tv_id: int, season_number: int, episode_number: int) -> Dict:
         return await self._get(f"/tv/{tv_id}/season/{season_number}/episode/{episode_number}")
 
-    # Popular / Trending
+    # Popular / Trending / Top
     async def get_popular_movies(self, page: int = 1) -> Dict:
         return await self._get("/movie/popular", {"page": page})
 
@@ -55,6 +55,12 @@ class TMDBClient:
 
     async def get_trending(self, media_type: str = "all", time_window: str = "week") -> Dict:
         return await self._get(f"/trending/{media_type}/{time_window}")
+
+    async def get_top_movies(self, page: int = 1) -> Dict:
+        return await self._get("/movie/top_rated", {"page": page})
+
+    async def get_top_tv(self, page: int = 1) -> Dict:
+        return await self._get("/tv/top_rated", {"page": page})
 
     # Helpers
     async def _get_movie_details(self, movie_id: int) -> Dict:
