@@ -148,6 +148,26 @@ class TMDBMapper:
             for person in cast_list[:10]
         ]
 
+    @staticmethod
+    def to_media_base_from_orm(media) -> MediaBase:
+        """Convert ORM Media object to MediaBase schema."""
+        return MediaBase(
+            id=media.id,
+            media_type=media.media_type,
+            tmdb_id=media.tmdb_id,
+            title=media.title,
+            original_title=media.original_title,
+            poster_url=media.poster_url,
+            backdrop_url=media.backdrop_url,
+            overview=media.overview,
+            release_year=media.release_year,
+            tmdb_rating=media.tmdb_rating,
+            genres=media.genres or [],
+            original_language=media.original_language,
+            country=media.country,
+            cast=media.cast or [],
+        )
+
 
     @staticmethod
     def _map_seasons(seasons_data: List[Dict]) -> List[Season]:
@@ -173,4 +193,5 @@ class TMDBMapper:
                 overview=s.get("overview"),
                 release_date=s.get("air_date")
             ))
+        
         return seasons

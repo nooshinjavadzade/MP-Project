@@ -1,7 +1,9 @@
-from fastapi import APIRouter, HTTPException, Depends, Query, status, Response
+import httpx
+from fastapi import APIRouter, HTTPException, Depends, Query, status
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 from datetime import datetime, timedelta, timezone
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 from app.dependencies.auth import get_current_user
 from app.models import (
@@ -32,72 +34,132 @@ async def search_media(
         page: int = Query(1, ge=1),
         db: Session = Depends(get_db)
 ):
-    """Search + Save to DB"""
+    """Search media via TMDB with fallback to cached database on failure."""
     try:
         tmdb_data = await tmdb_client.search_multi(query, page)
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
-    results = []
-    for item in tmdb_data.get("results", []):
-        media_type = item.get("media_type")
+        results = []
+        for item in tmdb_data.get("results", []):
+            media_type = item.get("media_type")
 
-        # Skip people (actors, directors, etc.)
-        if media_type not in ["movie", "tv"]:
-            continue
+            # Skip people (actors, directors, etc.)
+            if media_type not in ["movie", "tv"]:
+                continue
 
-        # Normalize media_type for our system
-        item["media_type"] = "series" if media_type == "tv" else "movie"
+            # Normalize media_type for our system
+            item["media_type"] = "series" if media_type == "tv" else "movie"
 
-        await _save_or_update_media(db, item, is_full_fetch=False)
-        results.append(TMDBMapper.to_media_base(item))
+            await _save_or_update_media(db, item, is_full_fetch=False)
+            results.append(TMDBMapper.to_media_base(item))
 
-    return MediaSearchResult(
-        items=results,
-        pagination=Pagination(
-            page=page,
-            per_page=20,
-            total_items=tmdb_data.get("total_results", 0),
-            total_pages=tmdb_data.get("total_pages", 1),
-            has_next_page=page < tmdb_data.get("total_pages", 1),
-            has_previous_page=page > 1
+        return MediaSearchResult(
+            items=results,
+            pagination=Pagination(
+                page=page,
+                per_page=20,
+                total_items=tmdb_data.get("total_results", 0),
+                total_pages=tmdb_data.get("total_pages", 1),
+                has_next_page=page < tmdb_data.get("total_pages", 1),
+                has_previous_page=page > 1
+            )
         )
-    )
+    except Exception as e:
+        # Fall back to cached database search for any TMDB error
+        # (5xx, 401, 403, connection errors, timeouts, etc.)
+        if _should_fallback_on_tmdb_error(e):
+            return await _search_cached_db(db, query, page)
+
+        # For other errors (like 400 Bad Request), re-raise
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
 @router.get("/popular/movies", response_model=List[MediaBase])
 async def get_popular_movies(page: int = 1, db: Session = Depends(get_db)):
-    tmdb_data = await tmdb_client.get_popular_movies(page)
-    results = []
-    for item in tmdb_data.get("results", []):
-        item["media_type"] = "movie"
-        await _save_or_update_media(db, item)
-        results.append(TMDBMapper.to_media_base(item))
+    try:
+        tmdb_data = await tmdb_client.get_popular_movies(page)
+        results = []
+        for item in tmdb_data.get("results", []):
+            item["media_type"] = "movie"
+            await _save_or_update_media(db, item)
+            results.append(TMDBMapper.to_media_base(item))
 
-    return results
+        return results
+    except Exception as e:
+        if _should_fallback_on_tmdb_error(e):
+            cached_media = await _fetch_cached_popular(db, "movie", page)
+            return [TMDBMapper.to_media_base_from_orm(m) for m in cached_media]
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
 @router.get("/popular/series", response_model=List[MediaBase])
 async def get_popular_series(page: int = 1, db: Session = Depends(get_db)):
-    tmdb_data = await tmdb_client.get_popular_tv(page)
-    results = []
-    for item in tmdb_data.get("results", []):
-        item["media_type"] = "series"
-        await _save_or_update_media(db, item)
-        results.append(TMDBMapper.to_media_base(item))
+    try:
+        tmdb_data = await tmdb_client.get_popular_tv(page)
+        results = []
+        for item in tmdb_data.get("results", []):
+            item["media_type"] = "series"
+            await _save_or_update_media(db, item)
+            results.append(TMDBMapper.to_media_base(item))
 
-    return results
+        return results
+    except Exception as e:
+        if _should_fallback_on_tmdb_error(e):
+            cached_media = await _fetch_cached_popular(db, "series", page)
+            return [TMDBMapper.to_media_base_from_orm(m) for m in cached_media]
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
 @router.get("/trending", response_model=List[MediaBase])
 async def get_trending(media_type: str = "all", time_window: str = "week", db: Session = Depends(get_db)):
-    tmdb_data = await tmdb_client.get_trending(media_type, time_window)
-    results = []
-    for item in tmdb_data.get("results", []):
-        await _save_or_update_media(db, item)
-        results.append(TMDBMapper.to_media_base(item))
+    try:
+        tmdb_data = await tmdb_client.get_trending(media_type, time_window)
+        results = []
+        for item in tmdb_data.get("results", []):
+            await _save_or_update_media(db, item)
+            results.append(TMDBMapper.to_media_base(item))
 
-    return results
+        return results
+    except Exception as e:
+        if _should_fallback_on_tmdb_error(e):
+            cached_media = await _fetch_cached_trending(db, media_type)
+            return [TMDBMapper.to_media_base_from_orm(m) for m in cached_media]
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@router.get("/movies/top", response_model=List[MediaBase])
+async def get_top_movies(page: int = 1, db: Session = Depends(get_db)):
+    try:
+        tmdb_data = await tmdb_client.get_top_movies(page)
+        results = []
+        for item in tmdb_data.get("results", []):
+            item["media_type"] = "movie"
+            await _save_or_update_media(db, item)
+            results.append(TMDBMapper.to_media_base(item))
+
+        return results
+    except Exception as e:
+        if _should_fallback_on_tmdb_error(e):
+            cached_media = await _fetch_cached_top_rated(db, "movie", page)
+            return [TMDBMapper.to_media_base_from_orm(m) for m in cached_media]
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@router.get("/series/top", response_model=List[MediaBase])
+async def get_top_series(page: int = 1, db: Session = Depends(get_db)):
+    try:
+        tmdb_data = await tmdb_client.get_top_tv(page)
+        results = []
+        for item in tmdb_data.get("results", []):
+            item["media_type"] = "series"
+            await _save_or_update_media(db, item)
+            results.append(TMDBMapper.to_media_base(item))
+
+        return results
+    except Exception as e:
+        if _should_fallback_on_tmdb_error(e):
+            cached_media = await _fetch_cached_top_rated(db, "series", page)
+            return [TMDBMapper.to_media_base_from_orm(m) for m in cached_media]
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
 @router.get("/movies/{tmdb_id}", response_model=MovieDetails)
@@ -114,11 +176,22 @@ async def get_movie_details(tmdb_id: int, db: Session = Depends(get_db)):
 
     if needs_refresh:
         # Fetch from TMDB
-        tmdb_data = await tmdb_client.get_media_details(tmdb_id, media_type="movie")
-        tmdb_data["media_type"] = "movie"
-        await _save_or_update_media(db, tmdb_data, is_full_fetch=True)
+        try:
+            tmdb_data = await tmdb_client.get_media_details(tmdb_id, media_type="movie")
+            tmdb_data["media_type"] = "movie"
+            await _save_or_update_media(db, tmdb_data, is_full_fetch=True)
+            media = _get_media_by_tmdb_id_and_type(db, str(tmdb_id), "movie")
+        except Exception as e:
+            # If TMDB fails and we have cached data, return it
+            if _should_fallback_on_tmdb_error(e) and media:
+                pass  # Use existing cached media
+            elif media is None:
+                # No cached data and TMDB failed
+                raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                                  detail="Service temporarily unavailable. Media not in cache.")
 
-        return TMDBMapper.to_movie_details(tmdb_data)
+    if media is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Movie not found")
 
     return MovieDetails.model_validate(media)
 
@@ -135,11 +208,23 @@ async def get_series_details(tmdb_id: int, db: Session = Depends(get_db)):
     )
 
     if needs_refresh:
-        tmdb_data = await tmdb_client.get_media_details(tmdb_id, media_type="tv")
-        tmdb_data["media_type"] = "series"
-        await _save_or_update_media(db, tmdb_data, is_full_fetch=True)
+        try:
+            tmdb_data = await tmdb_client.get_media_details(tmdb_id, media_type="tv")
+            tmdb_data["media_type"] = "series"
+            await _save_or_update_media(db, tmdb_data, is_full_fetch=True)
 
-        return TMDBMapper.to_series_details(tmdb_data)
+            media = _get_media_by_tmdb_id_and_type(db, str(tmdb_id), "series")
+        except Exception as e:
+            # If TMDB fails and we have cached data, return it
+            if _should_fallback_on_tmdb_error(e) and media:
+                pass  # Use existing cached media
+            elif media is None:
+                # No cached data and TMDB failed
+                raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                                  detail="Service temporarily unavailable. Media not in cache.")
+
+    if media is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Series not found")
 
     return SeriesDetails.model_validate(media)
 
@@ -314,8 +399,16 @@ async def get_season_details(tmdb_id: int, season_number: int, db: Session = Dep
     )
 
     if needs_refresh:
-        tmdb_media = await tmdb_client.get_media_details(tmdb_id, "tv")
-        media = await _save_or_update_media(db, tmdb_media, is_full_fetch=True)
+        try:
+            tmdb_media = await tmdb_client.get_media_details(tmdb_id, "tv")
+            media = await _save_or_update_media(db, tmdb_media, is_full_fetch=True)
+        except Exception as e:
+            if _should_fallback_on_tmdb_error(e) and media is None:
+                raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                                  detail="Service temporarily unavailable. Media not in cache.")
+
+    if media is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Series not found")
 
     season = (
         db.query(Season)
@@ -329,9 +422,13 @@ async def get_season_details(tmdb_id: int, season_number: int, db: Session = Dep
     if season:
         return season
 
-    tmdb_season = await tmdb_client.get_season_details(tmdb_id, season_number)
-
-    season = await _save_or_update_season(db, media, tmdb_season)
+    try:
+        tmdb_season = await tmdb_client.get_season_details(tmdb_id, season_number)
+        season = await _save_or_update_season(db, media, tmdb_season)
+    except Exception as e:
+        if _should_fallback_on_tmdb_error(e):
+            raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                              detail="Season not available offline.")
 
     return season
 
@@ -351,8 +448,16 @@ async def get_episode_details(tmdb_id: int, season_number: int, episode_number: 
     )
 
     if needs_refresh:
-        tmdb_media = await tmdb_client.get_media_details(tmdb_id, "tv")
-        media = await _save_or_update_media(db, tmdb_media, is_full_fetch=True)
+        try:
+            tmdb_media = await tmdb_client.get_media_details(tmdb_id, "tv")
+            media = await _save_or_update_media(db, tmdb_media, is_full_fetch=True)
+        except Exception as e:
+            if _should_fallback_on_tmdb_error(e) and media is None:
+                raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                                  detail="Service temporarily unavailable. Media not in cache.")
+
+    if media is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Series not found")
 
     episode = (
         db.query(Episode)
@@ -367,21 +472,44 @@ async def get_episode_details(tmdb_id: int, season_number: int, episode_number: 
     if episode:
         return episode
 
-    tmdb_season = await tmdb_client.get_season_details(tmdb_id, season_number)
-    season = await _save_or_update_season(db, media, tmdb_season)
+    try:
+        tmdb_season = await tmdb_client.get_season_details(tmdb_id, season_number)
+        await _save_or_update_season(db, media, tmdb_season)
 
-    tmdb_episode = await tmdb_client.get_episode_details(
-        tmdb_id,
-        season_number,
-        episode_number,
-    )
+        episode = (
+            db.query(Episode)
+            .filter(
+                Episode.media_id == media.id,
+                Episode.season_number == season_number,
+                Episode.episode_number == episode_number,
+            )
+            .first()
+        )
+    except Exception as e:
+        if _should_fallback_on_tmdb_error(e):
+            raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                              detail="Episode not available offline.")
 
-    episode = await _save_or_update_episode(
-        db,
-        media,
-        season_number,
-        tmdb_episode,
-    )
+    if episode:
+        return episode
+
+    try:
+        tmdb_episode = await tmdb_client.get_episode_details(
+            tmdb_id,
+            season_number,
+            episode_number,
+        )
+
+        episode = await _save_or_update_episode(
+            db,
+            media,
+            season_number,
+            tmdb_episode,
+        )
+    except Exception as e:
+        if _should_fallback_on_tmdb_error(e):
+            raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                              detail="Episode not available offline.")
 
     return episode
 
@@ -684,3 +812,86 @@ async def _save_or_update_episode(
         db.refresh(episode)
 
     return episode
+
+
+async def _search_cached_db(db: Session, query: str, page: int = 1, per_page: int = 20) -> MediaSearchResult:
+    """Search cached media in local database as fallback when TMDB is unavailable."""
+    search_term = f"%{query}%"
+
+    # Query local database for matching media
+    db_query = db.query(Media).filter(
+        or_(
+            Media.title.ilike(search_term),
+            Media.original_title.ilike(search_term)
+        )
+    ).order_by(Media.tmdb_rating.desc().nullslast())
+
+    total_items = db_query.count()
+    total_pages = (total_items + per_page - 1) // per_page if total_items > 0 else 1
+
+    offset = (page - 1) * per_page
+    media_items = db_query.offset(offset).limit(per_page).all()
+
+    results = [TMDBMapper.to_media_base_from_orm(media) for media in media_items]
+
+    return MediaSearchResult(
+        items=results,
+        pagination=Pagination(
+            page=page,
+            per_page=per_page,
+            total_items=total_items,
+            total_pages=total_pages,
+            has_next_page=page < total_pages,
+            has_previous_page=page > 1
+        )
+    )
+
+
+def _should_fallback_on_tmdb_error(e: Exception) -> bool:
+    """
+    Determine if a TMDB error should trigger fallback to cached database.
+
+    Fallback occurs for:
+    - 5xx server errors
+    - 401 Unauthorized (invalid API key)
+    - 403 Forbidden (access denied)
+    - Connection errors, timeouts, network issues
+    """
+    if isinstance(e, httpx.HTTPStatusError):
+        status_code = e.response.status_code
+        return status_code >= 500 or status_code in (401, 403)
+    elif isinstance(e, httpx.RequestError):
+        # Connection errors, timeouts, DNS failures, etc.
+        return True
+    return False
+
+
+async def _fetch_cached_media(db: Session, tmdb_id: str, media_type: str) -> Optional[Media]:
+    """Fetch media from local cache by TMDB ID and type."""
+    return _get_media_by_tmdb_id_and_type(db, tmdb_id, media_type)
+
+
+async def _fetch_cached_top_rated(db: Session, media_type: str, page: int = 1, per_page: int = 20) -> List[Media]:
+    """Fetch cached top-rated media from local database."""
+    offset = (page - 1) * per_page
+    return db.query(Media).filter(
+        Media.media_type == MediaType(media_type)
+    ).order_by(Media.tmdb_rating.desc().nullslast()).offset(offset).limit(per_page).all()
+
+
+async def _fetch_cached_popular(db: Session, media_type: str, page: int = 1, per_page: int = 20) -> List[Media]:
+    """Fetch cached popular media from local database."""
+    offset = (page - 1) * per_page
+    return db.query(Media).filter(
+        Media.media_type == MediaType(media_type)
+    ).order_by(Media.tmdb_rating.desc().nullslast()).offset(offset).limit(per_page).all()
+
+
+async def _fetch_cached_trending(db: Session, media_type: str = "all", per_page: int = 20) -> List[Media]:
+    """Fetch cached trending media from local database."""
+    query = db.query(Media).order_by(Media.tmdb_rating.desc().nullslast())
+
+    if media_type != "all":
+        query = query.filter(Media.media_type == MediaType(media_type))
+
+    return query.limit(per_page).all()
