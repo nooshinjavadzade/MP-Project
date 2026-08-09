@@ -4,3 +4,4 @@ export 'api/auth_service.dart';
 export 'api/media_service.dart';
 export 'api/interactions_service.dart';
 export 'api/profile_service.dart';
+export 'api/progress_service.dart';

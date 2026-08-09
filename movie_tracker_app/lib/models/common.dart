@@ -6,3 +6,6 @@ export 'common/media_search_result.dart';
 export 'common/api_error.dart';
 export 'common/base_response.dart';
 export 'common/exceptions.dart';
+export 'common/top_media_item.dart';
+export 'common/top_media_list_response.dart';
+export 'common/top_media_query.dart';

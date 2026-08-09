@@ -5,6 +5,8 @@ import '../../models/movie.dart';
 import '../../models/series.dart';
 import '../../models/user_content.dart';
 import '../../models/report.dart';
+// import '../../models/common/top_media_list_response.dart';
+// import '../../models/common/top_media_query.dart';
 
 import 'api_client.dart';
 import 'error_handler.dart';
@@ -91,6 +93,52 @@ class MediaService {
         return (response.data as List)
             .map((e) => MediaBase.fromJson(e as Map<String, dynamic>))
             .toList();
+      }
+      throw ErrorHandler.handleError(response);
+    } on DioException catch (e) {
+      throw ErrorHandler.handleDioError(e);
+    }
+  }
+
+  /// Get top-rated movies (paginated)
+  Future<TopMediaListResponse> getTopMovies({
+    int page = 1,
+    int perPage = 20,
+  }) async {
+    try {
+      final response = await _apiClient.dio.get(
+        '$_baseEndpoint/movies/top',
+        queryParameters: {
+          'page': page,
+          'per_page': perPage,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return TopMediaListResponse.fromJson(response.data);
+      }
+      throw ErrorHandler.handleError(response);
+    } on DioException catch (e) {
+      throw ErrorHandler.handleDioError(e);
+    }
+  }
+
+  /// Get top-rated series (paginated)
+  Future<TopMediaListResponse> getTopSeries({
+    int page = 1,
+    int perPage = 20,
+  }) async {
+    try {
+      final response = await _apiClient.dio.get(
+        '$_baseEndpoint/series/top',
+        queryParameters: {
+          'page': page,
+          'per_page': perPage,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return TopMediaListResponse.fromJson(response.data);
       }
       throw ErrorHandler.handleError(response);
     } on DioException catch (e) {

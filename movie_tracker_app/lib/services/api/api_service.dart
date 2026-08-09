@@ -7,6 +7,7 @@ import 'interactions_service.dart';
 import 'profile_service.dart';
 import 'admin_service.dart';
 import 'report_service.dart';
+import 'progress_service.dart';
 
 class ApiService {
   late final ApiClient client;
@@ -16,6 +17,7 @@ class ApiService {
   late final ProfileService profile;
   late final AdminService admin;
   late final ReportService report;
+  late final ProgressService progress;
 
   ApiService() {
     client = ApiClient();
@@ -25,6 +27,7 @@ class ApiService {
     profile = ProfileService(client);
     admin = AdminService(client);
     report = ReportService(client);
+    progress = ProgressService(client);
   }
 
   Future<void> initialize() async {
