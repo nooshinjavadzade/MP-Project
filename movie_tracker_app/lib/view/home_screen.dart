@@ -6,8 +6,9 @@ import '../widgets/custom_bottom_nav_bar.dart';
 import '../widgets/home_app_bar.dart';
 import '../widgets/fake_search_bar.dart';
 import '../widgets/horizontal_media_list.dart';
-import '../view/popular_movies_screen.dart';
-import '../view/popular_series_screen.dart';
+import 'popular_movies_screen.dart';
+import 'popular_series_screen.dart';
+import 'search_screen.dart';
 import 'trending_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -60,8 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 // سرچ بار
                 FakeSearchBar(
                   onTap: () {
-                    // TODO: Navigate to Search Screen
-                    debugPrint('Navigate to search screen');
+                    Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SearchScreen()));
                   },
                 ),
                 const SizedBox(height: 32), // space-y-8
