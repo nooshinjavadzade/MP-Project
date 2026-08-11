@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../view/login_screen.dart';
+import '../view/home_screen.dart';
 
 class WelcomeButtons extends StatelessWidget {
   const WelcomeButtons({super.key});
@@ -32,7 +34,7 @@ class WelcomeButtons extends StatelessWidget {
             color: Colors.transparent,
             child: InkWell(
               onTap: () {
-                // TODO: هدایت به صفحه اصلی (به عنوان مهمان)
+                Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
               },
               borderRadius: BorderRadius.circular(12),
               child: const Padding(
@@ -69,7 +71,10 @@ class WelcomeButtons extends StatelessWidget {
           width: double.infinity,
           child: OutlinedButton(
             onPressed: () {
-              // TODO: هدایت به صفحه لاگین
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
+              );
             },
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 12.0), // py-3
