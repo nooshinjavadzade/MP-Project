@@ -4,6 +4,8 @@ import 'dart:ui';
 import '../../presenters/media/media_presenter.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
 import '../widgets/background_glows.dart';
+import '../widgets/media_grid_card.dart';
+import 'movie_detail_screen.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -215,13 +217,43 @@ class _SearchScreenState extends State<SearchScreen> {
                           );
                         }
 
-                        // Search Results Display
-                        // As we don't have the exact MediaSearchResult structure, we just show a text for now.
-                        return const Center(
-                          child: Text(
-                            'Search results will appear here...',
-                            style: TextStyle(color: Colors.white54),
+                        final searchResult = presenter.searchResult;
+                        final results = searchResult?.items ?? [];
+                        if (results.isEmpty) {
+                          return const Center(
+                            child: Text(
+                              'No results found.',
+                              style: TextStyle(color: Colors.white54),
+                            ),
+                          );
+                        }
+                        
+                        return GridView.builder(
+                          padding: const EdgeInsets.only(bottom: 120),
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 3,
+                            mainAxisSpacing: 16,
+                            crossAxisSpacing: 12,
+                            childAspectRatio: 0.50,
                           ),
+                          itemCount: results.length,
+                          itemBuilder: (context, index) {
+                            return MediaGridCard(
+                              media: results[index],
+                              onTap: () {
+                                if (results[index].mediaType.toString().toLowerCase().contains('movie')) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => MovieDetailScreen(movieId: results[index].id),
+                                    ),
+                                  );
+                                } else {
+                                  // TODO: Navigate to Series Detail
+                                }
+                              },
+                            );
+                          },
                         );
                       },
                     ),

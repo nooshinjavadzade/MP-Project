@@ -5,6 +5,7 @@ import '../../presenters/media/media_presenter.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
 import '../widgets/media_grid_card.dart';
 import '../widgets/background_glows.dart';
+import 'movie_detail_screen.dart';
 
 class PopularMoviesScreen extends StatefulWidget {
   const PopularMoviesScreen({super.key});
@@ -157,7 +158,12 @@ class _PopularMoviesScreenState extends State<PopularMoviesScreen> {
                             return MediaGridCard(
                               media: filteredMovies[index],
                               onTap: () {
-                                // TODO: Navigate to movie details
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => MovieDetailScreen(movieId: filteredMovies[index].id),
+                                  ),
+                                );
                               },
                             );
                           },

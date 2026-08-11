@@ -5,6 +5,7 @@ import '../../presenters/media/media_presenter.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
 import '../widgets/media_grid_card.dart';
 import '../widgets/background_glows.dart';
+import 'movie_detail_screen.dart';
 
 class TrendingScreen extends StatefulWidget {
   const TrendingScreen({super.key});
@@ -157,7 +158,16 @@ class _TrendingScreenState extends State<TrendingScreen> {
                             return MediaGridCard(
                               media: filteredItems[index],
                               onTap: () {
-                                // TODO: Navigate to details
+                                if (filteredItems[index].mediaType.toString().toLowerCase().contains('movie')) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => MovieDetailScreen(movieId: filteredItems[index].id),
+                                    ),
+                                  );
+                                } else {
+                                  // TODO: Navigate to Series Detail
+                                }
                               },
                             );
                           },

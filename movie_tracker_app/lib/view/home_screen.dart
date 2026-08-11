@@ -7,6 +7,8 @@ import '../widgets/home_app_bar.dart';
 import '../widgets/fake_search_bar.dart';
 import '../widgets/horizontal_media_list.dart';
 import 'popular_movies_screen.dart';
+import 'movie_detail_screen.dart';
+import 'series_detail_screen.dart';
 import 'popular_series_screen.dart';
 import 'search_screen.dart';
 import 'trending_screen.dart';
@@ -75,8 +77,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.of(context).push(MaterialPageRoute(builder: (_) => const PopularMoviesScreen()));
                   },
                   onItemTap: (media) {
-                    // TODO: Navigate to Media Detail Screen
-                    debugPrint('Navigate to Movie Detail: $media');
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => MovieDetailScreen(movieId: media.id),
+                      ),
+                    );
                   },
                 ),
                 const SizedBox(height: 32),
@@ -90,7 +96,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.of(context).push(MaterialPageRoute(builder: (_) => const PopularSeriesScreen()));
                   },
                   onItemTap: (media) {
-                    // TODO: Navigate to Media Detail Screen
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => SeriesDetailScreen(tmdbId: int.parse(media.tmdbId))));
                     debugPrint('Navigate to Series Detail: $media');
                   },
                 ),
@@ -105,8 +111,17 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.of(context).push(MaterialPageRoute(builder: (_) => const TrendingScreen()));
                   },
                   onItemTap: (media) {
-                    // TODO: Navigate to Media Detail Screen
-                    debugPrint('Navigate to Detail: $media');
+                    if (media.mediaType.toString().toLowerCase().contains('movie')) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => MovieDetailScreen(movieId: media.id),
+                        ),
+                      );
+                    } else {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => SeriesDetailScreen(tmdbId: int.parse(media.tmdbId))));
+                      debugPrint('Navigate to Series Detail: $media');
+                    }
                   },
                 ),
               ],
