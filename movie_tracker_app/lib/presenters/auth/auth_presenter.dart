@@ -1,16 +1,26 @@
 import 'package:flutter/foundation.dart';
 import '../../models/auth.dart';
 import '../../services/api/auth_service.dart';
+import '../../services/local/biometric_service.dart';
+import '../../services/local/local_storage_service.dart';
 import 'i_auth_presenter.dart';
 
 class AuthPresenter extends ChangeNotifier implements IAuthPresenter {
   final AuthService _authService;
+  final LocalStorageService _localStorageService;
+  final BiometricService _biometricService;
 
   bool _isLoading = false;
   String? _errorMessage;
   AuthResponse? _authResponse;
+  bool _isBiometricEnabled = false;
 
-  AuthPresenter(this._authService);
+  AuthPresenter(
+      this._authService, {
+        LocalStorageService? localStorageService,
+        BiometricService? biometricService,
+      })  : _localStorageService = localStorageService ?? LocalStorageService(),
+        _biometricService = biometricService ?? BiometricService();
 
   @override
   bool get isLoading => _isLoading;
@@ -20,6 +30,9 @@ class AuthPresenter extends ChangeNotifier implements IAuthPresenter {
 
   @override
   AuthResponse? get authResponse => _authResponse;
+
+  @override
+  bool get isBiometricEnabled => _isBiometricEnabled;
 
   @override
   Future<void> login(String email, String password) async {
@@ -139,6 +152,7 @@ class AuthPresenter extends ChangeNotifier implements IAuthPresenter {
     _setLoading(true);
     try {
       await _authService.logout();
+      await _localStorageService.clearSessionData();
       _authResponse = null;
       _errorMessage = null;
     } catch (e) {
@@ -146,6 +160,59 @@ class AuthPresenter extends ChangeNotifier implements IAuthPresenter {
     } finally {
       _setLoading(false);
     }
+  }
+
+  @override
+  Future<bool> checkAutoLogin() async {
+    _setLoading(true);
+    try {
+      final isValid = await _localStorageService.isSessionValid();
+      if (!isValid) {
+        await logout();
+        return false;
+      }
+
+      final isBiometricOn = await _localStorageService.isBiometricEnabled();
+      if (isBiometricOn) {
+        final authenticated = await _biometricService.authenticate();
+        return authenticated;
+      }
+
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  @override
+  Future<bool> authenticateWithBiometric() async {
+    _setLoading(true);
+    try {
+      final result = await _biometricService.authenticate();
+      _errorMessage = null;
+      return result;
+    } catch (e) {
+      _errorMessage = e.toString();
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  @override
+  Future<void> setBiometricEnabled(bool enabled) async {
+    await _localStorageService.setBiometricEnabled(enabled);
+    _isBiometricEnabled = enabled;
+    notifyListeners();
+  }
+
+  @override
+  Future<void> loadBiometricStatus() async {
+    _isBiometricEnabled = await _localStorageService.isBiometricEnabled();
+    notifyListeners();
   }
 
   void _setLoading(bool value) {

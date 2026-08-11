@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../models/auth/token.dart';
 import '../../models/common/exceptions.dart';
@@ -81,6 +82,8 @@ class ApiClient {
   }) async {
     await _storage.write(key: 'access_token', value: accessToken);
     await _storage.write(key: 'refresh_token', value: refreshToken);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('login_timestamp', DateTime.now().millisecondsSinceEpoch);
   }
 
   Future<String?> getAccessToken() async {
@@ -146,5 +149,8 @@ class ApiClient {
   Future<void> _clearTokens() async {
     await _storage.delete(key: 'access_token');
     await _storage.delete(key: 'refresh_token');
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('login_timestamp');
   }
 }

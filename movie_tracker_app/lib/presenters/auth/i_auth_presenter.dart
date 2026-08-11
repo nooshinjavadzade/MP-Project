@@ -4,6 +4,7 @@ abstract class IAuthPresenter {
   bool get isLoading;
   String? get errorMessage;
   AuthResponse? get authResponse;
+  bool get isBiometricEnabled;
 
   Future<void> login(String email, String password);
   Future<void> register(String username, String email, String password, {String? fullName});
@@ -13,4 +14,9 @@ abstract class IAuthPresenter {
   Future<void> requestPasswordReset(String email);
   Future<void> confirmPasswordReset(String email, String otp, String newPassword, String confirmPassword);
   Future<void> logout();
+
+  Future<bool> checkAutoLogin();
+  Future<bool> authenticateWithBiometric();
+  Future<void> setBiometricEnabled(bool enabled);
+  Future<void> loadBiometricStatus();
 }
