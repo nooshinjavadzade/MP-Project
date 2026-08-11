@@ -6,6 +6,9 @@ import '../widgets/custom_bottom_nav_bar.dart';
 import '../widgets/home_app_bar.dart';
 import '../widgets/fake_search_bar.dart';
 import '../widgets/horizontal_media_list.dart';
+import '../view/popular_movies_screen.dart';
+import '../view/popular_series_screen.dart';
+import 'trending_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -69,8 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   items: presenter.popularMovies,
                   isLoading: presenter.isLoading && presenter.popularMovies.isEmpty,
                   onMoreTap: () {
-                    // TODO: Navigate to full popular movies list screen
-                    debugPrint('Navigate to Popular Movies');
+                    Navigator.of(context).push(MaterialPageRoute(builder: (_) => const PopularMoviesScreen()));
                   },
                   onItemTap: (media) {
                     // TODO: Navigate to Media Detail Screen
@@ -85,8 +87,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   items: presenter.popularSeries,
                   isLoading: presenter.isLoading && presenter.popularSeries.isEmpty,
                   onMoreTap: () {
-                    // TODO: Navigate to full popular series list screen
-                    debugPrint('Navigate to Popular Series');
+                    Navigator.of(context).push(MaterialPageRoute(builder: (_) => const PopularSeriesScreen()));
                   },
                   onItemTap: (media) {
                     // TODO: Navigate to Media Detail Screen
@@ -101,8 +102,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   items: presenter.trendingItems,
                   isLoading: presenter.isLoading && presenter.trendingItems.isEmpty,
                   onMoreTap: () {
-                    // TODO: Navigate to full trending list screen
-                    debugPrint('Navigate to Trending');
+                    Navigator.of(context).push(MaterialPageRoute(builder: (_) => const TrendingScreen()));
                   },
                   onItemTap: (media) {
                     // TODO: Navigate to Media Detail Screen
