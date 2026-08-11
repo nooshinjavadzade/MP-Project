@@ -1,0 +1,180 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'dart:ui';
+import '../../presenters/media/media_presenter.dart';
+import '../widgets/custom_bottom_nav_bar.dart';
+import '../widgets/media_grid_card.dart';
+import '../widgets/background_glows.dart';
+
+class TrendingScreen extends StatefulWidget {
+  const TrendingScreen({super.key});
+
+  @override
+  State<TrendingScreen> createState() => _TrendingScreenState();
+}
+
+class _TrendingScreenState extends State<TrendingScreen> {
+  String _searchQuery = '';
+  int _currentNavIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<MediaPresenter>().getTrending(timeWindow: 'week');
+    });
+  }
+
+  void _onNavTapped(int index) {
+    setState(() {
+      _currentNavIndex = index;
+    });
+    // TODO: Handle navigation based on index
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF00161F),
+      extendBodyBehindAppBar: true,
+      extendBody: true,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(64),
+        child: ClipRRect(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+            child: AppBar(
+              backgroundColor: const Color(0x9900161F),
+              elevation: 0,
+              centerTitle: false,
+              titleSpacing: 0,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Color(0xFFBCC9C8)),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              title: const Row(
+                children: [
+                  Icon(Icons.whatshot, color: Color(0xFF5AD9D9)),
+                  SizedBox(width: 12),
+                  Text(
+                    'New Releases',
+                    style: TextStyle(
+                      color: Color(0xFF5AD9D9),
+                      fontSize: 24,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Plus Jakarta Sans',
+                    ),
+                  ),
+                ],
+              ),
+              bottom: PreferredSize(
+                preferredSize: const Size.fromHeight(1),
+                child: Container(
+                  color: const Color(0xFF3C4949).withOpacity(0.2),
+                  height: 1,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+      body: Stack(
+        children: [
+          const BackgroundGlows(),
+          Consumer<MediaPresenter>(
+            builder: (context, presenter, child) {
+              final allItems = presenter.trendingItems;
+              final filteredItems = _searchQuery.isEmpty 
+                  ? allItems 
+                  : allItems.where((i) => i.title.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
+
+              return CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        top: MediaQuery.of(context).padding.top + 80,
+                        left: 16,
+                        right: 16,
+                        bottom: 24,
+                      ),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF0C2E3B),
+                          borderRadius: BorderRadius.circular(12),
+                          border: const Border(
+                            bottom: BorderSide(color: Color(0x4D29B5B5), width: 2),
+                          ),
+                        ),
+                        child: TextField(
+                          onChanged: (val) {
+                            setState(() {
+                              _searchQuery = val;
+                            });
+                          },
+                          style: const TextStyle(
+                            color: Color(0xFFC7E7F8), 
+                            fontSize: 16, 
+                            fontFamily: 'Manrope',
+                          ),
+                          decoration: InputDecoration(
+                            hintText: 'Search in New Releases...',
+                            hintStyle: TextStyle(color: const Color(0xFFBCC9C8).withOpacity(0.4)),
+                            prefixIcon: const Icon(Icons.search, color: Color(0x995AD9D9)),
+                            border: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  
+                  if (presenter.isLoading && allItems.isEmpty)
+                    const SliverFillRemaining(
+                      child: Center(child: CircularProgressIndicator(color: Color(0xFF5AD9D9))),
+                    )
+                  else if (filteredItems.isEmpty)
+                    const SliverFillRemaining(
+                      child: Center(
+                        child: Text(
+                          'No items found.',
+                          style: TextStyle(color: Colors.white54),
+                        ),
+                      ),
+                    )
+                  else
+                    SliverPadding(
+                      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 120),
+                      sliver: SliverGrid(
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3,
+                          mainAxisSpacing: 16,
+                          crossAxisSpacing: 12,
+                          childAspectRatio: 0.50,
+                        ),
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            return MediaGridCard(
+                              media: filteredItems[index],
+                              onTap: () {
+                                // TODO: Navigate to details
+                              },
+                            );
+                          },
+                          childCount: filteredItems.length,
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+      bottomNavigationBar: CustomBottomNavBar(
+        currentIndex: _currentNavIndex,
+        onTap: _onNavTapped,
+      ),
+    );
+  }
+}
