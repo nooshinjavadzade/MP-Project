@@ -2,36 +2,30 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../presenters/auth/auth_presenter.dart';
-import 'forgot_password_screen.dart';
-import 'signup_screen.dart';
+import '../view/verify_code_screen.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class ForgotPasswordScreen extends StatefulWidget {
+  const ForgotPasswordScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  bool _obscurePassword = true;
 
   @override
   void dispose() {
     _emailController.dispose();
-    _passwordController.dispose();
     super.dispose();
   }
 
-  void _handleLogin() async {
+  void _handleResetRequest() async {
     final email = _emailController.text.trim();
-    final password = _passwordController.text;
-
-    if (email.isEmpty || password.isEmpty) return;
+    if (email.isEmpty) return;
 
     final presenter = context.read<AuthPresenter>();
-    await presenter.login(email, password);
+    await presenter.requestPasswordReset(email);
 
     if (presenter.errorMessage != null) {
       if (mounted) {
@@ -41,8 +35,13 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } else {
       if (mounted) {
-        // TODO: Navigate to Home Screen on success
-        Navigator.pop(context); // Go back for now, or push replacement to home
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Password reset instructions sent to your email.')),
+        );
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => VerifyCodeScreen(email: email)),
+        );
       }
     }
   }
@@ -50,7 +49,16 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF00161F), // bg-background
+      backgroundColor: const Color(0xFF00161F),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(0xFFC7E7F8)),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      extendBodyBehindAppBar: true,
       body: Stack(
         children: [
           // Background Orbs
@@ -97,36 +105,42 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Logo
-                      Hero(
-                        tag: 'welcome_logo',
-                        child: Image.network(
-                          'https://lh3.googleusercontent.com/aida/AP1WRLuerJhXjzYwOZPW4Ru4zFslLiPZneeQfPA03fV2yFiTFALOQh5R616C5q6oy3VPwbqDy9TV1YFN9I8JCChRYKiA84KIail2f6bs4ypvKor-I8fCjKVhln9HwD7gU93BKivNf9sKrJPxBrFgh8XKKLaX7UL3ZA-9raCUzczA7tXgcCbcOBvYO-ueYd3qIpJH9RZmddN7YD0snbRC8XliVHj_F0qOK-I5-exc94bzKzupcO7L6qL4kJ0lztCd',
-                          width: 112,
-                          height: 112,
-                          fit: BoxFit.contain,
-                        ),
+                      // Icon/Logo
+                      const Icon(
+                        Icons.lock_reset,
+                        size: 80,
+                        color: Color(0xFF5AD9D9),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 24),
                       // Title
                       const Text(
-                        'TV Time',
+                        'Reset Password',
                         style: TextStyle(
-                          fontSize: 32, // md:text-headline-lg
-                          fontWeight: FontWeight.w800, // font-extrabold
+                          fontSize: 32,
+                          fontWeight: FontWeight.w800,
                           fontFamily: 'Plus Jakarta Sans',
-                          color: Color(0xFF5AD9D9), // text-primary
+                          color: Color(0xFF5AD9D9),
                           shadows: [
                             Shadow(
-                              color: Color(0x4D5AD9D9), // rgba(90, 217, 217, 0.3)
+                              color: Color(0x4D5AD9D9),
                               blurRadius: 20,
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 64), // mb-xl
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Enter your email address and we will send you instructions to reset your password.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Color(0xFFBCC9C8),
+                          fontFamily: 'Manrope',
+                        ),
+                      ),
+                      const SizedBox(height: 48),
 
-                      // Login Form Card
+                      // Form Card
                       ClipRRect(
                         borderRadius: BorderRadius.circular(12),
                         child: BackdropFilter(
@@ -150,32 +164,19 @@ class _LoginScreenState extends State<LoginScreen> {
                                   controller: _emailController,
                                   keyboardType: TextInputType.emailAddress,
                                 ),
-                                const SizedBox(height: 24),
-                                _buildTextField(
-                                  label: 'Password',
-                                  hint: '••••••••',
-                                  icon: Icons.lock_outline,
-                                  controller: _passwordController,
-                                  obscureText: _obscurePassword,
-                                  onVisibilityToggle: () {
-                                    setState(() {
-                                      _obscurePassword = !_obscurePassword;
-                                    });
-                                  },
-                                ),
                                 const SizedBox(height: 32),
                                 
-                                // Login Button
+                                // Submit Button
                                 Consumer<AuthPresenter>(
                                   builder: (context, presenter, _) {
                                     return SizedBox(
                                       width: double.infinity,
                                       child: ElevatedButton(
-                                        onPressed: presenter.isLoading ? null : _handleLogin,
+                                        onPressed: presenter.isLoading ? null : _handleResetRequest,
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: const Color(0xFFF08DA5), // brand-coral
-                                          foregroundColor: const Color(0xFF3F0018), // on-tertiary-fixed
-                                          padding: const EdgeInsets.symmetric(vertical: 16), // py-4
+                                          backgroundColor: const Color(0xFFF08DA5),
+                                          foregroundColor: const Color(0xFF3F0018),
+                                          padding: const EdgeInsets.symmetric(vertical: 16),
                                           shape: RoundedRectangleBorder(
                                             borderRadius: BorderRadius.circular(8),
                                           ),
@@ -195,88 +196,20 @@ class _LoginScreenState extends State<LoginScreen> {
                                                 mainAxisAlignment: MainAxisAlignment.center,
                                                 children: [
                                                   Text(
-                                                    'Log In',
+                                                    'Send Reset Link',
                                                     style: TextStyle(
-                                                      fontSize: 18, // text-body-lg
+                                                      fontSize: 18,
                                                       fontWeight: FontWeight.bold,
                                                       fontFamily: 'Manrope',
                                                     ),
                                                   ),
                                                   SizedBox(width: 8),
-                                                  Icon(Icons.arrow_forward, size: 20),
+                                                  Icon(Icons.send, size: 20),
                                                 ],
                                               ),
                                       ),
                                     );
                                   }
-                                ),
-                                
-                                const SizedBox(height: 24),
-                                // Footer Links
-                                Center(
-                                  child: Column(
-                                    children: [
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
-                                          );
-                                        },
-                                        style: TextButton.styleFrom(
-                                          foregroundColor: const Color(0xFF5AD9D9),
-                                        ),
-                                        child: const Text(
-                                          'FORGOT PASSWORD?',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w700,
-                                            letterSpacing: 0.6,
-                                            fontFamily: 'Manrope',
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 16),
-                                      Container(
-                                        width: 48,
-                                        height: 1,
-                                        color: const Color(0xFF3C4949).withOpacity(0.2),
-                                      ),
-                                      const SizedBox(height: 16),
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          const Text(
-                                            "Don't have an account? ",
-                                            style: TextStyle(
-                                              color: Color(0xFFBCC9C8), // on-surface-variant
-                                              fontSize: 16,
-                                              fontFamily: 'Manrope',
-                                            ),
-                                          ),
-                                          GestureDetector(
-                                            onTap: () {
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(builder: (context) => const SignUpScreen()),
-                                              );
-                                            },
-                                            child: const Text(
-                                              "Sign Up",
-                                              style: TextStyle(
-                                                color: Color(0xFF5AD9D9),
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                                fontFamily: 'Manrope',
-                                                decoration: TextDecoration.underline,
-                                                decorationColor: Color(0x4D5AD9D9), // primary/30
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
                                 ),
                               ],
                             ),
@@ -299,9 +232,7 @@ class _LoginScreenState extends State<LoginScreen> {
     required String hint,
     required IconData icon,
     required TextEditingController controller,
-    bool obscureText = false,
     TextInputType? keyboardType,
-    VoidCallback? onVisibilityToggle,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -311,7 +242,7 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Text(
             label.toUpperCase(),
             style: TextStyle(
-              color: const Color(0xFFBCC9C8).withOpacity(0.8), // on-surface-variant/80
+              color: const Color(0xFFBCC9C8).withOpacity(0.8),
               fontSize: 12,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.6,
@@ -321,18 +252,17 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF193846).withOpacity(0.2), // surface-container-highest/20
+            color: const Color(0xFF193846).withOpacity(0.2),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: const Color(0xFF3C4949).withOpacity(0.3), // outline-variant/30
+              color: const Color(0xFF3C4949).withOpacity(0.3),
             ),
           ),
           child: TextField(
             controller: controller,
-            obscureText: obscureText,
             keyboardType: keyboardType,
             style: const TextStyle(
-              color: Color(0xFFC7E7F8), // on-surface
+              color: Color(0xFFC7E7F8),
               fontSize: 16,
               fontFamily: 'Manrope',
             ),
@@ -343,17 +273,8 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               prefixIcon: Icon(
                 icon,
-                color: const Color(0xFF5AD9D9).withOpacity(0.6), // primary/60
+                color: const Color(0xFF5AD9D9).withOpacity(0.6),
               ),
-              suffixIcon: onVisibilityToggle != null
-                  ? IconButton(
-                      icon: Icon(
-                        obscureText ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                        color: const Color(0xFFBCC9C8).withOpacity(0.6),
-                      ),
-                      onPressed: onVisibilityToggle,
-                    )
-                  : null,
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
             ),
