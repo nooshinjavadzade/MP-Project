@@ -6,15 +6,17 @@ import '../../models/user_content/review_response.dart';
 import '../../models/auth/user.dart';
 import '../../models/auth/profile_response.dart';
 import '../../models/report.dart';
+import '../local/local_storage_service.dart';
 
 import 'api_client.dart';
 import 'error_handler.dart';
 
 class ProfileService {
   final ApiClient _apiClient;
+  final LocalStorageService? _localStorageService;
   final _baseEndpoint = '/profile';
 
-  ProfileService(this._apiClient);
+  ProfileService(this._apiClient, [this._localStorageService]);
 
   Future<User> getProfile() async {
     try {
@@ -25,6 +27,10 @@ class ProfileService {
       }
       throw ErrorHandler.handleError(response);
     } on DioException catch (e) {
+      final cachedProfile = _localStorageService?.getUserProfile(checkTtl: false);
+      if (cachedProfile != null) {
+        return User.fromJson(cachedProfile.toJson());
+      }
       throw ErrorHandler.handleDioError(e);
     }
   }
@@ -46,7 +52,16 @@ class ProfileService {
       );
 
       if (response.statusCode == 200) {
-        return User.fromJson(response.data);
+        final updatedUser = User.fromJson(response.data);
+        final cachedProfile = _localStorageService?.getUserProfile(checkTtl: false);
+        if (cachedProfile != null) {
+          final updatedJson = cachedProfile.toJson();
+          if (fullName != null) updatedJson['full_name'] = fullName;
+          if (bio != null) updatedJson['bio'] = bio;
+          if (avatarUrl != null) updatedJson['avatar_url'] = avatarUrl;
+          await _localStorageService?.saveUserProfile(ProfileResponse.fromJson(updatedJson));
+        }
+        return updatedUser;
       }
       throw ErrorHandler.handleError(response);
     } on DioException catch (e) {
@@ -142,6 +157,7 @@ class ProfileService {
       );
 
       if (response.statusCode == 200) {
+        await _localStorageService?.invalidateUserStats();
         return ReviewResponse.fromJson(response.data);
       }
       throw ErrorHandler.handleError(response);
@@ -157,20 +173,34 @@ class ProfileService {
       if (response.statusCode != 204) {
         throw ErrorHandler.handleError(response);
       }
+      await _localStorageService?.invalidateUserStats();
     } on DioException catch (e) {
       throw ErrorHandler.handleDioError(e);
     }
   }
 
-  Future<ProfileResponse> getProfileFull() async {
+  Future<ProfileResponse> getProfileFull({bool checkTtl = true}) async {
+    if (checkTtl) {
+      final cached = _localStorageService?.getUserProfile(checkTtl: true);
+      if (cached != null) {
+        return cached;
+      }
+    }
+
     try {
       final response = await _apiClient.dio.get(_baseEndpoint);
 
       if (response.statusCode == 200) {
-        return ProfileResponse.fromJson(response.data);
+        final profile = ProfileResponse.fromJson(response.data);
+        await _localStorageService?.saveUserProfile(profile);
+        return profile;
       }
       throw ErrorHandler.handleError(response);
     } on DioException catch (e) {
+      final cached = _localStorageService?.getUserProfile(checkTtl: false);
+      if (cached != null) {
+        return cached;
+      }
       throw ErrorHandler.handleDioError(e);
     }
   }

@@ -20,7 +20,9 @@ class AuthPresenter extends ChangeNotifier implements IAuthPresenter {
         LocalStorageService? localStorageService,
         BiometricService? biometricService,
       })  : _localStorageService = localStorageService ?? LocalStorageService(),
-        _biometricService = biometricService ?? BiometricService();
+        _biometricService = biometricService ?? BiometricService() {
+    loadBiometricStatus();
+  }
 
   @override
   bool get isLoading => _isLoading;
@@ -49,7 +51,12 @@ class AuthPresenter extends ChangeNotifier implements IAuthPresenter {
   }
 
   @override
-  Future<void> register(String username, String email, String password, {String? fullName}) async {
+  Future<void> register(
+      String username,
+      String email,
+      String password, {
+        String? fullName,
+      }) async {
     _setLoading(true);
     try {
       final request = RegisterRequest(
@@ -68,7 +75,10 @@ class AuthPresenter extends ChangeNotifier implements IAuthPresenter {
   }
 
   @override
-  Future<void> changePassword(String currentPassword, String newPassword) async {
+  Future<void> changePassword(
+      String currentPassword,
+      String newPassword,
+      ) async {
     _setLoading(true);
     try {
       await _authService.changePassword(
@@ -168,6 +178,12 @@ class AuthPresenter extends ChangeNotifier implements IAuthPresenter {
     try {
       final isValid = await _localStorageService.isSessionValid();
       if (!isValid) {
+        await logout();
+        return false;
+      }
+
+      final token = await _localStorageService.getAuthToken();
+      if (token == null || token.isEmpty) {
         await logout();
         return false;
       }

@@ -40,6 +40,9 @@ class InteractionsPresenter extends ChangeNotifier implements IInteractionsPrese
     try {
       final request = PersonalListCreate(name: name, description: description);
       _currentListResponse = await _interactionsService.createList(request);
+      if (_currentListResponse != null) {
+        _userLists = [..._userLists, _currentListResponse!];
+      }
       _errorMessage = null;
     } catch (e) {
       _errorMessage = e.toString();
@@ -87,6 +90,12 @@ class InteractionsPresenter extends ChangeNotifier implements IInteractionsPrese
         listId: listId,
         request: request,
       );
+      if (_currentListResponse != null) {
+        final index = _userLists.indexWhere((e) => e.id == listId);
+        if (index != -1) {
+          _userLists[index] = _currentListResponse!;
+        }
+      }
       _errorMessage = null;
     } catch (e) {
       _errorMessage = e.toString();
@@ -100,6 +109,10 @@ class InteractionsPresenter extends ChangeNotifier implements IInteractionsPrese
     _setLoading(true);
     try {
       await _interactionsService.deleteList(listId);
+      _userLists.removeWhere((e) => e.id == listId);
+      if (_selectedListWithItems?.id == listId) {
+        _selectedListWithItems = null;
+      }
       _errorMessage = null;
     } catch (e) {
       _errorMessage = e.toString();

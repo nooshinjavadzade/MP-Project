@@ -5,23 +5,26 @@ import '../../models/movie.dart';
 import '../../models/series.dart';
 import '../../models/user_content.dart';
 import '../../models/report.dart';
-// import '../../models/common/top_media_list_response.dart';
-// import '../../models/common/top_media_query.dart';
+import '../local/local_storage_service.dart';
 
 import 'api_client.dart';
 import 'error_handler.dart';
 
-
 class MediaService {
   final ApiClient _apiClient;
+  final LocalStorageService? _localStorageService;
   final _baseEndpoint = '/media';
 
-  MediaService(this._apiClient);
+  MediaService(this._apiClient, [this._localStorageService]);
 
   Future<MediaSearchResult> searchMedia({
     required String query,
     int page = 1,
   }) async {
+    final trimmedQuery = query.trim();
+    if (trimmedQuery.isNotEmpty) {
+      await _localStorageService?.addSearchQuery(trimmedQuery);
+    }
     try {
       final response = await _apiClient.dio.get(
         '$_baseEndpoint/search',
@@ -32,7 +35,13 @@ class MediaService {
       );
 
       if (response.statusCode == 200) {
-        return MediaSearchResult.fromJson(response.data);
+        final result = MediaSearchResult.fromJson(response.data);
+        for (final item in result.items) {
+          if (item.posterUrl != null) {
+            _localStorageService?.prefetchImage(item.posterUrl!);
+          }
+        }
+        return result;
       }
       throw ErrorHandler.handleError(response);
     } on DioException catch (e) {
@@ -54,9 +63,15 @@ class MediaService {
       );
 
       if (response.statusCode == 200) {
-        return (response.data as List)
+        final items = (response.data as List)
             .map((e) => MediaBase.fromJson(e as Map<String, dynamic>))
             .toList();
+        for (final item in items) {
+          if (item.posterUrl != null) {
+            _localStorageService?.prefetchImage(item.posterUrl!);
+          }
+        }
+        return items;
       }
       throw ErrorHandler.handleError(response);
     } on DioException catch (e) {
@@ -72,9 +87,15 @@ class MediaService {
       );
 
       if (response.statusCode == 200) {
-        return (response.data as List)
+        final items = (response.data as List)
             .map((e) => MediaBase.fromJson(e as Map<String, dynamic>))
             .toList();
+        for (final item in items) {
+          if (item.posterUrl != null) {
+            _localStorageService?.prefetchImage(item.posterUrl!);
+          }
+        }
+        return items;
       }
       throw ErrorHandler.handleError(response);
     } on DioException catch (e) {
@@ -90,9 +111,15 @@ class MediaService {
       );
 
       if (response.statusCode == 200) {
-        return (response.data as List)
+        final items = (response.data as List)
             .map((e) => MediaBase.fromJson(e as Map<String, dynamic>))
             .toList();
+        for (final item in items) {
+          if (item.posterUrl != null) {
+            _localStorageService?.prefetchImage(item.posterUrl!);
+          }
+        }
+        return items;
       }
       throw ErrorHandler.handleError(response);
     } on DioException catch (e) {
@@ -100,7 +127,6 @@ class MediaService {
     }
   }
 
-  /// Get top-rated movies (paginated)
   Future<TopMediaListResponse> getTopMovies({
     int page = 1,
     int perPage = 20,
@@ -115,15 +141,41 @@ class MediaService {
       );
 
       if (response.statusCode == 200) {
-        return TopMediaListResponse.fromJson(response.data);
+        final result = TopMediaListResponse.fromJson(response.data);
+        if (page == 1) {
+          await _localStorageService?.saveHomeSection('top_movies', result.items);
+        }
+        for (final item in result.items) {
+          if (item.media.posterUrl != null) {
+            _localStorageService?.prefetchImage(item.media.posterUrl!);
+          }
+        }
+        return result;
       }
       throw ErrorHandler.handleError(response);
     } on DioException catch (e) {
+      if (page == 1) {
+        final cachedItems = _localStorageService?.getHomeSection('top_movies');
+        if (cachedItems != null && cachedItems.isNotEmpty) {
+          return TopMediaListResponse(
+            items: cachedItems,
+            pagination: Pagination(
+              page: 1,
+              perPage: perPage,
+              totalItems: cachedItems.length,
+              totalPages: 1,
+              hasNextPage: false,
+              hasPreviousPage: false,
+            ),
+            timeWindow: 'week',
+            generatedAt: DateTime.now(),
+          );
+        }
+      }
       throw ErrorHandler.handleDioError(e);
     }
   }
 
-  /// Get top-rated series (paginated)
   Future<TopMediaListResponse> getTopSeries({
     int page = 1,
     int perPage = 20,
@@ -138,60 +190,127 @@ class MediaService {
       );
 
       if (response.statusCode == 200) {
-        return TopMediaListResponse.fromJson(response.data);
+        final result = TopMediaListResponse.fromJson(response.data);
+        if (page == 1) {
+          await _localStorageService?.saveHomeSection('top_series', result.items);
+        }
+        for (final item in result.items) {
+          if (item.media.posterUrl != null) {
+            _localStorageService?.prefetchImage(item.media.posterUrl!);
+          }
+        }
+        return result;
       }
       throw ErrorHandler.handleError(response);
     } on DioException catch (e) {
+      if (page == 1) {
+        final cachedItems = _localStorageService?.getHomeSection('top_series');
+        if (cachedItems != null && cachedItems.isNotEmpty) {
+          return TopMediaListResponse(
+            items: cachedItems,
+            pagination: Pagination(
+              page: 1,
+              perPage: perPage,
+              totalItems: cachedItems.length,
+              totalPages: 1,
+              hasNextPage: false,
+              hasPreviousPage: false,
+            ),
+            timeWindow: 'week',
+            generatedAt: DateTime.now(),
+          );
+        }
+      }
       throw ErrorHandler.handleDioError(e);
     }
   }
 
   Future<MovieDetails> getMovieDetails(int tmdbId) async {
+    final cached = _localStorageService?.getMovieDetails(tmdbId.toString());
     try {
       final response = await _apiClient.dio.get('$_baseEndpoint/movies/$tmdbId');
 
       if (response.statusCode == 200) {
-        return MovieDetails.fromJson(response.data);
+        final details = MovieDetails.fromJson(response.data);
+        await _localStorageService?.saveMovieDetails(tmdbId.toString(), details);
+        if (details.posterUrl != null) {
+          _localStorageService?.prefetchImage(details.posterUrl!);
+        }
+        if (details.backdropUrl != null) {
+          _localStorageService?.prefetchImage(details.backdropUrl!);
+        }
+        return details;
       }
       throw ErrorHandler.handleError(response);
     } on DioException catch (e) {
+      if (cached != null) return cached;
       throw ErrorHandler.handleDioError(e);
+    } catch (e) {
+      if (cached != null) return cached;
+      rethrow;
     }
   }
 
   Future<SeriesDetails> getSeriesDetails(int tmdbId) async {
+    final cached = _localStorageService?.getSeriesDetails(tmdbId.toString());
     try {
       final response = await _apiClient.dio.get('$_baseEndpoint/series/$tmdbId');
 
       if (response.statusCode == 200) {
-        return SeriesDetails.fromJson(response.data);
+        final details = SeriesDetails.fromJson(response.data);
+        await _localStorageService?.saveSeriesDetails(tmdbId.toString(), details);
+        if (details.posterUrl != null) {
+          _localStorageService?.prefetchImage(details.posterUrl!);
+        }
+        if (details.backdropUrl != null) {
+          _localStorageService?.prefetchImage(details.backdropUrl!);
+        }
+        return details;
       }
       throw ErrorHandler.handleError(response);
     } on DioException catch (e) {
+      if (cached != null) return cached;
       throw ErrorHandler.handleDioError(e);
+    } catch (e) {
+      if (cached != null) return cached;
+      rethrow;
     }
   }
 
   Future<Season> getSeasonDetails(int tmdbId, int seasonNumber) async {
+    final cachedEpisodes = _localStorageService?.getSeasonEpisodes(tmdbId.toString(), seasonNumber);
     try {
       final response = await _apiClient.dio.get(
         '$_baseEndpoint/series/$tmdbId/season/$seasonNumber',
       );
 
       if (response.statusCode == 200) {
-        return Season.fromJson(response.data);
+        final season = Season.fromJson(response.data);
+        final episodeJsonList = season.episodes.map((e) => e.toJson()).toList();
+        await _localStorageService?.saveSeasonEpisodes(tmdbId.toString(), seasonNumber, episodeJsonList);
+        return season;
       }
       throw ErrorHandler.handleError(response);
     } on DioException catch (e) {
+      if (cachedEpisodes != null && cachedEpisodes.isNotEmpty) {
+        final episodes = cachedEpisodes.map((e) => Episode.fromJson(e)).toList();
+        return Season(seasonNumber: seasonNumber, episodes: episodes);
+      }
       throw ErrorHandler.handleDioError(e);
+    } catch (e) {
+      if (cachedEpisodes != null && cachedEpisodes.isNotEmpty) {
+        final episodes = cachedEpisodes.map((e) => Episode.fromJson(e)).toList();
+        return Season(seasonNumber: seasonNumber, episodes: episodes);
+      }
+      rethrow;
     }
   }
 
   Future<Episode> getEpisodeDetails(
-    int tmdbId,
-    int seasonNumber,
-    int episodeNumber,
-  ) async {
+      int tmdbId,
+      int seasonNumber,
+      int episodeNumber,
+      ) async {
     try {
       final response = await _apiClient.dio.get(
         '$_baseEndpoint/series/$tmdbId/season/$seasonNumber/episode/$episodeNumber',
@@ -202,6 +321,16 @@ class MediaService {
       }
       throw ErrorHandler.handleError(response);
     } on DioException catch (e) {
+      final cachedEpisodes = _localStorageService?.getSeasonEpisodes(tmdbId.toString(), seasonNumber);
+      if (cachedEpisodes != null && cachedEpisodes.isNotEmpty) {
+        final matching = cachedEpisodes.firstWhere(
+              (e) => e['episode_number'] == episodeNumber,
+          orElse: () => <String, dynamic>{},
+        );
+        if (matching.isNotEmpty) {
+          return Episode.fromJson(matching);
+        }
+      }
       throw ErrorHandler.handleDioError(e);
     }
   }
@@ -220,6 +349,11 @@ class MediaService {
       }
       throw ErrorHandler.handleError(response);
     } on DioException catch (e) {
+      await _localStorageService?.addOrUpdatePendingAction({
+        'action_type': 'toggle_like',
+        'target_id': tmdbId,
+        'media_type': mediaType,
+      });
       throw ErrorHandler.handleDioError(e);
     }
   }
@@ -237,10 +371,23 @@ class MediaService {
       );
 
       if (response.statusCode == 200) {
-        return RatingResponse.fromJson(response.data);
+        final result = RatingResponse.fromJson(response.data);
+        final currentRatings = _localStorageService?.getUserRatings(checkTtl: false) ?? {};
+        currentRatings[tmdbId] = rating;
+        await _localStorageService?.saveUserRatings(currentRatings);
+        return result;
       }
       throw ErrorHandler.handleError(response);
     } on DioException catch (e) {
+      final currentRatings = _localStorageService?.getUserRatings(checkTtl: false) ?? {};
+      currentRatings[tmdbId] = rating;
+      await _localStorageService?.saveUserRatings(currentRatings);
+      await _localStorageService?.addOrUpdatePendingAction({
+        'action_type': 'rate_media',
+        'target_id': tmdbId,
+        'media_type': mediaType,
+        'rating': rating,
+      });
       throw ErrorHandler.handleDioError(e);
     }
   }
@@ -266,6 +413,13 @@ class MediaService {
       }
       throw ErrorHandler.handleError(response);
     } on DioException catch (e) {
+      await _localStorageService?.addOrUpdatePendingAction({
+        'action_type': 'create_review',
+        'target_id': tmdbId,
+        'media_type': mediaType,
+        'review': review,
+        'contains_spoiler': containsSpoiler,
+      });
       throw ErrorHandler.handleDioError(e);
     }
   }
@@ -276,6 +430,7 @@ class MediaService {
     int page = 1,
     int perPage = 20,
   }) async {
+    final cachedReviews = _localStorageService?.getMediaReviews(tmdbId);
     try {
       final response = await _apiClient.dio.get(
         '$_baseEndpoint/$mediaType/$tmdbId/reviews',
@@ -286,13 +441,25 @@ class MediaService {
       );
 
       if (response.statusCode == 200) {
-        return (response.data as List)
+        final rawList = response.data as List;
+        final reviews = rawList
             .map((e) => ReviewResponse.fromJson(e as Map<String, dynamic>))
             .toList();
+        final jsonList = rawList.map((e) => e as Map<String, dynamic>).toList();
+        await _localStorageService?.saveMediaReviews(tmdbId, jsonList);
+        return reviews;
       }
       throw ErrorHandler.handleError(response);
     } on DioException catch (e) {
+      if (cachedReviews != null && cachedReviews.isNotEmpty) {
+        return cachedReviews.map((e) => ReviewResponse.fromJson(e)).toList();
+      }
       throw ErrorHandler.handleDioError(e);
+    } catch (e) {
+      if (cachedReviews != null && cachedReviews.isNotEmpty) {
+        return cachedReviews.map((e) => ReviewResponse.fromJson(e)).toList();
+      }
+      rethrow;
     }
   }
 

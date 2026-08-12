@@ -1,21 +1,20 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../models/auth/token.dart';
 import '../../models/common/exceptions.dart';
+import '../local/local_storage_service.dart';
 
 class ApiClient {
   static const String _baseUrl = 'http://10.0.2.2:8000/api/v1'; // Android emulator localhost
 
   final Dio _dio;
-  final FlutterSecureStorage _storage;
+  final LocalStorageService _localStorage;
 
   ApiClient({
     Dio? dio,
-    FlutterSecureStorage? storage,
+    LocalStorageService? localStorage,
   })  : _dio = dio ?? Dio(),
-        _storage = storage ?? const FlutterSecureStorage() {
+        _localStorage = localStorage ?? LocalStorageService() {
     _configureDio();
   }
 
@@ -43,13 +42,13 @@ class ApiClient {
             error.requestOptions.path != '/auth/refresh' &&
             error.requestOptions.path != '/auth/login' &&
             error.requestOptions.path != '/auth/register') {
-          
+
           final refreshed = await refreshToken();
           if (refreshed != null) {
             // Retry the original request with new token
             final accessToken = await getAccessToken();
             error.requestOptions.headers['Authorization'] = 'Bearer $accessToken';
-            
+
             try {
               final response = await _dio.fetch(error.requestOptions);
               handler.resolve(response);
@@ -79,19 +78,19 @@ class ApiClient {
   Future<void> storeTokens({
     required String accessToken,
     required String refreshToken,
+    int? expiresInSeconds,
   }) async {
-    await _storage.write(key: 'access_token', value: accessToken);
-    await _storage.write(key: 'refresh_token', value: refreshToken);
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('login_timestamp', DateTime.now().millisecondsSinceEpoch);
+    await _localStorage.saveAuthToken(accessToken, expiresInSeconds: expiresInSeconds);
+    await _localStorage.saveRefreshToken(refreshToken);
+    await _localStorage.saveLoginTimestamp();
   }
 
   Future<String?> getAccessToken() async {
-    return await _storage.read(key: 'access_token');
+    return await _localStorage.getAuthToken();
   }
 
   Future<String?> getRefreshToken() async {
-    return await _storage.read(key: 'refresh_token');
+    return await _localStorage.getRefreshToken();
   }
 
   Future<bool> isLoggedIn() async {
@@ -115,9 +114,10 @@ class ApiClient {
 
       if (response.statusCode == 200) {
         final data = response.data;
-        storeTokens(
-            accessToken: data['access_token'],
-            refreshToken: data['refresh_token']
+        await storeTokens(
+          accessToken: data['access_token'],
+          refreshToken: data['refresh_token'],
+          expiresInSeconds: data['expires_in'],
         );
         return Token.fromJson(data);
       }
@@ -131,9 +131,9 @@ class ApiClient {
   Future<void> logout() async {
     final refreshToken = await getRefreshToken();
     await _dio.post(
-      '/auth/logout',
-      data: {'refresh_token': refreshToken},
-      options: Options(headers: {'Content-Type': 'application/json'})
+        '/auth/logout',
+        data: {'refresh_token': refreshToken},
+        options: Options(headers: {'Content-Type': 'application/json'})
     );
     await _clearTokens();
   }
@@ -147,10 +147,6 @@ class ApiClient {
   }
 
   Future<void> _clearTokens() async {
-    await _storage.delete(key: 'access_token');
-    await _storage.delete(key: 'refresh_token');
-
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('login_timestamp');
+    await _localStorage.clearSessionData();
   }
 }

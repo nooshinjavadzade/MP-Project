@@ -2,15 +2,20 @@ import 'package:dio/dio.dart';
 
 import '../../models/auth.dart';
 import '../../models/common/exceptions.dart';
+import '../local/local_storage_service.dart';
 
 import 'api_client.dart';
 import 'error_handler.dart';
 
 class AuthService {
   final ApiClient _apiClient;
+  final LocalStorageService _localStorageService;
   final _baseEndpoint = '/auth';
 
-  AuthService(this._apiClient);
+  AuthService(
+      this._apiClient, {
+        LocalStorageService? localStorageService,
+      }) : _localStorageService = localStorageService ?? LocalStorageService();
 
   Future<AuthResponse> register(RegisterRequest request) async {
     try {
@@ -25,6 +30,13 @@ class AuthService {
           accessToken: authResponse.tokens.accessToken,
           refreshToken: authResponse.tokens.refreshToken,
         );
+        await _localStorageService.saveAuthToken(
+          authResponse.tokens.accessToken,
+        );
+        await _localStorageService.saveRefreshToken(
+          authResponse.tokens.refreshToken,
+        );
+        await _localStorageService.saveLoginTimestamp();
         return authResponse;
       }
       throw ErrorHandler.handleError(response);
@@ -46,6 +58,13 @@ class AuthService {
           accessToken: authResponse.tokens.accessToken,
           refreshToken: authResponse.tokens.refreshToken,
         );
+        await _localStorageService.saveAuthToken(
+          authResponse.tokens.accessToken,
+        );
+        await _localStorageService.saveRefreshToken(
+          authResponse.tokens.refreshToken,
+        );
+        await _localStorageService.saveLoginTimestamp();
         return authResponse;
       }
       throw ErrorHandler.handleError(response);
@@ -57,8 +76,12 @@ class AuthService {
   Future<Token> refreshToken() async {
     try {
       final token = await _apiClient.refreshToken();
-      if (token == null) throw AuthException('Refresh token is either missing or expired');
+      if (token == null) {
+        throw AuthException('Refresh token is either missing or expired');
+      }
 
+      await _localStorageService.saveAuthToken(token.accessToken);
+      await _localStorageService.saveRefreshToken(token.refreshToken);
       return token;
     } on DioException catch (e) {
       throw ErrorHandler.handleDioError(e);
@@ -88,7 +111,9 @@ class AuthService {
 
   Future<void> requestEmailVerification() async {
     try {
-      final response = await _apiClient.dio.post('$_baseEndpoint/verify-email/request');
+      final response = await _apiClient.dio.post(
+        '$_baseEndpoint/verify-email/request',
+      );
       if (response.statusCode != 200) {
         throw ErrorHandler.handleError(response);
       }
@@ -97,7 +122,9 @@ class AuthService {
     }
   }
 
-  Future<AuthResponse> confirmEmailVerification(VerifyEmailConfirm request) async {
+  Future<AuthResponse> confirmEmailVerification(
+      VerifyEmailConfirm request,
+      ) async {
     try {
       final response = await _apiClient.dio.post(
         '$_baseEndpoint/verify-email/confirm',
@@ -111,6 +138,13 @@ class AuthService {
             accessToken: verifyResponse.tokens!.accessToken,
             refreshToken: verifyResponse.tokens!.refreshToken,
           );
+          await _localStorageService.saveAuthToken(
+            verifyResponse.tokens!.accessToken,
+          );
+          await _localStorageService.saveRefreshToken(
+            verifyResponse.tokens!.refreshToken,
+          );
+          await _localStorageService.saveLoginTimestamp();
           return AuthResponse(
             tokens: verifyResponse.tokens!,
             user: verifyResponse.user!,
@@ -137,7 +171,9 @@ class AuthService {
     }
   }
 
-  Future<AuthResponse> confirmPasswordReset(ResetPasswordConfirm request) async {
+  Future<AuthResponse> confirmPasswordReset(
+      ResetPasswordConfirm request,
+      ) async {
     try {
       final response = await _apiClient.dio.post(
         '$_baseEndpoint/password/reset/confirm',
@@ -151,6 +187,13 @@ class AuthService {
             accessToken: verifyResponse.tokens!.accessToken,
             refreshToken: verifyResponse.tokens!.refreshToken,
           );
+          await _localStorageService.saveAuthToken(
+            verifyResponse.tokens!.accessToken,
+          );
+          await _localStorageService.saveRefreshToken(
+            verifyResponse.tokens!.refreshToken,
+          );
+          await _localStorageService.saveLoginTimestamp();
           return AuthResponse(
             tokens: verifyResponse.tokens!,
             user: verifyResponse.user!,
@@ -164,10 +207,18 @@ class AuthService {
   }
 
   Future<void> logout() async {
-    await _apiClient.logout();
+    try {
+      await _apiClient.logout();
+    } finally {
+      await _localStorageService.clearSessionData();
+    }
   }
 
   Future<void> logoutAll() async {
-    await _apiClient.logoutAll();
+    try {
+      await _apiClient.logoutAll();
+    } finally {
+      await _localStorageService.clearSessionData();
+    }
   }
 }
