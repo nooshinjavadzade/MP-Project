@@ -1,45 +1,47 @@
 import 'package:flutter/material.dart';
-import '../models/user_content/watch_status.dart';
-import '../models/movie/watchlist_item.dart';
+import '../../../models/user_content/watch_status.dart';
+import '../../../models/user_content/progress_model.dart';
 
 class WatchlistCard extends StatelessWidget {
-  final WatchlistItem item;
+  final ProgressModel item;
 
   const WatchlistCard({super.key, required this.item});
 
   @override
   Widget build(BuildContext context) {
+    // Determine status from the model, default to planToWatch
+    final status = item.status ?? WatchStatus.planToWatch;
+    final progressVal = item.progress; 
+    
+    // Fallback UI for media details since ProgressModel only has mediaId
+    final String title = 'Media #${item.mediaId}';
+    final String subtitle = 'Episodes watched: ${item.watchedEpisodes}';
+    final String imageUrl = 'https://via.placeholder.com/150'; // Placeholder
+    final String progressLabel = status == WatchStatus.watching ? 'Watching' : 'Status: ${status.value}';
+
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF0C2E3B).withOpacity(0.4), // glass-panel
-        borderRadius: BorderRadius.circular(12),
+        color: const Color(0xFF0C2E3B).withOpacity(0.4),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: const Color(0xFF5AD9D9).withOpacity(0.1),
+          color: const Color(0xFF8DE6E3).withOpacity(0.1),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
       clipBehavior: Clip.hardEdge,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header Image Section
-          SizedBox(
-            height: 192,
+          // Image Section
+          Expanded(
             child: Stack(
               fit: StackFit.expand,
               children: [
                 Image.network(
-                  item.imageUrl,
+                  imageUrl,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) => Container(
                     color: const Color(0xFF00161F),
-                    child: const Icon(Icons.broken_image, color: Colors.white54),
+                    child: const Icon(Icons.broken_image, color: Colors.white30, size: 40),
                   ),
                 ),
                 // Gradient Overlay
@@ -50,7 +52,7 @@ class WatchlistCard extends StatelessWidget {
                         begin: Alignment.bottomCenter,
                         end: Alignment.topCenter,
                         colors: [
-                          const Color(0xFF001018), // surface-container-lowest
+                          const Color(0xFF00161F).withOpacity(0.9),
                           Colors.transparent,
                         ],
                         stops: const [0.0, 0.5],
@@ -58,48 +60,42 @@ class WatchlistCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                // Tags
-                if (item.tag != null)
+                // Favorite Icon
+                if (status == WatchStatus.loved)
                   Positioned(
                     top: 12,
-                    right: 12, // HTML sometimes uses left, sometimes right. Let's use right or map it.
+                    right: 12,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                        color: _getTagBgColor(item.status).withOpacity(0.8),
-                        borderRadius: BorderRadius.circular(4),
-                        border: Border.all(color: _getTagBorderColor(item.status)),
+                        color: const Color(0xFF00161F).withOpacity(0.6),
+                        shape: BoxShape.circle,
                       ),
-                      child: Text(
-                        item.tag!.toUpperCase(),
-                        style: TextStyle(
-                          fontFamily: 'Manrope',
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: _getTagTextColor(item.status),
-                        ),
+                      child: const Icon(
+                        Icons.favorite,
+                        color: Color(0xFFF08DA5),
+                        size: 16,
                       ),
                     ),
                   ),
-                // Play button for unwatched
-                if (item.status == WatchStatus.planToWatch)
-                  Positioned.fill(
+                // Tag
+                if (status == WatchStatus.completed)
+                  Positioned(
+                    top: 12,
+                    left: 12,
                     child: Container(
-                      color: const Color(0xFF001018).withOpacity(0.4),
-                      child: Center(
-                        child: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF5AD9D9),
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.3),
-                                blurRadius: 8,
-                              ),
-                            ],
-                          ),
-                          child: const Icon(Icons.play_arrow, color: Color(0xFF003737), size: 32),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: _getTagBgColor(status).withOpacity(0.9),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Text(
+                        'COMPLETED',
+                        style: TextStyle(
+                          fontFamily: 'Manrope',
+                          fontSize: 8,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
                       ),
                     ),
@@ -107,69 +103,58 @@ class WatchlistCard extends StatelessWidget {
               ],
             ),
           ),
-          // Content Section
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          item.title,
-                          style: const TextStyle(
-                            fontFamily: 'Manrope',
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFFC7E7F8),
-                            height: 1.2,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      Icon(
-                        item.isFavorite ? Icons.favorite : Icons.favorite_border,
-                        size: 20,
-                        color: item.isFavorite ? const Color(0xFFFFB1C2) : const Color(0xFFBCC9C8).withOpacity(0.4),
-                      ),
-                    ],
+          // Info Section
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontFamily: 'Plus Jakarta Sans',
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFFC7E7F8),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    item.subtitle,
-                    style: TextStyle(
-                      fontFamily: 'Manrope',
-                      fontSize: 14,
-                      color: const Color(0xFFBCC9C8).withOpacity(0.7),
-                    ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    fontFamily: 'Manrope',
+                    fontSize: 12,
+                    color: Color(0xFFBCC9C8),
                   ),
-                  const Spacer(),
-                  // Progress Bar Section
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 16),
+                
+                // Progress Section
+                if (status != WatchStatus.planToWatch) ...[
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        item.progressLabel.toUpperCase(),
+                        progressLabel.toUpperCase(),
                         style: TextStyle(
                           fontFamily: 'Manrope',
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
-                          color: _getProgressColor(item.status),
+                          color: _getProgressColor(status),
                           letterSpacing: 1.0,
                         ),
                       ),
                       Text(
-                        '${(item.progress * 100).toInt()}%',
+                        '${(progressVal * 100).toInt()}%',
                         style: TextStyle(
                           fontFamily: 'Manrope',
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
-                          color: _getProgressColor(item.status),
+                          color: _getProgressColor(status),
                         ),
                       ),
                     ],
@@ -179,20 +164,20 @@ class WatchlistCard extends StatelessWidget {
                     height: 6,
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF001018), // surface-container-lowest
+                      color: const Color(0xFF001018), 
                       borderRadius: BorderRadius.circular(9999),
                     ),
                     alignment: Alignment.centerLeft,
                     child: FractionallySizedBox(
-                      widthFactor: item.progress,
+                      widthFactor: progressVal.clamp(0.0, 1.0),
                       child: Container(
                         decoration: BoxDecoration(
-                          color: _getProgressColor(item.status),
+                          color: _getProgressColor(status),
                           borderRadius: BorderRadius.circular(9999),
-                          boxShadow: item.status != WatchStatus.planToWatch
+                          boxShadow: status != WatchStatus.planToWatch
                               ? [
                                   BoxShadow(
-                                    color: _getProgressColor(item.status).withOpacity(0.3),
+                                    color: _getProgressColor(status).withOpacity(0.3),
                                     blurRadius: 10,
                                   ),
                                 ]
@@ -202,7 +187,7 @@ class WatchlistCard extends StatelessWidget {
                     ),
                   ),
                 ],
-              ),
+              ],
             ),
           ),
         ],
@@ -213,32 +198,22 @@ class WatchlistCard extends StatelessWidget {
   Color _getProgressColor(WatchStatus status) {
     switch (status) {
       case WatchStatus.loved:
-        return const Color(0xFF29B5B5); // Green/Teal (primary-container)
+        return const Color(0xFF29B5B5); // Green/Teal 
       case WatchStatus.completed:
-        return const Color(0xFFCBBEFF); // Purple (secondary)
+        return const Color(0xFFCBBEFF); // Purple 
       case WatchStatus.dropped:
       case WatchStatus.onHold:
-        return const Color(0xFFFFB4AB); // Red (error)
+        return const Color(0xFFFFB4AB); // Red 
       case WatchStatus.watching:
-        return const Color(0xFFE8879F); // Yellow/Amber map to (tertiary-container)
+        return const Color(0xFFE8879F); // Yellow/Amber map to pink
       case WatchStatus.planToWatch:
       default:
-        return Colors.transparent; // Black/Transparent
+        return Colors.transparent; 
     }
   }
 
   Color _getTagBgColor(WatchStatus status) {
-    if (status == WatchStatus.completed) return const Color(0xFF493C81); // secondary-container
-    return const Color(0xFF00232F); // surface-container
-  }
-
-  Color _getTagBorderColor(WatchStatus status) {
-    if (status == WatchStatus.completed) return Colors.transparent;
-    return const Color(0xFF5AD9D9).withOpacity(0.2); // primary/20
-  }
-
-  Color _getTagTextColor(WatchStatus status) {
-    if (status == WatchStatus.completed) return const Color(0xFFE6DEFF); // secondary-fixed
-    return const Color(0xFF5AD9D9); // primary-fixed-dim
+    if (status == WatchStatus.completed) return const Color(0xFF493C81); 
+    return const Color(0xFF00232F); 
   }
 }
