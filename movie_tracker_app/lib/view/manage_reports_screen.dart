@@ -2,16 +2,26 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../presenters/admin/admin_presenter.dart';
-import '../../services/api/admin_service.dart';
 
-class ManageReportsScreen extends StatelessWidget {
+class ManageReportsScreen extends StatefulWidget {
   const ManageReportsScreen({super.key});
 
   @override
+  State<ManageReportsScreen> createState() => _ManageReportsScreenState();
+}
+
+class _ManageReportsScreenState extends State<ManageReportsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AdminPresenter>().getReports();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => AdminPresenter(AdminService())..getReports(),
-      child: Scaffold(
+    return Scaffold(
         backgroundColor: const Color(0xFF00161F),
         extendBodyBehindAppBar: true,
         appBar: AppBar(
@@ -71,10 +81,10 @@ class ManageReportsScreen extends StatelessWidget {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 16.0),
                       child: _ReportCard(
-                        userName: report.userName,
-                        email: report.email,
-                        reportedType: report.reportedType,
-                        reason: report.reason,
+                        userName: report.user.username,
+                        email: report.user.email,
+                        reportedType: report.media.title ?? report.media.mediaType?.toString() ?? 'Media Item',
+                        reason: report.description ?? report.reason.value,
                         onDelete: () => presenter.deleteReport(report.id),
                       ),
                     );
@@ -83,7 +93,6 @@ class ManageReportsScreen extends StatelessWidget {
             );
           },
         ),
-      ),
     );
   }
 }

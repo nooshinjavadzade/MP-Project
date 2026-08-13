@@ -2,16 +2,26 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../presenters/admin/admin_presenter.dart';
-import '../../services/api/admin_service.dart';
 
-class ManageReviewsScreen extends StatelessWidget {
+class ManageReviewsScreen extends StatefulWidget {
   const ManageReviewsScreen({super.key});
 
   @override
+  State<ManageReviewsScreen> createState() => _ManageReviewsScreenState();
+}
+
+class _ManageReviewsScreenState extends State<ManageReviewsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AdminPresenter>().getReviews();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => AdminPresenter(AdminService())..getReviews(),
-      child: Scaffold(
+    return Scaffold(
         backgroundColor: const Color(0xFF00161F), // surface
         extendBodyBehindAppBar: true,
         appBar: AppBar(
@@ -72,11 +82,11 @@ class ManageReviewsScreen extends StatelessWidget {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 16.0),
                       child: _ReviewCard(
-                        userName: review.userName,
-                        email: review.email,
-                        mediaTitle: review.mediaTitle,
-                        rating: review.rating,
-                        content: review.content,
+                        userName: review.user.username,
+                        email: review.user.email,
+                        mediaTitle: review.media.title ?? 'Unknown',
+                        content: review.review,
+                        containsSpoiler: review.containsSpoiler,
                         onDelete: () => presenter.deleteReview(review.id),
                       ),
                     );
@@ -85,7 +95,6 @@ class ManageReviewsScreen extends StatelessWidget {
             );
           },
         ),
-      ),
     );
   }
 }
@@ -94,16 +103,17 @@ class _ReviewCard extends StatelessWidget {
   final String userName;
   final String email;
   final String mediaTitle;
-  final double rating;
   final String content;
+  final bool containsSpoiler;
   final VoidCallback onDelete;
 
   const _ReviewCard({
+    super.key,
     required this.userName,
     required this.email,
     required this.mediaTitle,
-    required this.rating,
     required this.content,
+    required this.containsSpoiler,
     required this.onDelete,
   });
 
@@ -167,7 +177,24 @@ class _ReviewCard extends StatelessWidget {
                   ],
                 ),
               ),
-              _buildStarRating(rating),
+              if (containsSpoiler)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFB4AB).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(color: const Color(0xFFFFB4AB).withOpacity(0.3)),
+                  ),
+                  child: const Text(
+                    'SPOILER',
+                    style: TextStyle(
+                      fontFamily: 'Manrope',
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFFFFB4AB),
+                    ),
+                  ),
+                ),
             ],
           ),
           const SizedBox(height: 16),
@@ -211,33 +238,4 @@ class _ReviewCard extends StatelessWidget {
     );
   }
 
-  Widget _buildStarRating(double rating) {
-    List<Widget> stars = [];
-    for (int i = 1; i <= 5; i++) {
-      IconData iconData = Icons.star_border;
-      if (i <= rating) {
-        iconData = Icons.star;
-      } else if (i - 0.5 <= rating) {
-        iconData = Icons.star_half;
-      }
-
-      stars.add(
-        Icon(
-          iconData,
-          size: 24,
-          color: const Color(0xFF5AD9D9), // primary
-          shadows: [
-            Shadow(
-              color: const Color(0xFF29B5B5), // primary-container
-              blurRadius: 8,
-            ),
-          ],
-        ),
-      );
-    }
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: stars,
-    );
-  }
 }

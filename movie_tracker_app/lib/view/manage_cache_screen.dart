@@ -2,16 +2,26 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../presenters/admin/admin_presenter.dart';
-import '../../services/api/admin_service.dart';
 
-class ManageCacheScreen extends StatelessWidget {
+class ManageCacheScreen extends StatefulWidget {
   const ManageCacheScreen({super.key});
 
   @override
+  State<ManageCacheScreen> createState() => _ManageCacheScreenState();
+}
+
+class _ManageCacheScreenState extends State<ManageCacheScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AdminPresenter>().getCachedMedia();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => AdminPresenter(AdminService())..getCachedMedia(),
-      child: Scaffold(
+    return Scaffold(
         backgroundColor: const Color(0xFF00161F),
         extendBodyBehindAppBar: true,
         appBar: AppBar(
@@ -81,16 +91,18 @@ class ManageCacheScreen extends StatelessWidget {
                   )
                 else
                   ...items.map((item) {
-                    IconData iconData = Icons.description;
-                    if (item.iconType == 'image') iconData = Icons.image;
-                    if (item.iconType == 'movie') iconData = Icons.movie;
+                    IconData iconData = Icons.movie;
+                    if (item.mediaType.toLowerCase() == 'tv') iconData = Icons.tv;
+                    if (item.mediaType.toLowerCase() == 'person') iconData = Icons.person;
+                    
+                    final dateStr = "\${item.lastFetchedAt.year}-\${item.lastFetchedAt.month.toString().padLeft(2, '0')}-\${item.lastFetchedAt.day.toString().padLeft(2, '0')}";
 
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 16.0),
                       child: _CacheItemCard(
                         title: item.title,
-                        size: item.size,
-                        date: item.date,
+                        size: item.mediaType.toUpperCase(),
+                        date: dateStr,
                         icon: iconData,
                         onDelete: () => presenter.deleteCachedMedia(item.id),
                       ),
@@ -100,7 +112,6 @@ class ManageCacheScreen extends StatelessWidget {
             );
           },
         ),
-      ),
     );
   }
 }
