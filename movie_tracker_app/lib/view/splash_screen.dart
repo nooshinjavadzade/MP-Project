@@ -1,20 +1,58 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../presenters/auth/auth_presenter.dart';
+import 'home_screen.dart';
+import 'welcome_screen.dart';
 import '../widgets/splash_logo.dart';
 import '../widgets/splash_loading_bar.dart';
 
-
-
-class SplashScreen extends StatelessWidget {
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _initializeApp();
+  }
+
+  Future<void> _initializeApp() async {
+    final presenter = context.read<AuthPresenter>();
+    
+    // اجرای همزمان انیمیشن (۲.۵ ثانیه) و بررسی وضعیت لاگین کاربر
+    final results = await Future.wait([
+      Future.delayed(const Duration(milliseconds: 2500)),
+      presenter.checkAutoLogin(),
+    ]);
+
+    final isLoggedIn = results[1] as bool;
+
+    if (!mounted) return;
+
+    if (isLoggedIn) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const WelcomeScreen()),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // bg-background: #00161f
       backgroundColor: const Color(0xFF00161F),
       body: Stack(
         children: [
-          // Radial Glow Background (معدل کلاس glow-radial)
+          // Radial Glow Background
           Container(
             decoration: const BoxDecoration(
               gradient: RadialGradient(
@@ -37,7 +75,7 @@ class SplashScreen extends StatelessWidget {
                 Spacer(),
                 // بخش نوار وضعیت بارگذاری
                 SplashLoadingBar(),
-                SizedBox(height: 64), // معادل pb-16
+                SizedBox(height: 64),
               ],
             ),
           ),
