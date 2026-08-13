@@ -9,6 +9,8 @@ import 'services/api/admin_service.dart';
 import 'services/api/auth_service.dart';
 import 'services/api/interactions_service.dart';
 import 'services/api/progress_service.dart';
+// حتما ایمپورت سرویس مدیا رو چک کنید که مسیرش درست باشه
+import 'services/api/media_service.dart'; 
 import 'services/local/biometric_service.dart';
 import 'services/local/local_storage_service.dart';
 
@@ -17,6 +19,8 @@ import 'presenters/admin/admin_presenter.dart';
 import 'presenters/auth/auth_presenter.dart';
 import 'presenters/interactions/interactions_presenter.dart';
 import 'presenters/progress/progress_presenter.dart';
+// ایمپورت پرزنتر مدیا
+import 'presenters/media/media_presenter.dart'; 
 
 // Screens
 import 'view/splash_screen.dart';
@@ -32,6 +36,7 @@ void main() async {
   final adminService = AdminService(apiClient);
   final interactionsService = InteractionsService(apiClient);
   final progressService = ProgressService(apiClient);
+  final mediaService = MediaService(apiClient); // <--- اضافه شد
 
   // 3. Instantiate Local Services
   final biometricService = BiometricService();
@@ -55,6 +60,10 @@ void main() async {
         ),
         ChangeNotifierProvider<ProgressPresenter>(
           create: (_) => ProgressPresenter(progressService),
+        ),
+        // <--- پرزنتر مدیا به لیست پرووایدرها اضافه شد --->
+        ChangeNotifierProvider<MediaPresenter>(
+          create: (_) => MediaPresenter(mediaService),
         ),
       ],
       child: const TVTimeApp(),
