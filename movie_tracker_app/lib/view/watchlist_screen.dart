@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../presenters/auth/auth_presenter.dart';
-import '../../presenters/progress/progress_presenter.dart';
-import '../../models/user_content/progress_model.dart';
-import '../auth/login_screen.dart';
-import 'widgets/watchlist_card.dart';
+import '../../presenters/interactions/interactions_presenter.dart';
+import '../../models/user_content/personal_list.dart';
+import 'login_screen.dart';
+import '../widgets/watchlist_card.dart';
 
 class WatchlistScreen extends StatefulWidget {
   const WatchlistScreen({super.key});
@@ -23,7 +23,7 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authPresenter = context.read<AuthPresenter>();
       if (authPresenter.authResponse?.user != null) {
-        context.read<ProgressPresenter>().fetchAllProgress();
+        context.read<InteractionsPresenter>().getUserLists();
       }
     });
   }
@@ -68,10 +68,21 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
         // LOGGED IN USER VIEW
         return Scaffold(
           backgroundColor: const Color(0xFF00161F),
-          body: Consumer<ProgressPresenter>(
-            builder: (context, progressPresenter, _) {
-              final items = progressPresenter.watchlist;
-              final isLoading = progressPresenter.isLoading;
+          body: Consumer<InteractionsPresenter>(
+            builder: (context, interactionsPresenter, _) {
+              List<PersonalListItemResponse> items = [];
+              final selectedList = interactionsPresenter.selectedListWithItems;
+              
+              if (selectedList != null) {
+                items = selectedList.items;
+              } else if (interactionsPresenter.userLists.isNotEmpty && !interactionsPresenter.isLoading) {
+                // Auto-load first list if lists are loaded but none selected
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                   context.read<InteractionsPresenter>().getListWithItems(interactionsPresenter.userLists.first.id);
+                });
+              }
+              
+              final isLoading = interactionsPresenter.isLoading;
 
               return CustomScrollView(
                 slivers: [

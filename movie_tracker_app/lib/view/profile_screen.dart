@@ -5,6 +5,7 @@ import '../../presenters/auth/auth_presenter.dart';
 import '../../models/auth/user.dart';
 import 'login_screen.dart';
 import '../widgets/edit_profile_dialog.dart';
+import 'admin_dashboard_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -290,9 +291,9 @@ class ProfileScreen extends StatelessWidget {
           const SizedBox(height: 16),
           InkWell(
             onTap: () {
-              // Navigate to Admin screen (placeholder for now)
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('System Administration coming soon...')),
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AdminDashboardScreen()),
               );
             },
             borderRadius: BorderRadius.circular(16),

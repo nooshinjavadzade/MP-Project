@@ -1,22 +1,24 @@
 import 'package:flutter/material.dart';
 import '../../../models/user_content/watch_status.dart';
-import '../../../models/user_content/progress_model.dart';
+import '../../../models/user_content/personal_list.dart';
 
 class WatchlistCard extends StatelessWidget {
-  final ProgressModel item;
+  final PersonalListItemResponse item;
 
   const WatchlistCard({super.key, required this.item});
 
   @override
   Widget build(BuildContext context) {
     // Determine status from the model, default to planToWatch
-    final status = item.status ?? WatchStatus.planToWatch;
-    final progressVal = item.progress; 
+    final status = WatchStatus.planToWatch; 
+    final progressVal = 0.0; 
     
     // Fallback UI for media details since ProgressModel only has mediaId
-    final String title = 'Media #${item.mediaId}';
-    final String subtitle = 'Episodes watched: ${item.watchedEpisodes}';
-    final String imageUrl = 'https://via.placeholder.com/150'; // Placeholder
+    final String title = item.media.title ?? 'Unknown Title';
+    final String subtitle = 'Added on: ${item.addedAt.year}-${item.addedAt.month.toString().padLeft(2, '0')}-${item.addedAt.day.toString().padLeft(2, '0')}';
+    
+    // Using a placeholder image for now, ideally item.media has a posterPath
+    final String imageUrl = 'https://via.placeholder.com/150'; 
     final String progressLabel = status == WatchStatus.watching ? 'Watching' : 'Status: ${status.value}';
 
     return Container(
