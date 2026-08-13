@@ -17,28 +17,39 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _initializeApp();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeApp();
+    });
   }
 
   Future<void> _initializeApp() async {
-    final presenter = context.read<AuthPresenter>();
-    
-    // اجرای همزمان انیمیشن (۲.۵ ثانیه) و بررسی وضعیت لاگین کاربر
-    final results = await Future.wait([
-      Future.delayed(const Duration(milliseconds: 2500)),
-      presenter.checkAutoLogin(),
-    ]);
+    try {
+      final presenter = context.read<AuthPresenter>();
+      
+      // اجرای همزمان انیمیشن (۲.۵ ثانیه) و بررسی وضعیت لاگین کاربر
+      final results = await Future.wait([
+        Future.delayed(const Duration(milliseconds: 2500)),
+        presenter.checkAutoLogin(),
+      ]);
 
-    final isLoggedIn = results[1] as bool;
+      final isLoggedIn = results[1] as bool;
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    if (isLoggedIn) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-      );
-    } else {
+      if (isLoggedIn) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const WelcomeScreen()),
+        );
+      }
+    } catch (e) {
+      // در صورت بروز هرگونه خطای پیش‌بینی نشده، کاربر را به صفحه لاگین بفرست
+      if (!mounted) return;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const WelcomeScreen()),
