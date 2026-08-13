@@ -6,7 +6,7 @@ import '../../models/auth/token.dart';
 import '../../models/common/exceptions.dart';
 
 class ApiClient {
-  static const String _baseUrl = 'http://10.0.2.2:8000/api/v1'; // Android emulator localhost
+  static const String _baseUrl = 'https://mp-project.fastapicloud.dev/api/v1'; // Android emulator localhost
 
   final Dio _dio;
   final FlutterSecureStorage _storage;
