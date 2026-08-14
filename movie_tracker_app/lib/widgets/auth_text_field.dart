@@ -30,20 +30,20 @@ class AuthTextField extends StatelessWidget {
           child: Text(
             label.toUpperCase(),
             style: const TextStyle(
-              color: Color(0xFF5AD9D9), // primary
-              fontSize: 12, // label-sm
+              color: Color(0xFF5AD9D9),
+              fontSize: 12,
               fontWeight: FontWeight.w700,
-              letterSpacing: 1.2, // tracking-widest
+              letterSpacing: 1.2,
               fontFamily: 'Manrope',
             ),
           ),
         ),
         Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF00232F).withOpacity(0.5), // surface-container/50
+            color: const Color(0xFF00232F).withOpacity(0.5),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: const Color(0xFF3C4949).withOpacity(0.3), // outline-variant/30
+              color: const Color(0xFF3C4949).withOpacity(0.3),
             ),
           ),
           child: TextField(
@@ -52,7 +52,7 @@ class AuthTextField extends StatelessWidget {
             textInputAction: textInputAction,
             maxLines: maxLines,
             style: const TextStyle(
-              color: Color(0xFFC7E7F8), // on-surface
+              color: Color(0xFFC7E7F8),
               fontSize: 16,
               fontFamily: 'Manrope',
             ),
@@ -65,7 +65,7 @@ class AuthTextField extends StatelessWidget {
                 padding: maxLines > 1 ? const EdgeInsets.only(bottom: 48.0) : EdgeInsets.zero,
                 child: Icon(
                   icon,
-                  color: const Color(0xFFBCC9C8).withOpacity(0.6), // on-surface-variant/60
+                  color: const Color(0xFFBCC9C8).withOpacity(0.6),
                 ),
               ),
               border: OutlineInputBorder(
@@ -74,7 +74,7 @@ class AuthTextField extends StatelessWidget {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: Color(0xFF5AD9D9), width: 1), // primary
+                borderSide: const BorderSide(color: Color(0xFF5AD9D9), width: 1),
               ),
               contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
             ),

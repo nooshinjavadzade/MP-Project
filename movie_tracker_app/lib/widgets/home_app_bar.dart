@@ -13,21 +13,20 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
           height: preferredSize.height,
           padding: EdgeInsets.only(
             top: MediaQuery.of(context).padding.top,
-            left: 16, // px-margin-mobile
+            left: 16,
             right: 16,
           ),
           decoration: const BoxDecoration(
-            color: Color(0xCC00161F), // bg-surface/80 (0.8 * #00161F)
+            color: Color(0xCC00161F),
             border: Border(
               bottom: BorderSide(
-                color: Color(0x33193846), // border-surface-variant/20
+                color: Color(0x33193846),
                 width: 1,
               ),
             ),
           ),
           child: Row(
             children: [
-              // آیکون گرادیانتی
               Container(
                 width: 32,
                 height: 32,
@@ -35,8 +34,8 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
                   borderRadius: BorderRadius.circular(8),
                   gradient: const LinearGradient(
                     colors: [
-                      Color(0xFFF08DA5), // coral-pink
-                      Color(0xFF6C5FA6), // lavender-shadow
+                      Color(0xFFF08DA5),
+                      Color(0xFF6C5FA6),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -49,7 +48,6 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              // متن گرادیانتی
               ShaderMask(
                 shaderCallback: (bounds) => const LinearGradient(
                   colors: [
@@ -63,7 +61,7 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
                   'TV Time',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 24, // headline-lg-mobile
+                    fontSize: 24,
                     fontWeight: FontWeight.w700,
                     fontFamily: 'Plus Jakarta Sans',
                   ),

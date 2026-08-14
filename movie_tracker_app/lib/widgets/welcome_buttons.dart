@@ -9,15 +9,14 @@ class WelcomeButtons extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // دکمه Enter App
         Container(
           width: double.infinity,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12), // rounded-xl
+            borderRadius: BorderRadius.circular(12),
             gradient: const LinearGradient(
               colors: [
-                Color(0xFFFFB1C2), // tertiary
-                Color(0xFF29B5B5), // primary-container
+                Color(0xFFFFB1C2),
+                Color(0xFF29B5B5),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -38,20 +37,20 @@ class WelcomeButtons extends StatelessWidget {
               },
               borderRadius: BorderRadius.circular(12),
               child: const Padding(
-                padding: EdgeInsets.symmetric(vertical: 16.0), // py-4
+                padding: EdgeInsets.symmetric(vertical: 16.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Enter App',
+                      'ورود به برنامه',
                       style: TextStyle(
-                        color: Color(0xFFC7E7F8), // text-on-surface
-                        fontSize: 20, // title-md
+                        color: Color(0xFFC7E7F8),
+                        fontSize: 20,
                         fontWeight: FontWeight.w600,
                         fontFamily: 'Manrope',
                       ),
                     ),
-                    SizedBox(width: 8), // gap-2
+                    SizedBox(width: 8),
                     Icon(
                       Icons.arrow_forward,
                       color: Color(0xFFC7E7F8),
@@ -64,9 +63,8 @@ class WelcomeButtons extends StatelessWidget {
           ),
         ),
         
-        const SizedBox(height: 24), // gap-md
+        const SizedBox(height: 24),
 
-        // دکمه Log In
         SizedBox(
           width: double.infinity,
           child: OutlinedButton(
@@ -77,18 +75,18 @@ class WelcomeButtons extends StatelessWidget {
               );
             },
             style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 12.0), // py-3
-              side: const BorderSide(color: Color(0xFF3C4949)), // border-outline-variant
+              padding: const EdgeInsets.symmetric(vertical: 12.0),
+              side: const BorderSide(color: Color(0xFF3C4949)),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12), // rounded-xl
+                borderRadius: BorderRadius.circular(12),
               ),
-              foregroundColor: const Color(0xFFBCC9C8), // رنگ افکت کلیک
+              foregroundColor: const Color(0xFFBCC9C8),
             ),
             child: const Text(
-              'Log In',
+              'ورود',
               style: TextStyle(
-                color: Color(0xFFBCC9C8), // text-on-surface-variant
-                fontSize: 12, // label-sm
+                color: Color(0xFFBCC9C8),
+                fontSize: 12,
                 fontWeight: FontWeight.w700,
                 fontFamily: 'Manrope',
                 letterSpacing: 0.6,

@@ -33,11 +33,10 @@ class MovieHeroSection extends StatelessWidget {
 
     return SizedBox(
       width: double.infinity,
-      height: MediaQuery.of(context).size.height * 0.75, // شبیه‌سازی h-[618px] md:h-[707px]
+      height: MediaQuery.of(context).size.height * 0.75,
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // Background Image
           if (finalBackdrop.isNotEmpty)
             Image.network(
               finalBackdrop,
@@ -47,7 +46,6 @@ class MovieHeroSection extends StatelessWidget {
           else
             Container(color: const Color(0xFF193846)),
 
-          // Gradient Overlay
           DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -63,7 +61,6 @@ class MovieHeroSection extends StatelessWidget {
             ),
           ),
 
-          // Content
           Positioned(
             bottom: 32,
             left: 16,
@@ -72,7 +69,6 @@ class MovieHeroSection extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Genres
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
@@ -82,8 +78,8 @@ class MovieHeroSection extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                       decoration: BoxDecoration(
                         color: isFirst 
-                            ? const Color(0x3329B5B5) // primary-container/20
-                            : const Color(0x336C5FA6), // lavender-shadow/20
+                            ? const Color(0x3329B5B5)
+                            : const Color(0x336C5FA6),
                         border: Border.all(
                           color: isFirst 
                               ? const Color(0x4D5AD9D9) 
@@ -105,12 +101,11 @@ class MovieHeroSection extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 
-                // Title
                 Text(
                   year.isNotEmpty ? '$title ($year)' : title,
                   style: const TextStyle(
-                    color: Color(0xFF5AD9D9), // primary
-                    fontSize: 48, // display-lg
+                    color: Color(0xFF5AD9D9),
+                    fontSize: 48,
                     fontWeight: FontWeight.w800,
                     fontFamily: 'Plus Jakarta Sans',
                     letterSpacing: -1,
@@ -124,13 +119,11 @@ class MovieHeroSection extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
 
-                // Info & Ratings
                 Wrap(
                   spacing: 12,
                   runSpacing: 12,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    // IMDb Rating
                     if (imdbRating > 0)
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -145,7 +138,7 @@ class MovieHeroSection extends StatelessWidget {
                             const Icon(Icons.star, color: Color(0xFF5AD9D9), size: 18),
                             const SizedBox(width: 6),
                             Text(
-                              'IMDb ${imdbRating.toStringAsFixed(1)}',
+                              'امتیاز IMDb ${imdbRating.toStringAsFixed(1)}',
                               style: const TextStyle(
                                 color: Color(0xFF5AD9D9),
                                 fontSize: 12,
@@ -156,7 +149,6 @@ class MovieHeroSection extends StatelessWidget {
                         ),
                       ),
                     
-                    // Users Rating
                     if (userRating > 0)
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -171,7 +163,7 @@ class MovieHeroSection extends StatelessWidget {
                             const Icon(Icons.favorite, color: Color(0xFFF08DA5), size: 18),
                             const SizedBox(width: 6),
                             Text(
-                              'Users ${userRating.toStringAsFixed(1)}',
+                              'امتیاز کاربران ${userRating.toStringAsFixed(1)}',
                               style: const TextStyle(
                                 color: Color(0xFFF08DA5),
                                 fontSize: 12,
@@ -182,7 +174,6 @@ class MovieHeroSection extends StatelessWidget {
                         ),
                       ),
 
-                    // Country & Duration
                     if (country.isNotEmpty || duration.isNotEmpty)
                       Text(
                         [if (country.isNotEmpty) country, if (duration.isNotEmpty) duration].join(' • '),

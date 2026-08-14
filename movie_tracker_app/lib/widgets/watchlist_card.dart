@@ -9,17 +9,14 @@ class WatchlistCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Determine status from the model, default to planToWatch
     final status = WatchStatus.planToWatch; 
     final progressVal = 0.0; 
     
-    // Fallback UI for media details since ProgressModel only has mediaId
-    final String title = item.media.title ?? 'Unknown Title';
-    final String subtitle = 'Added on: ${item.addedAt.year}-${item.addedAt.month.toString().padLeft(2, '0')}-${item.addedAt.day.toString().padLeft(2, '0')}';
+    final String title = item.media.title ?? 'عنوان ناشناخته';
+    final String subtitle = 'افزوده شده در: ${item.addedAt.year}-${item.addedAt.month.toString().padLeft(2, '0')}-${item.addedAt.day.toString().padLeft(2, '0')}';
     
-    // Using a placeholder image for now, ideally item.media has a posterPath
     final String imageUrl = 'https://via.placeholder.com/150'; 
-    final String progressLabel = status == WatchStatus.watching ? 'Watching' : 'Status: ${status.value}';
+    final String progressLabel = status == WatchStatus.watching ? 'در حال تماشا' : 'وضعیت: ${status.value}';
 
     return Container(
       decoration: BoxDecoration(
@@ -33,7 +30,6 @@ class WatchlistCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Image Section
           Expanded(
             child: Stack(
               fit: StackFit.expand,
@@ -46,7 +42,6 @@ class WatchlistCard extends StatelessWidget {
                     child: const Icon(Icons.broken_image, color: Colors.white30, size: 40),
                   ),
                 ),
-                // Gradient Overlay
                 Positioned.fill(
                   child: DecoratedBox(
                     decoration: BoxDecoration(
@@ -62,7 +57,6 @@ class WatchlistCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                // Favorite Icon
                 if (status == WatchStatus.loved)
                   Positioned(
                     top: 12,
@@ -80,7 +74,6 @@ class WatchlistCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                // Tag
                 if (status == WatchStatus.completed)
                   Positioned(
                     top: 12,
@@ -92,7 +85,7 @@ class WatchlistCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: const Text(
-                        'COMPLETED',
+                        'تکمیل شده',
                         style: TextStyle(
                           fontFamily: 'Manrope',
                           fontSize: 8,
@@ -105,7 +98,6 @@ class WatchlistCard extends StatelessWidget {
               ],
             ),
           ),
-          // Info Section
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -135,7 +127,6 @@ class WatchlistCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 
-                // Progress Section
                 if (status != WatchStatus.planToWatch) ...[
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -200,14 +191,14 @@ class WatchlistCard extends StatelessWidget {
   Color _getProgressColor(WatchStatus status) {
     switch (status) {
       case WatchStatus.loved:
-        return const Color(0xFF29B5B5); // Green/Teal 
+        return const Color(0xFF29B5B5);
       case WatchStatus.completed:
-        return const Color(0xFFCBBEFF); // Purple 
+        return const Color(0xFFCBBEFF);
       case WatchStatus.dropped:
       case WatchStatus.onHold:
-        return const Color(0xFFFFB4AB); // Red 
+        return const Color(0xFFFFB4AB);
       case WatchStatus.watching:
-        return const Color(0xFFE8879F); // Yellow/Amber map to pink
+        return const Color(0xFFE8879F);
       case WatchStatus.planToWatch:
       default:
         return Colors.transparent; 

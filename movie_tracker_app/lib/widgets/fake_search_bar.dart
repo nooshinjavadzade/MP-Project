@@ -9,19 +9,19 @@ class FakeSearchBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0), // px-margin-mobile
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: GestureDetector(
         onTap: onTap,
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(12), // rounded-xl
+          borderRadius: BorderRadius.circular(12),
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: const Color(0x66193846), // rgba(25, 56, 70, 0.4) - glass-card
+                color: const Color(0x66193846),
                 border: Border.all(
-                  color: const Color(0x1AF08DA5), // rgba(240, 141, 165, 0.1)
+                  color: const Color(0x1AF08DA5),
                 ),
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -29,14 +29,14 @@ class FakeSearchBar extends StatelessWidget {
                 children: [
                   const Icon(
                     Icons.search,
-                    color: Color(0xFF6C5FA6), // text-lavender-shadow
+                    color: Color(0xFF6C5FA6),
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    'Search movies, series...',
+                    'جستجوی فیلم، سریال...',
                     style: TextStyle(
-                      color: const Color(0xFFBCC9C8).withOpacity(0.5), // placeholder:text-on-surface-variant/50
-                      fontSize: 16, // font-body-md
+                      color: const Color(0xFFBCC9C8).withOpacity(0.5),
+                      fontSize: 16,
                       fontFamily: 'Manrope',
                     ),
                   ),

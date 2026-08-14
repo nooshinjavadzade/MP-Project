@@ -18,7 +18,7 @@ class BackgroundGlows extends StatelessWidget {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF5AD9D9).withOpacity(0.05), // primary/5
+                  color: const Color(0xFF5AD9D9).withOpacity(0.05),
                   blurRadius: 120,
                   spreadRadius: 20,
                 ),
@@ -36,7 +36,7 @@ class BackgroundGlows extends StatelessWidget {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFFFFB1C2).withOpacity(0.05), // tertiary/5
+                  color: const Color(0xFFFFB1C2).withOpacity(0.05),
                   blurRadius: 150,
                   spreadRadius: 20,
                 ),

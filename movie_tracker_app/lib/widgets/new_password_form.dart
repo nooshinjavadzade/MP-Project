@@ -31,14 +31,14 @@ class _NewPasswordFormState extends State<NewPasswordForm> {
 
     if (newPassword.isEmpty || confirmPassword.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill in both fields.')),
+        const SnackBar(content: Text('لطفاً هر دو فیلد را پر کنید.')),
       );
       return;
     }
 
     if (newPassword != confirmPassword) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Passwords do not match.')),
+        const SnackBar(content: Text('رمزهای عبور مطابقت ندارند.')),
       );
       return;
     }
@@ -60,9 +60,8 @@ class _NewPasswordFormState extends State<NewPasswordForm> {
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Password reset successfully! Please login.')),
+          const SnackBar(content: Text('رمز عبور با موفقیت بازنشانی شد! لطفاً وارد شوید.')),
         );
-        // بازگشت به صفحه لاگین با پاک کردن صفحات قبلی
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const LoginScreen()),
@@ -77,14 +76,14 @@ class _NewPasswordFormState extends State<NewPasswordForm> {
     return Column(
       children: [
         AuthPasswordField(
-          label: 'New Password',
+          label: 'رمز عبور جدید',
           hint: '••••••••',
           icon: Icons.lock_outline,
           controller: _newPasswordController,
         ),
         const SizedBox(height: 24),
         AuthPasswordField(
-          label: 'Confirm Password',
+          label: 'تأیید رمز عبور',
           hint: '••••••••',
           icon: Icons.lock_clock_outlined,
           controller: _confirmPasswordController,
@@ -99,7 +98,7 @@ class _NewPasswordFormState extends State<NewPasswordForm> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
                 gradient: const LinearGradient(
-                  colors: [Color(0xFFE8879F), Color(0xFF681F36)], // btn-glow
+                  colors: [Color(0xFFE8879F), Color(0xFF681F36)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -130,7 +129,7 @@ class _NewPasswordFormState extends State<NewPasswordForm> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                'Reset & Login',
+                                'بازنشانی و ورود',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 20,

@@ -15,7 +15,7 @@ class WatchlistScreen extends StatefulWidget {
 
 class _WatchlistScreenState extends State<WatchlistScreen> {
   int _selectedTabIndex = 0;
-  final List<String> _tabs = ['Watching', 'Watched', 'Will watch', 'Favorites'];
+  final List<String> _tabs = ['در حال تماشا', 'تماشا شده', 'خواهم دید', 'علاقه‌مندی‌ها'];
 
   @override
   void initState() {
@@ -34,7 +34,6 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
       builder: (context, authPresenter, _) {
         final user = authPresenter.authResponse?.user;
 
-        // GUEST VIEW
         if (user == null) {
           return Scaffold(
             backgroundColor: const Color(0xFF00161F),
@@ -53,7 +52,7 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
                 child: const Text(
-                  'Log In to View Watchlist',
+                  'برای مشاهده لیست تماشا وارد شوید',
                   style: TextStyle(
                     fontFamily: 'Plus Jakarta Sans',
                     fontSize: 16,
@@ -65,7 +64,6 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
           );
         }
 
-        // LOGGED IN USER VIEW
         return Scaffold(
           backgroundColor: const Color(0xFF00161F),
           body: Consumer<InteractionsPresenter>(
@@ -76,7 +74,6 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
               if (selectedList != null) {
                 items = selectedList.items;
               } else if (interactionsPresenter.userLists.isNotEmpty && !interactionsPresenter.isLoading) {
-                // Auto-load first list if lists are loaded but none selected
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                    context.read<InteractionsPresenter>().getListWithItems(interactionsPresenter.userLists.first.id);
                 });
@@ -86,7 +83,6 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
 
               return CustomScrollView(
                 slivers: [
-                  // Top App Bar
                   SliverAppBar(
                     backgroundColor: const Color(0xFF00161F).withOpacity(0.6),
                     pinned: true,
@@ -102,12 +98,10 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                       ),
                     ),
                   ),
-                  // Body Content
                   SliverPadding(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
                     sliver: SliverList(
                       delegate: SliverChildListDelegate([
-                        // Tabs
                         SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           child: Row(
@@ -138,7 +132,7 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                                           : null,
                                     ),
                                     child: Text(
-                                      title.toLowerCase(),
+                                      title,
                                       style: TextStyle(
                                         fontFamily: 'Manrope',
                                         fontSize: 12,
@@ -154,7 +148,6 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                         ),
                         const SizedBox(height: 24),
                         
-                        // Header Section
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           crossAxisAlignment: CrossAxisAlignment.end,
@@ -163,7 +156,7 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'MY COLLECTION',
+                                  'مجموعه من',
                                   style: TextStyle(
                                     fontFamily: 'Manrope',
                                     fontSize: 12,
@@ -176,7 +169,7 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                                 Row(
                                   children: [
                                     const Text(
-                                      'Watchlist',
+                                      'لیست تماشا',
                                       style: TextStyle(
                                         fontFamily: 'Plus Jakarta Sans',
                                         fontSize: 24,
@@ -226,7 +219,7 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                             padding: EdgeInsets.all(32.0),
                             child: Center(
                               child: Text(
-                                'No items found in your watchlist.',
+                                'هیچ آیتمی در لیست تماشای شما یافت نشد.',
                                 style: TextStyle(
                                   fontFamily: 'Manrope',
                                   color: Color(0xFFBCC9C8),

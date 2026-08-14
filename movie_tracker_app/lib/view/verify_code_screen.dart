@@ -51,7 +51,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter the full 4-digit code.')),
+        const SnackBar(content: Text('لطفاً کد کامل ۴ رقمی را وارد کنید.')),
       );
     }
   }
@@ -71,7 +71,6 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
       extendBodyBehindAppBar: true,
       body: Stack(
         children: [
-          // Background Gradient/Orbs
           Positioned(
             top: -100,
             left: -100,
@@ -98,7 +97,6 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // App Logo & Branding
                       Container(
                         padding: const EdgeInsets.all(4.0),
                         decoration: BoxDecoration(
@@ -125,7 +123,6 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                       ),
                       const SizedBox(height: 64),
 
-                      // Verification Card
                       ClipRRect(
                         borderRadius: BorderRadius.circular(12),
                         child: BackdropFilter(
@@ -142,7 +139,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                             child: Column(
                               children: [
                                 const Text(
-                                  'Verify your identity',
+                                  'تأیید هویت شما',
                                   style: TextStyle(
                                     fontSize: 24,
                                     fontWeight: FontWeight.w600,
@@ -152,17 +149,16 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                                 ),
                                 const SizedBox(height: 8),
                                 const Text(
-                                  'Enter the 4-digit code sent to your email',
+                                  'کد ۴ رقمی ارسال‌شده به ایمیل خود را وارد کنید',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize: 16,
-                                    color: Color(0xFFBCC9C8), // on-surface-variant
+                                    color: Color(0xFFBCC9C8),
                                     fontFamily: 'Manrope',
                                   ),
                                 ),
                                 const SizedBox(height: 40),
                                 
-                                // OTP Inputs
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: List.generate(4, (index) {
@@ -203,7 +199,6 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                                 ),
                                 const SizedBox(height: 40),
                                 
-                                // Submit Button
                                 SizedBox(
                                   width: double.infinity,
                                   height: 56,
@@ -211,7 +206,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                                     onPressed: _handleVerify,
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: const Color(0xFFF08DA5),
-                                      foregroundColor: const Color(0xFF5B152D), // on-tertiary
+                                      foregroundColor: const Color(0xFF5B152D),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(12),
                                       ),
@@ -222,9 +217,9 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
                                         Text(
-                                          'Verify & Proceed',
+                                          'تأیید و ادامه',
                                           style: TextStyle(
-                                            fontSize: 20, // title-md
+                                            fontSize: 20,
                                             fontWeight: FontWeight.w600,
                                             fontFamily: 'Manrope',
                                           ),

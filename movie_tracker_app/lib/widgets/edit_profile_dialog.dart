@@ -47,10 +47,10 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
             constraints: const BoxConstraints(maxWidth: 400),
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: const Color(0xFF0C2E3B).withOpacity(0.8), // surface-container-high
+              color: const Color(0xFF0C2E3B).withOpacity(0.8),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: const Color(0xFFF08DA5).withOpacity(0.3), // coral-pink/30
+                color: const Color(0xFFF08DA5).withOpacity(0.3),
               ),
             ),
             child: SingleChildScrollView(
@@ -59,27 +59,26 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Edit Profile Settings',
+                    'تنظیمات ویرایش پروفایل',
                     style: TextStyle(
                       fontFamily: 'Manrope',
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF8DE6E3), // seafoam-mist
+                      color: Color(0xFF8DE6E3),
                     ),
                   ),
                   const SizedBox(height: 24),
-                  _buildTextField('Full Name', _nameController),
+                  _buildTextField('نام کامل', _nameController),
                   const SizedBox(height: 16),
-                  _buildTextField('Email Address', _emailController),
+                  _buildTextField('آدرس ایمیل', _emailController),
                   const SizedBox(height: 16),
-                  _buildTextField('Bio', _bioController, maxLines: 3),
+                  _buildTextField('بیوگرافی', _bioController, maxLines: 3),
                   const SizedBox(height: 16),
                   
-                  // Internal Biometric Toggle in Dialog
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF00232F), // surface-container
+                      color: const Color(0xFF00232F),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
@@ -89,7 +88,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Biometric Authentication',
+                              'احراز هویت بیومتریک',
                               style: TextStyle(
                                 fontFamily: 'Manrope',
                                 fontSize: 10,
@@ -99,7 +98,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                               ),
                             ),
                             Text(
-                              'Enable Biometric Login',
+                              'فعال‌سازی ورود با بیومتریک',
                               style: TextStyle(
                                 fontFamily: 'Manrope',
                                 fontSize: 16,
@@ -130,7 +129,6 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                     height: 48,
                     child: ElevatedButton(
                       onPressed: () {
-                        // TODO: Save logic
                         Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
@@ -142,7 +140,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                         elevation: 4,
                       ),
                       child: const Text(
-                        'Save Changes',
+                        'ذخیره تغییرات',
                         style: TextStyle(
                           fontFamily: 'Manrope',
                           fontSize: 16,
@@ -161,7 +159,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                         foregroundColor: const Color(0xFFBCC9C8),
                       ),
                       child: const Text(
-                        'Discard Changes',
+                        'لغو تغییرات',
                         style: TextStyle(
                           fontFamily: 'Manrope',
                           fontSize: 14,
@@ -204,7 +202,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
           ),
           decoration: InputDecoration(
             filled: true,
-            fillColor: const Color(0xFF00232F), // surface-container
+            fillColor: const Color(0xFF00232F),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide.none,

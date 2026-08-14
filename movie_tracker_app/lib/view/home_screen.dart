@@ -31,12 +31,10 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _currentNavIndex = widget.initialIndex;
     
-    // فراخوانی متدهای پرزنتر بلافاصله پس از بیلد اولیه
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final presenter = context.read<MediaPresenter>();
       presenter.getPopularMovies();
       presenter.getPopularSeries();
-      // به عنوان New Releases از ترندینگ استفاده میکنیم
       presenter.getTrending(timeWindow: 'week');
     });
   }
@@ -50,9 +48,9 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF00161F), // bg-background
+      backgroundColor: const Color(0xFF00161F),
       extendBodyBehindAppBar: true,
-      extendBody: true, // برای اینکه لیست زیر باتم نوبار برود (pb-safe)
+      extendBody: true,
       appBar: _currentNavIndex == 0 ? const HomeAppBar() : null,
       body: IndexedStack(
         index: _currentNavIndex,
@@ -74,23 +72,21 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (context, presenter, child) {
         return SingleChildScrollView(
           padding: const EdgeInsets.only(
-            top: kToolbarHeight + 32, // فاصله از اپبار
-            bottom: 100, // pb-24 padding for bottom nav
+            top: kToolbarHeight + 32,
+            bottom: 100,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // سرچ بار
               FakeSearchBar(
                 onTap: () {
                   Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SearchScreen()));
                 },
               ),
-              const SizedBox(height: 32), // space-y-8
+              const SizedBox(height: 32),
               
-              // Popular Movies
               HorizontalMediaList(
-                title: 'Popular Movies',
+                title: 'فیلم‌های محبوب',
                 items: presenter.popularMovies,
                 isLoading: presenter.isLoading && presenter.popularMovies.isEmpty,
                 onMoreTap: () {
@@ -107,9 +103,8 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 32),
               
-              // Popular Series
               HorizontalMediaList(
-                title: 'Popular Series',
+                title: 'سریال‌های محبوب',
                 items: presenter.popularSeries,
                 isLoading: presenter.isLoading && presenter.popularSeries.isEmpty,
                 onMoreTap: () {
@@ -122,9 +117,8 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 32),
               
-              // New Releases (Trending)
               HorizontalMediaList(
-                title: 'New Releases',
+                title: 'آخرین انتشارها',
                 items: presenter.trendingItems,
                 isLoading: presenter.isLoading && presenter.trendingItems.isEmpty,
                 onMoreTap: () {

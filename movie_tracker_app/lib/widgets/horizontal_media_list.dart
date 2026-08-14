@@ -23,17 +23,16 @@ class HorizontalMediaList extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // هدر لیست (عنوان و دکمه More)
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0), // px-margin-mobile
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 title,
                 style: const TextStyle(
-                  color: Color(0xFFC7E7F8), // text-on-surface
-                  fontSize: 20, // text-title-md
+                  color: Color(0xFFC7E7F8),
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Manrope',
                 ),
@@ -43,9 +42,9 @@ class HorizontalMediaList extends StatelessWidget {
                 child: Row(
                   children: [
                     const Text(
-                      'More',
+                      'بیشتر',
                       style: TextStyle(
-                        color: Color(0xFFF08DA5), // text-coral-pink
+                        color: Color(0xFFF08DA5),
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                       ),
@@ -61,18 +60,17 @@ class HorizontalMediaList extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 16), // space-y-4
+        const SizedBox(height: 16),
         
-        // لیست افقی
         SizedBox(
-          height: 240, // محاسبه تقریبی با توجه به aspect ratio و متن زیرش
+          height: 240,
           child: isLoading 
             ? const Center(child: CircularProgressIndicator(color: Color(0xFFF08DA5)))
             : items.isEmpty
-              ? const Center(child: Text('No data found.', style: TextStyle(color: Colors.white54)))
+              ? const Center(child: Text('داده‌ای یافت نشد.', style: TextStyle(color: Colors.white54)))
               : ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.only(left: 16.0), // padding اولیه
+                  padding: const EdgeInsets.only(left: 16.0),
                   itemCount: items.length,
                   itemBuilder: (context, index) {
                     final media = items[index];

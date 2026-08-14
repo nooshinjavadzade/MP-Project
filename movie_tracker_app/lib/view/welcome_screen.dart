@@ -9,27 +9,24 @@ class WelcomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF00161F), // bg-background
+      backgroundColor: const Color(0xFF00161F),
       body: Stack(
         children: [
-          // پس‌زمینه محو و افکت‌های نوری
           const WelcomeBackground(),
           
           SafeArea(
             child: Center(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0), // px-margin-mobile
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 448), // max-w-md
+                  constraints: const BoxConstraints(maxWidth: 448),
                   child: const Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // بخش لوگو و عنوان برنامه
                       WelcomeLogo(),
                       
-                      SizedBox(height: 64), // mb-xl
+                      SizedBox(height: 64),
                       
-                      // دکمه‌های ورود به برنامه و لاگین
                       WelcomeButtons(),
                     ],
                   ),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
 
-// یک مدل ساده برای کستینگ چون ممکنه ساختار دقیق رو نداشته باشیم
 class CastMember {
   final String name;
   final String role;
@@ -27,7 +26,7 @@ class MovieCastCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (cast.isEmpty) {
-      return const SizedBox.shrink(); // نمایش هیچ چیزی در صورت خالی بودن لیست
+      return const SizedBox.shrink();
     }
 
     return ClipRRect(
@@ -45,7 +44,7 @@ class MovieCastCard extends StatelessWidget {
             decoration: const BoxDecoration(
               border: Border(
                 left: BorderSide(
-                  color: Color(0xFFF08DA5), // coral-pink
+                  color: Color(0xFFF08DA5),
                   width: 4,
                 ),
               ),
@@ -55,7 +54,7 @@ class MovieCastCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Main Cast',
+                  'بازیگران اصلی',
                   style: TextStyle(
                     color: Color(0xFFF08DA5),
                     fontSize: 20,

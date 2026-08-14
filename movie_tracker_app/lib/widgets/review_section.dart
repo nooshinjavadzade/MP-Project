@@ -56,7 +56,7 @@ class _ReviewSectionState extends State<ReviewSection> {
       
       _reviewController.clear();
       setState(() => _rating = 0);
-      await _loadReviews(); // Reload after submission
+      await _loadReviews();
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -85,7 +85,7 @@ class _ReviewSectionState extends State<ReviewSection> {
         padding: EdgeInsets.symmetric(vertical: 24.0),
         child: Center(
           child: Text(
-            'No reviews yet. Be the first to review!',
+            'هنوز نظری ثبت نشده. اولین نفر باشید!',
             style: TextStyle(color: Color(0xFFBCC9C8), fontFamily: 'Manrope'),
           ),
         ),
@@ -95,7 +95,6 @@ class _ReviewSectionState extends State<ReviewSection> {
     return Column(
       children: reviews.map((reviewObj) {
         final dynamic review = reviewObj;
-        // Using dynamic to gracefully handle the model fields without strict compile-time coupling
         final String authorName = review.user?.username ?? review.user?.name ?? 'User';
         final String content = review.review ?? '';
         final bool isSpoiler = review.containsSpoiler ?? false;
@@ -104,7 +103,7 @@ class _ReviewSectionState extends State<ReviewSection> {
           padding: const EdgeInsets.only(bottom: 16.0, top: 16.0),
           decoration: const BoxDecoration(
             border: Border(
-              bottom: BorderSide(color: Color(0x333C4949)), // outline-variant/20
+              bottom: BorderSide(color: Color(0x333C4949)),
             ),
           ),
           child: Column(
@@ -133,7 +132,7 @@ class _ReviewSectionState extends State<ReviewSection> {
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: const Text(
-                            'SPOILER',
+                            'اسپویلر',
                             style: TextStyle(
                               color: Color(0xFFF08DA5),
                               fontSize: 10,
@@ -175,7 +174,7 @@ class _ReviewSectionState extends State<ReviewSection> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Reviews & Rating',
+          'نظرات و امتیازات',
           style: TextStyle(
             color: Colors.white,
             fontSize: 20,
@@ -185,13 +184,12 @@ class _ReviewSectionState extends State<ReviewSection> {
         ),
         const SizedBox(height: 16),
         
-        // Input Card
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: const Color(0x9900232F), // surface-container/60 glass card
+            color: const Color(0x9900232F),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0x4D3C4949)), // outline-variant/30
+            border: Border.all(color: const Color(0x4D3C4949)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -199,7 +197,7 @@ class _ReviewSectionState extends State<ReviewSection> {
               Row(
                 children: [
                   const Text(
-                    'Rate this show:',
+                    'به این اثر امتیاز دهید:',
                     style: TextStyle(
                       color: Color(0xFFBCC9C8),
                       fontSize: 12,
@@ -216,7 +214,7 @@ class _ReviewSectionState extends State<ReviewSection> {
               const SizedBox(height: 16),
               Container(
                 decoration: BoxDecoration(
-                  color: const Color(0x66001F2A), // surface-container-low/40
+                  color: const Color(0x66001F2A),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: const Color(0x4D3C4949)),
                 ),
@@ -225,7 +223,7 @@ class _ReviewSectionState extends State<ReviewSection> {
                   maxLines: 4,
                   style: const TextStyle(color: Color(0xFFC7E7F8), fontFamily: 'Manrope'),
                   decoration: InputDecoration(
-                    hintText: 'Write a review...',
+                    hintText: 'نظر خود را بنویسید...',
                     hintStyle: TextStyle(
                       color: const Color(0xFFBCC9C8).withOpacity(0.5),
                     ),
@@ -240,8 +238,8 @@ class _ReviewSectionState extends State<ReviewSection> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _submitReview,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFF08DA5), // tertiary
-                    foregroundColor: const Color(0xFF3F0018), // on-tertiary
+                    backgroundColor: const Color(0xFFF08DA5),
+                    foregroundColor: const Color(0xFF3F0018),
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(9999),
@@ -258,7 +256,7 @@ class _ReviewSectionState extends State<ReviewSection> {
                           ),
                         )
                       : const Text(
-                          'POST REVIEW',
+                          'ارسال نظر',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
@@ -273,7 +271,6 @@ class _ReviewSectionState extends State<ReviewSection> {
         ),
         const SizedBox(height: 24),
         
-        // List of Reviews
         Consumer<MediaPresenter>(
           builder: (context, presenter, _) {
             if (presenter.isLoading) {

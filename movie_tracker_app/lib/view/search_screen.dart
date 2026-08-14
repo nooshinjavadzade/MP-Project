@@ -16,8 +16,8 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
-  String _selectedFilter = 'All';
-  final List<String> _filters = ['All', 'Name', 'Year', 'Director', 'Actor', 'Genre'];
+  String _selectedFilter = 'همه';
+  final List<String> _filters = ['همه', 'نام', 'سال', 'کارگردان', 'بازیگر', 'ژانر'];
   int _currentNavIndex = 0;
 
   @override
@@ -36,13 +36,12 @@ class _SearchScreenState extends State<SearchScreen> {
     setState(() {
       _currentNavIndex = index;
     });
-    // TODO: Handle bottom nav navigation
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0B2D3A), // custom bg from HTML inline style
+      backgroundColor: const Color(0xFF0B2D3A),
       extendBodyBehindAppBar: true,
       extendBody: true,
       appBar: PreferredSize(
@@ -51,7 +50,7 @@ class _SearchScreenState extends State<SearchScreen> {
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
             child: AppBar(
-              backgroundColor: const Color(0xCC00161F), // surface/80
+              backgroundColor: const Color(0xCC00161F),
               elevation: 0,
               centerTitle: true,
               leading: IconButton(
@@ -62,10 +61,10 @@ class _SearchScreenState extends State<SearchScreen> {
                 'TV Time',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 24, // headline-lg-mobile
+                  fontSize: 24,
                   fontWeight: FontWeight.w600,
                   fontFamily: 'Plus Jakarta Sans',
-                  letterSpacing: -0.5, // tracking-tighter
+                  letterSpacing: -0.5,
                 ),
               ),
               bottom: PreferredSize(
@@ -90,10 +89,9 @@ class _SearchScreenState extends State<SearchScreen> {
                 children: [
                   const SizedBox(height: 16),
                   
-                  // Search Input
                   Container(
                     decoration: BoxDecoration(
-                      color: const Color(0x330F5F66), // glass-card equivalent bg
+                      color: const Color(0x330F5F66),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: Colors.white.withOpacity(0.1)),
                     ),
@@ -107,7 +105,7 @@ class _SearchScreenState extends State<SearchScreen> {
                         fontWeight: FontWeight.w600,
                       ),
                       decoration: InputDecoration(
-                        hintText: 'Search by title...',
+                        hintText: 'جستجو بر اساس عنوان...',
                         hintStyle: TextStyle(
                           color: const Color(0xFFBCC9C8).withOpacity(0.5),
                         ),
@@ -122,7 +120,6 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
                   const SizedBox(height: 16),
                   
-                  // Filter Chips
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
@@ -140,8 +137,8 @@ class _SearchScreenState extends State<SearchScreen> {
                               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                               decoration: BoxDecoration(
                                 color: isSelected 
-                                    ? const Color(0xFFF08DA5) // coral-pink 
-                                    : const Color(0xFF193846).withOpacity(0.4), // surface-variant/40
+                                    ? const Color(0xFFF08DA5)
+                                    : const Color(0xFF193846).withOpacity(0.4),
                                 borderRadius: BorderRadius.circular(9999),
                                 border: Border.all(
                                   color: isSelected 
@@ -172,7 +169,6 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
                   const SizedBox(height: 24),
                   
-                  // Recent Searches / Results
                   Expanded(
                     child: Consumer<MediaPresenter>(
                       builder: (context, presenter, child) {
@@ -183,7 +179,6 @@ class _SearchScreenState extends State<SearchScreen> {
                         }
                         
                         if (_searchController.text.isEmpty) {
-                          // Show Recent Searches Placeholder
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -191,7 +186,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   const Text(
-                                    'Recent Searches',
+                                    'جستجوهای اخیر',
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontSize: 16,
@@ -202,7 +197,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                   TextButton(
                                     onPressed: () {},
                                     child: const Text(
-                                      'Clear All',
+                                      'پاک کردن همه',
                                       style: TextStyle(
                                         color: Color(0xFFF08DA5),
                                         fontSize: 12,
@@ -212,7 +207,6 @@ class _SearchScreenState extends State<SearchScreen> {
                                   ),
                                 ],
                               ),
-                              // (Empty list placeholder)
                             ],
                           );
                         }
@@ -222,7 +216,7 @@ class _SearchScreenState extends State<SearchScreen> {
                         if (results.isEmpty) {
                           return const Center(
                             child: Text(
-                              'No results found.',
+                              'هیچ نتیجه‌ای یافت نشد.',
                               style: TextStyle(color: Colors.white54),
                             ),
                           );

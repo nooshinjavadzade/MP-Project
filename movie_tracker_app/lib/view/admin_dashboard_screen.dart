@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'manage_cache_screen.dart';
 import 'manage_reports_screen.dart';
 import 'manage_reviews_screen.dart';
+import 'admin_users_screen.dart';
 
 class AdminDashboardScreen extends StatelessWidget {
   const AdminDashboardScreen({super.key});
@@ -18,7 +19,7 @@ class AdminDashboardScreen extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'Admin Dashboard',
+          'داشبورد مدیریت',  // ✅ ترجمه شده
           style: TextStyle(
             fontFamily: 'Plus Jakarta Sans',
             fontSize: 20,
@@ -32,18 +33,18 @@ class AdminDashboardScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
         children: [
           _AdminCard(
-            title: 'Users',
-            subtitle: 'Manage user accounts and permissions',
+            title: 'کاربران',  // ✅ ترجمه شده
+            subtitle: 'مدیریت حساب‌های کاربری و دسترسی‌ها',  // ✅ ترجمه شده
             icon: Icons.group,
             iconColor: const Color(0xFF29B5B5),
             onTap: () {
-              // TODO: Navigate to Users Management
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminUsersScreen()));
             },
           ),
           const SizedBox(height: 16),
           _AdminCard(
-            title: 'Cache Media',
-            subtitle: 'Update titles, metadata, and posters',
+            title: 'مدیریت محتوای کش',  // ✅ ترجمه شده
+            subtitle: 'بروزرسانی عنوان‌ها، متادیتا و پوسترها',  // ✅ ترجمه شده
             icon: Icons.movie,
             iconColor: const Color(0xFFF08DA5),
             onTap: () {
@@ -55,8 +56,8 @@ class AdminDashboardScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           _AdminCard(
-            title: 'Reports',
-            subtitle: 'View analytics and user activity logs',
+            title: 'گزارش‌ها',  // ✅ ترجمه شده
+            subtitle: 'مشاهده تحلیل‌ها و لاگ‌های فعالیت کاربران',  // ✅ ترجمه شده
             icon: Icons.analytics,
             iconColor: const Color(0xFFF08DA5),
             onTap: () {
@@ -68,8 +69,8 @@ class AdminDashboardScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           _AdminCard(
-            title: 'Reviews',
-            subtitle: 'Moderate user comments and ratings',
+            title: 'نقد و بررسی‌ها',  // ✅ ترجمه شده
+            subtitle: 'مدیریت نظرات و امتیازات کاربران',  // ✅ ترجمه شده
             icon: Icons.rate_review,
             iconColor: const Color(0xFF29B5B5),
             onTap: () {
@@ -108,10 +109,10 @@ class _AdminCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: const Color(0xFF00232F).withOpacity(0.6), // surface-container
+          color: const Color(0xFF00232F).withOpacity(0.6),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: const Color(0xFF29B5B5).withOpacity(0.2), // primary border
+            color: const Color(0xFF29B5B5).withOpacity(0.2),
           ),
         ),
         child: Row(
