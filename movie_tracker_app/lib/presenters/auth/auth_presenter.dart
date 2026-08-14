@@ -20,7 +20,9 @@ class AuthPresenter extends ChangeNotifier implements IAuthPresenter {
         LocalStorageService? localStorageService,
         BiometricService? biometricService,
       })  : _localStorageService = localStorageService ?? LocalStorageService(),
-        _biometricService = biometricService ?? BiometricService();
+        _biometricService = biometricService ?? BiometricService() {
+    loadBiometricStatus();
+  }
 
   @override
   bool get isLoading => _isLoading;
@@ -34,12 +36,21 @@ class AuthPresenter extends ChangeNotifier implements IAuthPresenter {
   @override
   bool get isBiometricEnabled => _isBiometricEnabled;
 
+  Future<void> _cacheSession(AuthResponse response) async {
+    await _localStorageService.saveAuthToken(response.tokens.accessToken);
+    await _localStorageService.saveRefreshToken(response.tokens.refreshToken);
+    await _localStorageService.saveLoginTimestamp();
+    await _localStorageService.saveAuthUser(response.user);
+  }
+
   @override
   Future<void> login(String email, String password) async {
     _setLoading(true);
     try {
       final request = LoginRequest(email: email, password: password);
-      _authResponse = await _authService.login(request);
+      final response = await _authService.login(request);
+      await _cacheSession(response);
+      _authResponse = response;
       _errorMessage = null;
     } catch (e) {
       _errorMessage = e.toString();
@@ -49,7 +60,12 @@ class AuthPresenter extends ChangeNotifier implements IAuthPresenter {
   }
 
   @override
-  Future<void> register(String username, String email, String password, {String? fullName}) async {
+  Future<void> register(
+      String username,
+      String email,
+      String password, {
+        String? fullName,
+      }) async {
     _setLoading(true);
     try {
       final request = RegisterRequest(
@@ -58,7 +74,9 @@ class AuthPresenter extends ChangeNotifier implements IAuthPresenter {
         password: password,
         fullName: fullName,
       );
-      _authResponse = await _authService.register(request);
+      final response = await _authService.register(request);
+      await _cacheSession(response);
+      _authResponse = response;
       _errorMessage = null;
     } catch (e) {
       _errorMessage = e.toString();
@@ -101,7 +119,9 @@ class AuthPresenter extends ChangeNotifier implements IAuthPresenter {
     _setLoading(true);
     try {
       final request = VerifyEmailConfirm(otp: otp);
-      _authResponse = await _authService.confirmEmailVerification(request);
+      final response = await _authService.confirmEmailVerification(request);
+      await _cacheSession(response);
+      _authResponse = response;
       _errorMessage = null;
     } catch (e) {
       _errorMessage = e.toString();
@@ -138,7 +158,9 @@ class AuthPresenter extends ChangeNotifier implements IAuthPresenter {
         newPassword: newPassword,
         confirmPassword: confirmPassword,
       );
-      _authResponse = await _authService.confirmPasswordReset(request);
+      final response = await _authService.confirmPasswordReset(request);
+      await _cacheSession(response);
+      _authResponse = response;
       _errorMessage = null;
     } catch (e) {
       _errorMessage = e.toString();
@@ -152,12 +174,12 @@ class AuthPresenter extends ChangeNotifier implements IAuthPresenter {
     _setLoading(true);
     try {
       await _authService.logout();
-      await _localStorageService.clearSessionData();
-      _authResponse = null;
       _errorMessage = null;
     } catch (e) {
       _errorMessage = e.toString();
     } finally {
+      await _localStorageService.clearSessionData();
+      _authResponse = null;
       _setLoading(false);
     }
   }
@@ -172,11 +194,37 @@ class AuthPresenter extends ChangeNotifier implements IAuthPresenter {
         return false;
       }
 
+      final token = await _localStorageService.getAuthToken();
+      if (token == null || token.isEmpty) {
+        await logout();
+        return false;
+      }
+
+      final refreshToken = await _localStorageService.getRefreshToken();
+
+      final cachedUser = _localStorageService.getAuthUser();
+      if (cachedUser == null) {
+        await logout();
+        return false;
+      }
+
       final isBiometricOn = await _localStorageService.isBiometricEnabled();
       if (isBiometricOn) {
         final authenticated = await _biometricService.authenticate();
-        return authenticated;
+        if (!authenticated) {
+          _setLoading(false);
+          return false;
+        }
       }
+
+      _authResponse = AuthResponse(
+        tokens: Token(
+          accessToken: token,
+          refreshToken: refreshToken ?? '',
+        ),
+        user: cachedUser,
+      );
+      notifyListeners();
 
       return true;
     } catch (e) {

@@ -1,11 +1,16 @@
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
+import 'local_storage_service.dart';
 
 class BiometricService {
   final LocalAuthentication _auth;
+  final LocalStorageService _localStorageService;
 
-  BiometricService({LocalAuthentication? auth})
-      : _auth = auth ?? LocalAuthentication();
+  BiometricService({
+    LocalAuthentication? auth,
+    LocalStorageService? localStorageService,
+  })  : _auth = auth ?? LocalAuthentication(),
+        _localStorageService = localStorageService ?? LocalStorageService();
 
   Future<bool> isBiometricAvailable() async {
     try {
@@ -23,6 +28,14 @@ class BiometricService {
     } on PlatformException {
       return [];
     }
+  }
+
+  Future<bool> isBiometricEnabled() async {
+    return await _localStorageService.isBiometricEnabled();
+  }
+
+  Future<void> setBiometricEnabled(bool enabled) async {
+    await _localStorageService.setBiometricEnabled(enabled);
   }
 
   Future<bool> authenticate({String localizedReason = 'Biometric Authentication'}) async {

@@ -14,6 +14,7 @@ abstract class IProfilePresenter {
   ReviewResponse? get updatedReview;
 
   Future<void> getProfile();
+  Future<void> getProfileFull({bool checkTtl = true});
   Future<void> updateProfile({String? fullName, String? bio, String? avatarUrl});
   Future<void> getLikedMedia({int page = 1, int perPage = 20});
   Future<void> getRatings({int page = 1, int perPage = 20});

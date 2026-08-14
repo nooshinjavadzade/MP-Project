@@ -4,10 +4,12 @@ import '../../models/movie.dart';
 import '../../models/series.dart';
 import '../../models/user_content.dart';
 import '../../services/api/media_service.dart';
+import '../../services/local/local_storage_service.dart';
 import 'i_media_presenter.dart';
 
 class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
   final MediaService _mediaService;
+  final LocalStorageService? _localStorageService;
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -25,7 +27,7 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
   ReviewResponse? _lastCreatedReview;
   List<ReviewResponse> _reviews = [];
 
-  MediaPresenter(this._mediaService);
+  MediaPresenter(this._mediaService, [this._localStorageService]);
 
   @override
   bool get isLoading => _isLoading;
@@ -69,11 +71,25 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
   @override
   List<ReviewResponse> get reviews => _reviews;
 
+  void _prefetchPosters(List<MediaBase> items) {
+    for (final item in items) {
+      if (item.posterUrl != null) {
+        _localStorageService?.prefetchImage(item.posterUrl!);
+      }
+    }
+  }
+
   @override
   Future<void> searchMedia(String query, {int page = 1}) async {
     _setLoading(true);
+    final trimmedQuery = query.trim();
+    if (trimmedQuery.isNotEmpty) {
+      await _localStorageService?.addSearchQuery(trimmedQuery);
+    }
     try {
-      _searchResult = await _mediaService.searchMedia(query: query, page: page);
+      final result = await _mediaService.searchMedia(query: query, page: page);
+      _prefetchPosters(result.items);
+      _searchResult = result;
       _errorMessage = null;
     } catch (e) {
       _errorMessage = e.toString();
@@ -85,11 +101,21 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
   @override
   Future<void> getTrending({String mediaType = 'all', String timeWindow = 'week'}) async {
     _setLoading(true);
+    final cacheKey = 'cached_trending_${mediaType}_$timeWindow';
     try {
-      _trendingItems = await _mediaService.getTrending(mediaType: mediaType, timeWindow: timeWindow);
+      final items = await _mediaService.getTrending(mediaType: mediaType, timeWindow: timeWindow);
+      _prefetchPosters(items);
+      await _localStorageService?.saveMediaList(cacheKey, items);
+      _trendingItems = items;
       _errorMessage = null;
     } catch (e) {
-      _errorMessage = e.toString();
+      final cachedItems = _localStorageService?.getMediaList(cacheKey, checkTtl: false) ?? [];
+      if (cachedItems.isNotEmpty) {
+        _trendingItems = cachedItems;
+        _errorMessage = null;
+      } else {
+        _errorMessage = e.toString();
+      }
     } finally {
       _setLoading(false);
     }
@@ -98,10 +124,25 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
   @override
   Future<void> getPopularMovies({int page = 1}) async {
     _setLoading(true);
+    final cacheKey = 'cached_popular_movies_page_$page';
     try {
-      _popularMovies = await _mediaService.getPopularMovies(page: page);
+      final items = await _mediaService.getPopularMovies(page: page);
+      _prefetchPosters(items);
+      if (page == 1) {
+        await _localStorageService?.saveMediaList(cacheKey, items);
+      }
+      _popularMovies = items;
       _errorMessage = null;
     } catch (e) {
+      if (page == 1) {
+        final cachedItems = _localStorageService?.getMediaList(cacheKey, checkTtl: false) ?? [];
+        if (cachedItems.isNotEmpty) {
+          _popularMovies = cachedItems;
+          _errorMessage = null;
+          _setLoading(false);
+          return;
+        }
+      }
       _errorMessage = e.toString();
     } finally {
       _setLoading(false);
@@ -111,10 +152,81 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
   @override
   Future<void> getPopularSeries({int page = 1}) async {
     _setLoading(true);
+    final cacheKey = 'cached_popular_series_page_$page';
     try {
-      _popularSeries = await _mediaService.getPopularSeries(page: page);
+      final items = await _mediaService.getPopularSeries(page: page);
+      _prefetchPosters(items);
+      if (page == 1) {
+        await _localStorageService?.saveMediaList(cacheKey, items);
+      }
+      _popularSeries = items;
       _errorMessage = null;
     } catch (e) {
+      if (page == 1) {
+        final cachedItems = _localStorageService?.getMediaList(cacheKey, checkTtl: false) ?? [];
+        if (cachedItems.isNotEmpty) {
+          _popularSeries = cachedItems;
+          _errorMessage = null;
+          _setLoading(false);
+          return;
+        }
+      }
+      _errorMessage = e.toString();
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<void> getTopMovies({int page = 1, int perPage = 20}) async {
+    _setLoading(true);
+    try {
+      final result = await _mediaService.getTopMovies(page: page, perPage: perPage);
+      if (page == 1) {
+        await _localStorageService?.saveHomeSection('top_movies', result.items);
+      }
+      for (final item in result.items) {
+        if (item.media.posterUrl != null) {
+          _localStorageService?.prefetchImage(item.media.posterUrl!);
+        }
+      }
+      _errorMessage = null;
+    } catch (e) {
+      if (page == 1) {
+        final cachedItems = _localStorageService?.getHomeSection('top_movies');
+        if (cachedItems != null && cachedItems.isNotEmpty) {
+          _errorMessage = null;
+          _setLoading(false);
+          return;
+        }
+      }
+      _errorMessage = e.toString();
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<void> getTopSeries({int page = 1, int perPage = 20}) async {
+    _setLoading(true);
+    try {
+      final result = await _mediaService.getTopSeries(page: page, perPage: perPage);
+      if (page == 1) {
+        await _localStorageService?.saveHomeSection('top_series', result.items);
+      }
+      for (final item in result.items) {
+        if (item.media.posterUrl != null) {
+          _localStorageService?.prefetchImage(item.media.posterUrl!);
+        }
+      }
+      _errorMessage = null;
+    } catch (e) {
+      if (page == 1) {
+        final cachedItems = _localStorageService?.getHomeSection('top_series');
+        if (cachedItems != null && cachedItems.isNotEmpty) {
+          _errorMessage = null;
+          _setLoading(false);
+          return;
+        }
+      }
       _errorMessage = e.toString();
     } finally {
       _setLoading(false);
@@ -124,11 +236,25 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
   @override
   Future<void> getMovieDetails(int tmdbId) async {
     _setLoading(true);
+    final cached = _localStorageService?.getMovieDetails(tmdbId.toString());
     try {
-      _movieDetails = await _mediaService.getMovieDetails(tmdbId);
+      final details = await _mediaService.getMovieDetails(tmdbId);
+      await _localStorageService?.saveMovieDetails(tmdbId.toString(), details);
+      if (details.posterUrl != null) {
+        _localStorageService?.prefetchImage(details.posterUrl!);
+      }
+      if (details.backdropUrl != null) {
+        _localStorageService?.prefetchImage(details.backdropUrl!);
+      }
+      _movieDetails = details;
       _errorMessage = null;
     } catch (e) {
-      _errorMessage = e.toString();
+      if (cached != null) {
+        _movieDetails = cached;
+        _errorMessage = null;
+      } else {
+        _errorMessage = e.toString();
+      }
     } finally {
       _setLoading(false);
     }
@@ -137,11 +263,25 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
   @override
   Future<void> getSeriesDetails(int tmdbId) async {
     _setLoading(true);
+    final cached = _localStorageService?.getSeriesDetails(tmdbId.toString());
     try {
-      _seriesDetails = await _mediaService.getSeriesDetails(tmdbId);
+      final details = await _mediaService.getSeriesDetails(tmdbId);
+      await _localStorageService?.saveSeriesDetails(tmdbId.toString(), details);
+      if (details.posterUrl != null) {
+        _localStorageService?.prefetchImage(details.posterUrl!);
+      }
+      if (details.backdropUrl != null) {
+        _localStorageService?.prefetchImage(details.backdropUrl!);
+      }
+      _seriesDetails = details;
       _errorMessage = null;
     } catch (e) {
-      _errorMessage = e.toString();
+      if (cached != null) {
+        _seriesDetails = cached;
+        _errorMessage = null;
+      } else {
+        _errorMessage = e.toString();
+      }
     } finally {
       _setLoading(false);
     }
@@ -150,11 +290,21 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
   @override
   Future<void> getSeasonDetails(int tmdbId, int seasonNumber) async {
     _setLoading(true);
+    final cachedEpisodes = _localStorageService?.getSeasonEpisodes(tmdbId.toString(), seasonNumber);
     try {
-      _seasonDetails = await _mediaService.getSeasonDetails(tmdbId, seasonNumber);
+      final season = await _mediaService.getSeasonDetails(tmdbId, seasonNumber);
+      final episodeJsonList = season.episodes.map((e) => e.toJson()).toList();
+      await _localStorageService?.saveSeasonEpisodes(tmdbId.toString(), seasonNumber, episodeJsonList);
+      _seasonDetails = season;
       _errorMessage = null;
     } catch (e) {
-      _errorMessage = e.toString();
+      if (cachedEpisodes != null && cachedEpisodes.isNotEmpty) {
+        final episodes = cachedEpisodes.map((e) => Episode.fromJson(e)).toList();
+        _seasonDetails = Season(seasonNumber: seasonNumber, episodes: episodes);
+        _errorMessage = null;
+      } else {
+        _errorMessage = e.toString();
+      }
     } finally {
       _setLoading(false);
     }
@@ -167,7 +317,21 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
       _episodeDetails = await _mediaService.getEpisodeDetails(tmdbId, seasonNumber, episodeNumber);
       _errorMessage = null;
     } catch (e) {
-      _errorMessage = e.toString();
+      final cachedEpisodes = _localStorageService?.getSeasonEpisodes(tmdbId.toString(), seasonNumber);
+      if (cachedEpisodes != null && cachedEpisodes.isNotEmpty) {
+        final matching = cachedEpisodes.firstWhere(
+              (e) => e['episode_number'] == episodeNumber,
+          orElse: () => <String, dynamic>{},
+        );
+        if (matching.isNotEmpty) {
+          _episodeDetails = Episode.fromJson(matching);
+          _errorMessage = null;
+        } else {
+          _errorMessage = e.toString();
+        }
+      } else {
+        _errorMessage = e.toString();
+      }
     } finally {
       _setLoading(false);
     }
@@ -180,6 +344,11 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
       _lastLikeResponse = await _mediaService.toggleLike(tmdbId: tmdbId, mediaType: mediaType);
       _errorMessage = null;
     } catch (e) {
+      await _localStorageService?.addOrUpdatePendingAction({
+        'action_type': 'toggle_like',
+        'target_id': tmdbId,
+        'media_type': mediaType,
+      });
       _errorMessage = e.toString();
     } finally {
       _setLoading(false);
@@ -190,9 +359,22 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
   Future<void> rateMedia(String tmdbId, String mediaType, double rating) async {
     _setLoading(true);
     try {
-      _lastRatingResponse = await _mediaService.rateMedia(tmdbId: tmdbId, mediaType: mediaType, rating: rating);
+      final result = await _mediaService.rateMedia(tmdbId: tmdbId, mediaType: mediaType, rating: rating);
+      final currentRatings = _localStorageService?.getUserRatings(checkTtl: false) ?? {};
+      currentRatings[tmdbId] = rating;
+      await _localStorageService?.saveUserRatings(currentRatings);
+      _lastRatingResponse = result;
       _errorMessage = null;
     } catch (e) {
+      final currentRatings = _localStorageService?.getUserRatings(checkTtl: false) ?? {};
+      currentRatings[tmdbId] = rating;
+      await _localStorageService?.saveUserRatings(currentRatings);
+      await _localStorageService?.addOrUpdatePendingAction({
+        'action_type': 'rate_media',
+        'target_id': tmdbId,
+        'media_type': mediaType,
+        'rating': rating,
+      });
       _errorMessage = e.toString();
     } finally {
       _setLoading(false);
@@ -211,6 +393,13 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
       );
       _errorMessage = null;
     } catch (e) {
+      await _localStorageService?.addOrUpdatePendingAction({
+        'action_type': 'create_review',
+        'target_id': tmdbId,
+        'media_type': mediaType,
+        'review': review,
+        'contains_spoiler': containsSpoiler,
+      });
       _errorMessage = e.toString();
     } finally {
       _setLoading(false);
@@ -220,16 +409,25 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
   @override
   Future<void> getReviews(String tmdbId, String mediaType, {int page = 1, int perPage = 20}) async {
     _setLoading(true);
+    final cachedReviews = _localStorageService?.getMediaReviews(tmdbId);
     try {
-      _reviews = await _mediaService.getReviews(
+      final reviews = await _mediaService.getReviews(
         tmdbId: tmdbId,
         mediaType: mediaType,
         page: page,
         perPage: perPage,
       );
+      final jsonList = reviews.map((e) => e.toJson()).toList();
+      await _localStorageService?.saveMediaReviews(tmdbId, jsonList);
+      _reviews = reviews;
       _errorMessage = null;
     } catch (e) {
-      _errorMessage = e.toString();
+      if (cachedReviews != null && cachedReviews.isNotEmpty) {
+        _reviews = cachedReviews.map((e) => ReviewResponse.fromJson(e)).toList();
+        _errorMessage = null;
+      } else {
+        _errorMessage = e.toString();
+      }
     } finally {
       _setLoading(false);
     }

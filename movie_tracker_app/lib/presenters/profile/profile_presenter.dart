@@ -1,13 +1,16 @@
 import 'package:flutter/foundation.dart';
 import '../../models/auth/user.dart';
+import '../../models/auth/profile_response.dart';
 import '../../models/common/media_base.dart';
 import '../../models/user_content/rating_response.dart';
 import '../../models/user_content/review_response.dart';
 import '../../services/api/profile_service.dart';
+import '../../services/local/local_storage_service.dart';
 import 'i_profile_presenter.dart';
 
 class ProfilePresenter extends ChangeNotifier implements IProfilePresenter {
   final ProfileService _profileService;
+  final LocalStorageService? _localStorageService;
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -18,7 +21,7 @@ class ProfilePresenter extends ChangeNotifier implements IProfilePresenter {
   List<ReviewResponse> _reviews = [];
   ReviewResponse? _updatedReview;
 
-  ProfilePresenter(this._profileService);
+  ProfilePresenter(this._profileService, [this._localStorageService]);
 
   @override
   bool get isLoading => _isLoading;
@@ -48,7 +51,44 @@ class ProfilePresenter extends ChangeNotifier implements IProfilePresenter {
       _user = await _profileService.getProfile();
       _errorMessage = null;
     } catch (e) {
-      _errorMessage = e.toString();
+      final cachedProfile = _localStorageService?.getUserProfile(checkTtl: false);
+      if (cachedProfile != null) {
+        _user = User.fromJson(cachedProfile.toJson());
+        _errorMessage = null;
+      } else {
+        _errorMessage = e.toString();
+      }
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  @override
+  Future<void> getProfileFull({bool checkTtl = true}) async {
+    _setLoading(true);
+    if (checkTtl) {
+      final cached = _localStorageService?.getUserProfile(checkTtl: true);
+      if (cached != null) {
+        _user = User.fromJson(cached.toJson());
+        _errorMessage = null;
+        _setLoading(false);
+        return;
+      }
+    }
+
+    try {
+      final profile = await _profileService.getProfileFull();
+      await _localStorageService?.saveUserProfile(profile);
+      _user = User.fromJson(profile.toJson());
+      _errorMessage = null;
+    } catch (e) {
+      final cached = _localStorageService?.getUserProfile(checkTtl: false);
+      if (cached != null) {
+        _user = User.fromJson(cached.toJson());
+        _errorMessage = null;
+      } else {
+        _errorMessage = e.toString();
+      }
     } finally {
       _setLoading(false);
     }
@@ -63,6 +103,15 @@ class ProfilePresenter extends ChangeNotifier implements IProfilePresenter {
         bio: bio,
         avatarUrl: avatarUrl,
       );
+
+      final cachedProfile = _localStorageService?.getUserProfile(checkTtl: false);
+      if (cachedProfile != null) {
+        final updatedJson = cachedProfile.toJson();
+        if (fullName != null) updatedJson['full_name'] = fullName;
+        if (bio != null) updatedJson['bio'] = bio;
+        if (avatarUrl != null) updatedJson['avatar_url'] = avatarUrl;
+        await _localStorageService?.saveUserProfile(ProfileResponse.fromJson(updatedJson));
+      }
       _errorMessage = null;
     } catch (e) {
       _errorMessage = e.toString();
@@ -123,6 +172,7 @@ class ProfilePresenter extends ChangeNotifier implements IProfilePresenter {
         review: review,
         containsSpoiler: containsSpoiler,
       );
+      await _localStorageService?.invalidateUserStats();
       _errorMessage = null;
     } catch (e) {
       _errorMessage = e.toString();
@@ -136,6 +186,7 @@ class ProfilePresenter extends ChangeNotifier implements IProfilePresenter {
     _setLoading(true);
     try {
       await _profileService.deleteReview(reviewId);
+      await _localStorageService?.invalidateUserStats();
       _errorMessage = null;
     } catch (e) {
       _errorMessage = e.toString();
