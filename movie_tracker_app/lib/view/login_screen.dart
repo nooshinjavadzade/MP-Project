@@ -41,8 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } else {
       if (mounted) {
-        // TODO: Navigate to Home Screen on success
-        Navigator.pop(context); // Go back for now, or push replacement to home
+        Navigator.pop(context);
       }
     }
   }
@@ -50,10 +49,9 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF00161F), // bg-background
+      backgroundColor: const Color(0xFF00161F),
       body: Stack(
         children: [
-          // Background Orbs
           Positioned(
             top: -100,
             left: -100,
@@ -87,7 +85,6 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
 
-          // Main Content
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
@@ -97,7 +94,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Logo
                       Hero(
                         tag: 'welcome_logo',
                         child: Image.network(
@@ -108,25 +104,23 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      // Title
                       const Text(
                         'TV Time',
                         style: TextStyle(
-                          fontSize: 32, // md:text-headline-lg
-                          fontWeight: FontWeight.w800, // font-extrabold
+                          fontSize: 32,
+                          fontWeight: FontWeight.w800,
                           fontFamily: 'Plus Jakarta Sans',
-                          color: Color(0xFF5AD9D9), // text-primary
+                          color: Color(0xFF5AD9D9),
                           shadows: [
                             Shadow(
-                              color: Color(0x4D5AD9D9), // rgba(90, 217, 217, 0.3)
+                              color: Color(0x4D5AD9D9),
                               blurRadius: 20,
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 64), // mb-xl
+                      const SizedBox(height: 64),
 
-                      // Login Form Card
                       ClipRRect(
                         borderRadius: BorderRadius.circular(12),
                         child: BackdropFilter(
@@ -144,7 +138,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 _buildTextField(
-                                  label: 'Email Address',
+                                  label: 'آدرس ایمیل',
                                   hint: 'name@example.com',
                                   icon: Icons.mail_outline,
                                   controller: _emailController,
@@ -152,7 +146,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                                 const SizedBox(height: 24),
                                 _buildTextField(
-                                  label: 'Password',
+                                  label: 'رمز عبور',
                                   hint: '••••••••',
                                   icon: Icons.lock_outline,
                                   controller: _passwordController,
@@ -165,7 +159,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                                 const SizedBox(height: 32),
                                 
-                                // Login Button
                                 Consumer<AuthPresenter>(
                                   builder: (context, presenter, _) {
                                     return SizedBox(
@@ -173,9 +166,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                       child: ElevatedButton(
                                         onPressed: presenter.isLoading ? null : _handleLogin,
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: const Color(0xFFF08DA5), // brand-coral
-                                          foregroundColor: const Color(0xFF3F0018), // on-tertiary-fixed
-                                          padding: const EdgeInsets.symmetric(vertical: 16), // py-4
+                                          backgroundColor: const Color(0xFFF08DA5),
+                                          foregroundColor: const Color(0xFF3F0018),
+                                          padding: const EdgeInsets.symmetric(vertical: 16),
                                           shape: RoundedRectangleBorder(
                                             borderRadius: BorderRadius.circular(8),
                                           ),
@@ -195,9 +188,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                                 mainAxisAlignment: MainAxisAlignment.center,
                                                 children: [
                                                   Text(
-                                                    'Log In',
+                                                    'ورود',
                                                     style: TextStyle(
-                                                      fontSize: 18, // text-body-lg
+                                                      fontSize: 18,
                                                       fontWeight: FontWeight.bold,
                                                       fontFamily: 'Manrope',
                                                     ),
@@ -212,7 +205,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                                 
                                 const SizedBox(height: 24),
-                                // Footer Links
                                 Center(
                                   child: Column(
                                     children: [
@@ -227,7 +219,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           foregroundColor: const Color(0xFF5AD9D9),
                                         ),
                                         child: const Text(
-                                          'FORGOT PASSWORD?',
+                                          'رمز عبور را فراموش کردید؟',
                                           style: TextStyle(
                                             fontSize: 12,
                                             fontWeight: FontWeight.w700,
@@ -247,9 +239,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                         mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
                                           const Text(
-                                            "Don't have an account? ",
+                                            'حساب کاربری ندارید؟ ',
                                             style: TextStyle(
-                                              color: Color(0xFFBCC9C8), // on-surface-variant
+                                              color: Color(0xFFBCC9C8),
                                               fontSize: 16,
                                               fontFamily: 'Manrope',
                                             ),
@@ -262,14 +254,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                               );
                                             },
                                             child: const Text(
-                                              "Sign Up",
+                                              'ثبت‌نام',
                                               style: TextStyle(
                                                 color: Color(0xFF5AD9D9),
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.bold,
                                                 fontFamily: 'Manrope',
                                                 decoration: TextDecoration.underline,
-                                                decorationColor: Color(0x4D5AD9D9), // primary/30
+                                                decorationColor: Color(0x4D5AD9D9),
                                               ),
                                             ),
                                           ),
@@ -311,7 +303,7 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Text(
             label.toUpperCase(),
             style: TextStyle(
-              color: const Color(0xFFBCC9C8).withOpacity(0.8), // on-surface-variant/80
+              color: const Color(0xFFBCC9C8).withOpacity(0.8),
               fontSize: 12,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.6,
@@ -321,10 +313,10 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF193846).withOpacity(0.2), // surface-container-highest/20
+            color: const Color(0xFF193846).withOpacity(0.2),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: const Color(0xFF3C4949).withOpacity(0.3), // outline-variant/30
+              color: const Color(0xFF3C4949).withOpacity(0.3),
             ),
           ),
           child: TextField(
@@ -332,7 +324,7 @@ class _LoginScreenState extends State<LoginScreen> {
             obscureText: obscureText,
             keyboardType: keyboardType,
             style: const TextStyle(
-              color: Color(0xFFC7E7F8), // on-surface
+              color: Color(0xFFC7E7F8),
               fontSize: 16,
               fontFamily: 'Manrope',
             ),
@@ -343,7 +335,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               prefixIcon: Icon(
                 icon,
-                color: const Color(0xFF5AD9D9).withOpacity(0.6), // primary/60
+                color: const Color(0xFF5AD9D9).withOpacity(0.6),
               ),
               suffixIcon: onVisibilityToggle != null
                   ? IconButton(

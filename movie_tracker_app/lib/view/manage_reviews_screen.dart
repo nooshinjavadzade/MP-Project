@@ -22,7 +22,7 @@ class _ManageReviewsScreenState extends State<ManageReviewsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: const Color(0xFF00161F), // surface
+        backgroundColor: const Color(0xFF00161F),
         extendBodyBehindAppBar: true,
         appBar: AppBar(
           backgroundColor: const Color(0xFF00232F).withOpacity(0.6),
@@ -34,7 +34,7 @@ class _ManageReviewsScreenState extends State<ManageReviewsScreen> {
                 decoration: BoxDecoration(
                   border: Border(
                     bottom: BorderSide(
-                      color: const Color(0xFF3C4949).withOpacity(0.2), // outline-variant
+                      color: const Color(0xFF3C4949).withOpacity(0.2),
                     ),
                   ),
                 ),
@@ -42,16 +42,16 @@ class _ManageReviewsScreenState extends State<ManageReviewsScreen> {
             ),
           ),
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Color(0xFFBCC9C8)), // on-surface-variant
+            icon: const Icon(Icons.arrow_back, color: Color(0xFFBCC9C8)),
             onPressed: () => Navigator.pop(context),
           ),
           title: const Text(
-            'Manage Reviews',
+            'مدیریت نقد و بررسی‌ها',
             style: TextStyle(
               fontFamily: 'Plus Jakarta Sans',
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF5AD9D9), // primary
+              color: Color(0xFF5AD9D9),
             ),
           ),
           centerTitle: false,
@@ -72,7 +72,7 @@ class _ManageReviewsScreenState extends State<ManageReviewsScreen> {
                     padding: EdgeInsets.all(32.0),
                     child: Center(
                       child: Text(
-                        'No reviews found.',
+                        'هیچ نقد و بررسی‌ای یافت نشد.',
                         style: TextStyle(color: Color(0xFFBCC9C8)),
                       ),
                     ),
@@ -84,7 +84,7 @@ class _ManageReviewsScreenState extends State<ManageReviewsScreen> {
                       child: _ReviewCard(
                         userName: review.user.username,
                         email: review.user.email,
-                        mediaTitle: review.media.title ?? 'Unknown',
+                        mediaTitle: review.media.title ?? 'ناشناخته',
                         content: review.review,
                         containsSpoiler: review.containsSpoiler,
                         onDelete: () => presenter.deleteReview(review.id),
@@ -122,10 +122,10 @@ class _ReviewCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F5F66).withOpacity(0.4), // glass-card bg
+        color: const Color(0xFF0F5F66).withOpacity(0.4),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: const Color(0xFF869393).withOpacity(0.2), // outline
+          color: const Color(0xFF869393).withOpacity(0.2),
         ),
         boxShadow: [
           BoxShadow(
@@ -151,7 +151,7 @@ class _ReviewCard extends StatelessWidget {
                         fontFamily: 'Manrope',
                         fontSize: 20,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF5AD9D9), // primary
+                        color: Color(0xFF5AD9D9),
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -186,7 +186,7 @@ class _ReviewCard extends StatelessWidget {
                     border: Border.all(color: const Color(0xFFFFB4AB).withOpacity(0.3)),
                   ),
                   child: const Text(
-                    'SPOILER',
+                    'اسپویلر',
                     style: TextStyle(
                       fontFamily: 'Manrope',
                       fontSize: 10,
@@ -204,7 +204,7 @@ class _ReviewCard extends StatelessWidget {
               fontFamily: 'Manrope',
               fontSize: 16,
               height: 1.5,
-              color: const Color(0xFFC7E7F8).withOpacity(0.9), // on-surface
+              color: const Color(0xFFC7E7F8).withOpacity(0.9),
             ),
           ),
           const SizedBox(height: 16),
@@ -214,7 +214,7 @@ class _ReviewCard extends StatelessWidget {
               onPressed: onDelete,
               icon: const Icon(Icons.delete_outline, size: 18),
               label: const Text(
-                'DELETE',
+                'حذف',
                 style: TextStyle(
                   fontFamily: 'Manrope',
                   fontSize: 12,
@@ -223,7 +223,7 @@ class _ReviewCard extends StatelessWidget {
                 ),
               ),
               style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFFFFB4AB), // error
+                foregroundColor: const Color(0xFFFFB4AB),
                 backgroundColor: const Color(0xFFFFB4AB).withOpacity(0.1),
                 side: BorderSide(color: const Color(0xFFFFB4AB).withOpacity(0.3)),
                 shape: RoundedRectangleBorder(
@@ -237,5 +237,4 @@ class _ReviewCard extends StatelessWidget {
       ),
     );
   }
-
 }

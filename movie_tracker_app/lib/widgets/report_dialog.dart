@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
 import '../../../../presenters/report/report_presenter.dart';
-import '../../../../models/report.dart'; // فرض بر وجود مدل ReportReason
+import '../../../../models/report.dart';
 
 class ReportDialog extends StatefulWidget {
   final int tmdbId;
@@ -28,12 +28,10 @@ class _ReportDialogState extends State<ReportDialog> {
   }
 
   void _submitReport() {
-    // فرض بر این است که ReportReason.other یا مشابه آن در مدل شما وجود دارد
-    // با توجه به اینکه مدل دقیق را ندارم از یک مقدار پیش‌فرض استفاده کردم.
     context.read<ReportPresenter>().submitReport(
       mediaType: widget.mediaType,
       tmdbId: widget.tmdbId,
-      reason: ReportReason.spam, // TODO: به روز رسانی با دلیل واقعی اگر نیازه
+      reason: ReportReason.spam,
       description: _detailsController.text,
     );
     Navigator.of(context).pop();
@@ -53,8 +51,8 @@ class _ReportDialogState extends State<ReportDialog> {
             constraints: const BoxConstraints(maxWidth: 400),
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: const Color(0xCC00232F), // surface-container/80
-              border: Border.all(color: const Color(0x335AD9D9)), // primary/20
+              color: const Color(0xCC00232F),
+              border: Border.all(color: const Color(0x335AD9D9)),
               borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
@@ -68,7 +66,7 @@ class _ReportDialogState extends State<ReportDialog> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Report Content',
+                  'گزارش محتوا',
                   style: TextStyle(
                     color: Color(0xFF5AD9D9),
                     fontSize: 20,
@@ -78,9 +76,9 @@ class _ReportDialogState extends State<ReportDialog> {
                 ),
                 const SizedBox(height: 24),
                 const Text(
-                  'Additional Details',
+                  'جزئیات بیشتر',
                   style: TextStyle(
-                    color: Color(0xFFBCC9C8), // on-surface-variant
+                    color: Color(0xFFBCC9C8),
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
                     fontFamily: 'Manrope',
@@ -89,8 +87,8 @@ class _ReportDialogState extends State<ReportDialog> {
                 const SizedBox(height: 8),
                 Container(
                   decoration: BoxDecoration(
-                    color: const Color(0x80193846), // surface-variant/50
-                    border: Border.all(color: const Color(0x4D3C4949)), // outline-variant/30
+                    color: const Color(0x80193846),
+                    border: Border.all(color: const Color(0x4D3C4949)),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: TextField(
@@ -102,7 +100,7 @@ class _ReportDialogState extends State<ReportDialog> {
                       fontFamily: 'Manrope',
                     ),
                     decoration: InputDecoration(
-                      hintText: 'Tell us more (optional)...',
+                      hintText: 'جزئیات بیشتر (اختیاری)...',
                       hintStyle: TextStyle(
                         color: const Color(0xFFBCC9C8).withOpacity(0.5),
                       ),
@@ -119,14 +117,14 @@ class _ReportDialogState extends State<ReportDialog> {
                         onPressed: () => Navigator.of(context).pop(),
                         style: TextButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          backgroundColor: const Color(0x66193846), // surface-variant/40
+                          backgroundColor: const Color(0x66193846),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                             side: const BorderSide(color: Color(0x4D3C4949)),
                           ),
                         ),
                         child: const Text(
-                          'Cancel',
+                          'انصراف',
                           style: TextStyle(
                             color: Color(0xFFBCC9C8),
                             fontWeight: FontWeight.bold,
@@ -141,7 +139,7 @@ class _ReportDialogState extends State<ReportDialog> {
                         onPressed: _submitReport,
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          backgroundColor: const Color(0xFFF08DA5), // coral-pink
+                          backgroundColor: const Color(0xFFF08DA5),
                           elevation: 0,
                           shadowColor: const Color(0xFFF08DA5).withOpacity(0.3),
                           shape: RoundedRectangleBorder(
@@ -149,9 +147,9 @@ class _ReportDialogState extends State<ReportDialog> {
                           ),
                         ),
                         child: const Text(
-                          'Submit Report',
+                          'ارسال گزارش',
                           style: TextStyle(
-                            color: Color(0xFF3F0018), // on-tertiary-container / dark red
+                            color: Color(0xFF3F0018),
                             fontWeight: FontWeight.bold,
                             fontFamily: 'Manrope',
                           ),

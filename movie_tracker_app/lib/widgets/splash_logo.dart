@@ -103,3 +103,4 @@ class _SplashLogoState extends State<SplashLogo> with TickerProviderStateMixin {
     );
   }
 }
+

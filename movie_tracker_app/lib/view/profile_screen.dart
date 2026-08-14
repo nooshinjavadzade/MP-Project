@@ -23,7 +23,6 @@ class ProfileScreen extends StatelessWidget {
       builder: (context, presenter, _) {
         final user = presenter.authResponse?.user;
         
-        // GUEST VIEW (Just a login button as requested)
         if (user == null) {
           return Scaffold(
             backgroundColor: const Color(0xFF00161F),
@@ -42,7 +41,7 @@ class ProfileScreen extends StatelessWidget {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
                 child: const Text(
-                  'Log In / Sign Up',
+                  'ورود / ثبت‌نام',
                   style: TextStyle(
                     fontFamily: 'Plus Jakarta Sans',
                     fontSize: 16,
@@ -54,7 +53,6 @@ class ProfileScreen extends StatelessWidget {
           );
         }
 
-        // LOGGED IN USER VIEW
         return Scaffold(
           backgroundColor: const Color(0xFF00161F),
           body: CustomScrollView(
@@ -64,32 +62,26 @@ class ProfileScreen extends StatelessWidget {
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
                     
-                    // Profile Header Section
                     _buildProfileHeader(context, user),
                     const SizedBox(height: 40),
                     
-                    // Stats Grid Section
                     _buildStatsGrid(),
                     const SizedBox(height: 40),
                     
-                    // Settings Toggles (Biometric + Admin)
                     _buildSettings(context, user, presenter),
                     const SizedBox(height: 40),
 
-                    // Watching Section
-                    _buildSectionTitle('Watching'),
+                    _buildSectionTitle('در حال تماشا'),
                     const SizedBox(height: 16),
                     _buildWatchingList(),
                     const SizedBox(height: 40),
 
-                    // Recently Watched Section
-                    _buildSectionTitle('Recently Watched'),
+                    _buildSectionTitle('اخیراً تماشا شده'),
                     const SizedBox(height: 16),
                     _buildRecentlyWatchedList(),
                     const SizedBox(height: 40),
 
-                    // Favorite Items Section
-                    _buildSectionTitle('Favorite Discoveries'),
+                    _buildSectionTitle('کشفیات مورد علاقه'),
                     const SizedBox(height: 20),
                     _buildFavoritesGrid(),
 
@@ -206,9 +198,9 @@ class ProfileScreen extends StatelessWidget {
   Widget _buildStatsGrid() {
     return Row(
       children: [
-        Expanded(child: _buildStatCard('124', 'Movies Watched')),
+        Expanded(child: _buildStatCard('124', 'فیلم‌های تماشا شده')),
         const SizedBox(width: 16),
-        Expanded(child: _buildStatCard('42', 'Series Watched')),
+        Expanded(child: _buildStatCard('42', 'سریال‌های تماشا شده')),
       ],
     );
   }
@@ -257,7 +249,7 @@ class ProfileScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Biometric Authentication',
+                    'احراز هویت بیومتریک',
                     style: TextStyle(
                       fontFamily: 'Manrope',
                       fontSize: 14,
@@ -267,7 +259,7 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   SizedBox(height: 2),
                   Text(
-                    'Enable fingerprint or face recognition',
+                    'فعال‌سازی اثر انگشت یا تشخیص چهره',
                     style: TextStyle(
                       fontFamily: 'Manrope',
                       fontSize: 12,
@@ -309,7 +301,7 @@ class ProfileScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'System Administration',
+                        'مدیریت سیستم',
                         style: TextStyle(
                           fontFamily: 'Manrope',
                           fontSize: 14,
@@ -319,7 +311,7 @@ class ProfileScreen extends StatelessWidget {
                       ),
                       SizedBox(height: 2),
                       Text(
-                        'Manage platform and users',
+                        'مدیریت پلتفرم و کاربران',
                         style: TextStyle(
                           fontFamily: 'Manrope',
                           fontSize: 12,
@@ -347,7 +339,7 @@ class ProfileScreen extends StatelessWidget {
                 Icon(Icons.logout, color: Color(0xFFBCC9C8)),
                 SizedBox(width: 8),
                 Text(
-                  'Log Out',
+                  'خروج',
                   style: TextStyle(
                     fontFamily: 'Manrope',
                     fontSize: 14,

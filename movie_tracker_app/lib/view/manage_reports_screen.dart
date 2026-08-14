@@ -28,14 +28,14 @@ class _ManageReportsScreenState extends State<ManageReportsScreen> {
         return AlertDialog(
           backgroundColor: const Color(0xFF0A323D),
           title: const Text(
-            'Update Report',
+            'بروزرسانی گزارش',
             style: TextStyle(color: Color(0xFF3DE4E5), fontFamily: 'Plus Jakarta Sans'),
           ),
           content: TextField(
             controller: noteController,
             style: const TextStyle(color: Colors.white, fontFamily: 'Manrope'),
             decoration: InputDecoration(
-              hintText: 'Enter resolution note...',
+              hintText: 'یادداشت راه‌حل را وارد کنید...',
               hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
               enabledBorder: UnderlineInputBorder(
                 borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
@@ -49,7 +49,7 @@ class _ManageReportsScreenState extends State<ManageReportsScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('CANCEL', style: TextStyle(color: Colors.white54)),
+              child: const Text('انصراف', style: TextStyle(color: Colors.white54)),
             ),
             TextButton(
               onPressed: () async {
@@ -63,10 +63,9 @@ class _ManageReportsScreenState extends State<ManageReportsScreen> {
                     adminNote: note.isNotEmpty ? note : null,
                   ),
                 );
-                // Refresh list after update
                 presenter.getReports();
               },
-              child: const Text('OK', style: TextStyle(color: Color(0xFF3DE4E5), fontWeight: FontWeight.bold)),
+              child: const Text('تأیید', style: TextStyle(color: Color(0xFF3DE4E5), fontWeight: FontWeight.bold)),
             ),
           ],
         );
@@ -100,7 +99,7 @@ class _ManageReportsScreenState extends State<ManageReportsScreen> {
             onPressed: () => Navigator.pop(context),
           ),
           title: const Text(
-            'Manage Reports',
+            'مدیریت گزارش‌ها',
             style: TextStyle(
               fontFamily: 'Plus Jakarta Sans',
               fontSize: 20,
@@ -126,7 +125,7 @@ class _ManageReportsScreenState extends State<ManageReportsScreen> {
                     padding: EdgeInsets.all(32.0),
                     child: Center(
                       child: Text(
-                        'No reports found.',
+                        'هیچ گزارشی یافت نشد.',
                         style: TextStyle(color: Color(0xFFA5B4BB)),
                       ),
                     ),
@@ -265,7 +264,7 @@ class _ReportCard extends StatelessWidget {
                   ),
                   children: [
                     TextSpan(
-                      text: 'Reason: ',
+                      text: 'دلیل: ',
                       style: TextStyle(
                         fontWeight: FontWeight.w500,
                         color: Colors.white.withOpacity(0.7),
@@ -289,7 +288,7 @@ class _ReportCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Admin Note:',
+                        'یادداشت مدیر:',
                         style: TextStyle(
                           fontFamily: 'Manrope',
                           fontSize: 12,

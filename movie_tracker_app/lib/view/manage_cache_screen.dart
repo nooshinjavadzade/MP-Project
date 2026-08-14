@@ -38,7 +38,7 @@ class _ManageCacheScreenState extends State<ManageCacheScreen> {
             onPressed: () => Navigator.pop(context),
           ),
           title: const Text(
-            'Manage Cache',
+            'مدیریت حافظه‌ی کش',
             style: TextStyle(
               fontFamily: 'Plus Jakarta Sans',
               fontSize: 24,
@@ -61,7 +61,7 @@ class _ManageCacheScreenState extends State<ManageCacheScreen> {
               padding: const EdgeInsets.fromLTRB(16.0, 100.0, 16.0, 32.0),
               children: [
                 const Text(
-                  'Cached Items',
+                  'آیتم‌های ذخیره‌شده',
                   style: TextStyle(
                     fontFamily: 'Manrope',
                     fontSize: 20,
@@ -71,7 +71,7 @@ class _ManageCacheScreenState extends State<ManageCacheScreen> {
                 ),
                 const SizedBox(height: 4),
                 const Text(
-                  'Review and clear temporary files.',
+                  'بررسی و پاک‌سازی فایل‌های موقت.',
                   style: TextStyle(
                     fontFamily: 'Manrope',
                     fontSize: 16,
@@ -84,7 +84,7 @@ class _ManageCacheScreenState extends State<ManageCacheScreen> {
                     padding: EdgeInsets.all(32.0),
                     child: Center(
                       child: Text(
-                        'No cached items found.',
+                        'هیچ آیتم ذخیره‌شده‌ای یافت نشد.',
                         style: TextStyle(color: Color(0xFFBCC9C8)),
                       ),
                     ),

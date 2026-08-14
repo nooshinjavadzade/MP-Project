@@ -23,7 +23,6 @@ class NewPasswordScreen extends StatelessWidget {
       ),
       body: Stack(
         children: [
-          // Ambient Background Orbs
           Positioned(
             top: -MediaQuery.of(context).size.height * 0.2,
             left: -MediaQuery.of(context).size.width * 0.1,
@@ -57,7 +56,6 @@ class NewPasswordScreen extends StatelessWidget {
             ),
           ),
 
-          // Main Content Canvas
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
@@ -67,7 +65,6 @@ class NewPasswordScreen extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Header Minimalist
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -84,10 +81,10 @@ class NewPasswordScreen extends StatelessWidget {
                           const Text(
                             'TV Time',
                             style: TextStyle(
-                              fontSize: 24, // headline-lg-mobile
+                              fontSize: 24,
                               fontWeight: FontWeight.w700,
                               fontFamily: 'Plus Jakarta Sans',
-                              color: Color(0xFF5AD9D9), // primary
+                              color: Color(0xFF5AD9D9),
                               letterSpacing: -1,
                             ),
                           ),
@@ -95,7 +92,6 @@ class NewPasswordScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 64),
 
-                      // Glass Panel Card
                       ClipRRect(
                         borderRadius: BorderRadius.circular(12),
                         child: BackdropFilter(
@@ -103,10 +99,10 @@ class NewPasswordScreen extends StatelessWidget {
                           child: Container(
                             padding: const EdgeInsets.all(40.0),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF0F5F66).withOpacity(0.2), // glass-panel
+                              color: const Color(0xFF0F5F66).withOpacity(0.2),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: const Color(0xFF869393).withOpacity(0.2), // outline/20
+                                color: const Color(0xFF869393).withOpacity(0.2),
                               ),
                               boxShadow: [
                                 BoxShadow(
@@ -118,27 +114,26 @@ class NewPasswordScreen extends StatelessWidget {
                             child: Column(
                               children: [
                                 const Text(
-                                  'Create New Password',
+                                  'ایجاد رمز عبور جدید',
                                   style: TextStyle(
                                     fontSize: 24,
                                     fontWeight: FontWeight.w600,
                                     fontFamily: 'Plus Jakarta Sans',
-                                    color: Color(0xFFC7E7F8), // on-surface
+                                    color: Color(0xFFC7E7F8),
                                   ),
                                 ),
                                 const SizedBox(height: 8),
                                 const Text(
-                                  'Your new password must be different from previous passwords.',
+                                  'رمز عبور جدید شما باید با رمزهای عبور قبلی متفاوت باشد.',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize: 16,
-                                    color: Color(0xFFBCC9C8), // on-surface-variant
+                                    color: Color(0xFFBCC9C8),
                                     fontFamily: 'Manrope',
                                   ),
                                 ),
                                 const SizedBox(height: 32),
                                 
-                                // Form Widget
                                 NewPasswordForm(email: email, otp: otp),
                               ],
                             ),

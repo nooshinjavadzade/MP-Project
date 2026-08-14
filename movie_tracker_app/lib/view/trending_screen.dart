@@ -30,7 +30,6 @@ class _TrendingScreenState extends State<TrendingScreen> {
     setState(() {
       _currentNavIndex = index;
     });
-    // TODO: Handle navigation based on index
   }
 
   @override
@@ -58,7 +57,7 @@ class _TrendingScreenState extends State<TrendingScreen> {
                   Icon(Icons.whatshot, color: Color(0xFF5AD9D9)),
                   SizedBox(width: 12),
                   Text(
-                    'New Releases',
+                    'آخرین انتشارها',
                     style: TextStyle(
                       color: Color(0xFF5AD9D9),
                       fontSize: 24,
@@ -119,7 +118,7 @@ class _TrendingScreenState extends State<TrendingScreen> {
                             fontFamily: 'Manrope',
                           ),
                           decoration: InputDecoration(
-                            hintText: 'Search in New Releases...',
+                            hintText: 'جستجو در آخرین انتشارها...',
                             hintStyle: TextStyle(color: const Color(0xFFBCC9C8).withOpacity(0.4)),
                             prefixIcon: const Icon(Icons.search, color: Color(0x995AD9D9)),
                             border: InputBorder.none,
@@ -138,7 +137,7 @@ class _TrendingScreenState extends State<TrendingScreen> {
                     const SliverFillRemaining(
                       child: Center(
                         child: Text(
-                          'No items found.',
+                          'هیچ آیتمی یافت نشد.',
                           style: TextStyle(color: Colors.white54),
                         ),
                       ),

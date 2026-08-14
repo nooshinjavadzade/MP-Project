@@ -18,7 +18,7 @@ class _PopularSeriesScreenState extends State<PopularSeriesScreen> {
   String _searchQuery = '';
   final ScrollController _scrollController = ScrollController();
   int _currentPage = 1;
-  int _currentNavIndex = 0; // Home is active by default as per HTML
+  int _currentNavIndex = 0;
 
   @override
   void initState() {
@@ -34,14 +34,13 @@ class _PopularSeriesScreenState extends State<PopularSeriesScreen> {
     setState(() {
       _currentNavIndex = index;
     });
-    // TODO: Handle navigation based on index
   }
 
     void _onScroll() {
     if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
       if (!context.read<MediaPresenter>().isLoading) {
         _currentPage++;
-        context.read<MediaPresenter>().getPopularSeries(/* page: _currentPage */); // pass page if supported
+        context.read<MediaPresenter>().getPopularSeries(/* page: _currentPage */);
       }
     }
   }
@@ -64,7 +63,7 @@ class _PopularSeriesScreenState extends State<PopularSeriesScreen> {
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
             child: AppBar(
-              backgroundColor: const Color(0x9900161F), // surface/60
+              backgroundColor: const Color(0x9900161F),
               elevation: 0,
               centerTitle: false,
               titleSpacing: 0,
@@ -77,7 +76,7 @@ class _PopularSeriesScreenState extends State<PopularSeriesScreen> {
                   Icon(Icons.movie_filter, color: Color(0xFF5AD9D9)),
                   SizedBox(width: 12),
                   Text(
-                    'Popular Series',
+                    'سریال‌های محبوب',
                     style: TextStyle(
                       color: Color(0xFF5AD9D9),
                       fontSize: 24,
@@ -90,7 +89,7 @@ class _PopularSeriesScreenState extends State<PopularSeriesScreen> {
               bottom: PreferredSize(
                 preferredSize: const Size.fromHeight(1),
                 child: Container(
-                  color: const Color(0xFF3C4949).withOpacity(0.2), // outline-variant/20
+                  color: const Color(0xFF3C4949).withOpacity(0.2),
                   height: 1,
                 ),
               ),
@@ -121,10 +120,10 @@ class _PopularSeriesScreenState extends State<PopularSeriesScreen> {
                       ),
                       child: Container(
                         decoration: BoxDecoration(
-                          color: const Color(0xFF0C2E3B), // surface-container-high
+                          color: const Color(0xFF0C2E3B),
                           borderRadius: BorderRadius.circular(12),
                           border: const Border(
-                            bottom: BorderSide(color: Color(0x4D29B5B5), width: 2), // border-primary-container/30
+                            bottom: BorderSide(color: Color(0x4D29B5B5), width: 2),
                           ),
                         ),
                         child: TextField(
@@ -139,7 +138,7 @@ class _PopularSeriesScreenState extends State<PopularSeriesScreen> {
                             fontFamily: 'Manrope',
                           ),
                           decoration: InputDecoration(
-                            hintText: 'Search in Popular Series...',
+                            hintText: 'جستجو در سریال‌های محبوب...',
                             hintStyle: TextStyle(color: const Color(0xFFBCC9C8).withOpacity(0.4)),
                             prefixIcon: const Icon(Icons.search, color: Color(0x995AD9D9)),
                             border: InputBorder.none,
@@ -158,7 +157,7 @@ class _PopularSeriesScreenState extends State<PopularSeriesScreen> {
                     const SliverFillRemaining(
                       child: Center(
                         child: Text(
-                          'No series found.',
+                          'هیچ سریالی یافت نشد.',
                           style: TextStyle(color: Colors.white54),
                         ),
                       ),
@@ -171,7 +170,7 @@ class _PopularSeriesScreenState extends State<PopularSeriesScreen> {
                           crossAxisCount: 3,
                           mainAxisSpacing: 16,
                           crossAxisSpacing: 12,
-                          childAspectRatio: 0.50, // 2/3 for image + extra for text
+                          childAspectRatio: 0.50,
                         ),
                         delegate: SliverChildBuilderDelegate(
                           (context, index) {

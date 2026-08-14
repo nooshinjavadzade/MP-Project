@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:provider/provider.dart';
 
 import '../../presenters/media/media_presenter.dart';
-import '../widgets/movie_synopsis_card.dart'; // We can reuse this since it's just a text card
+import '../widgets/movie_synopsis_card.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
 import '../widgets/review_section.dart';
 import '../widgets/episode_card.dart';
@@ -41,7 +41,7 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF00161F), // background
+      backgroundColor: const Color(0xFF00161F),
       extendBodyBehindAppBar: true,
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(64),
@@ -49,7 +49,7 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
             child: AppBar(
-              backgroundColor: const Color(0x99193846), // surface-variant/60
+              backgroundColor: const Color(0x99193846),
               elevation: 0,
               centerTitle: true,
               leading: IconButton(
@@ -78,7 +78,7 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
                   height: 1,
                   width: double.infinity,
                   decoration: const BoxDecoration(
-                    color: Color(0x333C4949), // outline-variant/20
+                    color: Color(0x333C4949),
                   ),
                 ),
               ),
@@ -107,7 +107,7 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
           if (details == null) {
             return const Center(
               child: Text(
-                'Series not found.',
+                'سریال یافت نشد.',
                 style: TextStyle(color: Colors.white54),
               ),
             );
@@ -128,7 +128,6 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Hero Section
                 SizedBox(
                   height: MediaQuery.of(context).size.height * 0.65,
                   width: double.infinity,
@@ -143,7 +142,6 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
                       else
                         Container(color: const Color(0xFF193846)),
                         
-                      // Gradient overlay
                       Container(
                         decoration: const BoxDecoration(
                           gradient: LinearGradient(
@@ -159,7 +157,6 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
                         ),
                       ),
                       
-                      // Content
                       Positioned(
                         bottom: 0,
                         left: 0,
@@ -204,7 +201,7 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
                                 title,
                                 style: const TextStyle(
                                   color: Colors.white,
-                                  fontSize: 48, // display-lg
+                                  fontSize: 48,
                                   fontWeight: FontWeight.w800,
                                   fontFamily: 'Plus Jakarta Sans',
                                   height: 1.1,
@@ -218,14 +215,14 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
                                   ElevatedButton.icon(
                                     onPressed: () {
                                       ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('Added to Watchlist')),
+                                        const SnackBar(content: Text('به لیست تماشا اضافه شد')),
                                       );
                                     },
                                     icon: const Icon(Icons.add, size: 20),
-                                    label: const Text('ADD TO WATCHLIST'),
+                                    label: const Text('افزودن به لیست تماشا'),
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFFF08DA5), // tertiary
-                                      foregroundColor: const Color(0xFF3F0018), // on-tertiary
+                                      backgroundColor: const Color(0xFFF08DA5),
+                                      foregroundColor: const Color(0xFF3F0018),
                                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),
                                       elevation: 0,
@@ -234,17 +231,17 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
                                   OutlinedButton.icon(
                                     onPressed: () {
                                       ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('Added to Favorites')),
+                                        const SnackBar(content: Text('به علاقه‌مندی‌ها اضافه شد')),
                                       );
                                     },
                                     icon: const Icon(Icons.favorite_border, size: 20),
-                                    label: const Text('LIKE'),
+                                    label: const Text('پسندیدن'),
                                     style: OutlinedButton.styleFrom(
-                                      foregroundColor: const Color(0xFFC7E7F8), // on-surface
-                                      side: const BorderSide(color: Color(0x4D3C4949)), // outline-variant/30
+                                      foregroundColor: const Color(0xFFC7E7F8),
+                                      side: const BorderSide(color: Color(0x4D3C4949)),
                                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),
-                                      backgroundColor: const Color(0xFF0C2E3B), // surface-container-high
+                                      backgroundColor: const Color(0xFF0C2E3B),
                                     ),
                                   ),
                                 ],
@@ -259,7 +256,6 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
                 
                 const SizedBox(height: 16),
                 
-                // Synopsis
                 if (synopsis.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -268,7 +264,6 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
 
                 const SizedBox(height: 32),
 
-                // Season Selector
                 if (seasons.isNotEmpty) ...[
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -276,7 +271,7 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text(
-                          'Episodes',
+                          'قسمت‌ها',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 20,
@@ -288,7 +283,7 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
                           onPressed: () {},
                           icon: const Icon(Icons.check_circle, size: 18, color: Color(0xFFF08DA5)),
                           label: const Text(
-                            'MARK SEASON AS WATCHED',
+                            'علامت‌گذاری فصل به‌عنوان تماشا شده',
                             style: TextStyle(
                               color: Color(0xFFF08DA5),
                               fontSize: 12,
@@ -307,7 +302,6 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
                   ),
                   const SizedBox(height: 16),
                   
-                  // Season Tabs
                   SizedBox(
                     height: 40,
                     child: ListView.builder(
@@ -338,7 +332,7 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
                               ),
                               child: Center(
                                 child: Text(
-                                  season.title ?? 'SEASON ${season.seasonNumber}',
+                                  season.title ?? 'فصل ${season.seasonNumber}',
                                   style: TextStyle(
                                     color: isSelected ? const Color(0xFF3F0018) : const Color(0xFFBCC9C8),
                                     fontSize: 12,
@@ -355,7 +349,6 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
                   ),
                   const SizedBox(height: 24),
                   
-                  // Episodes List for Selected Season
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Builder(
@@ -368,7 +361,7 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
                             child: Padding(
                               padding: EdgeInsets.all(24.0),
                               child: Text(
-                                'No episodes available.',
+                                'هیچ قسمتی در دسترس نیست.',
                                 style: TextStyle(color: Color(0xFFBCC9C8)),
                               ),
                             ),
@@ -382,8 +375,6 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
                               title: episode.title,
                               overview: episode.overview,
                               runtime: episode.runtime,
-                              // For demo purposes, we don't have episode image in the model
-                              // You can add it to the model if your API provides it
                               imageUrl: null, 
                               onToggleWatched: () {
                                 // TODO: Implement watch toggle functionality
@@ -398,7 +389,6 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
                 
                 const SizedBox(height: 32),
                 
-                // Reviews & Rating
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: ReviewSection(tmdbId: widget.tmdbId, mediaType: 'series'),

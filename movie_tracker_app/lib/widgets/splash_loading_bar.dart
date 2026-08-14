@@ -20,7 +20,6 @@ class _SplashLoadingBarState extends State<SplashLoadingBar> with SingleTickerPr
       vsync: this,
     );
     
-    // فید شدن همزمان با شروع پر شدن
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _progressController,
@@ -28,7 +27,7 @@ class _SplashLoadingBarState extends State<SplashLoadingBar> with SingleTickerPr
       ),
     );
 
-    _progressController.repeat(); // Loop the loading animation just like CSS
+    _progressController.repeat();
   }
 
   @override
@@ -42,27 +41,27 @@ class _SplashLoadingBarState extends State<SplashLoadingBar> with SingleTickerPr
     return FadeTransition(
       opacity: _fadeAnimation,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 48.0), // px-margin-desktop
+        padding: const EdgeInsets.symmetric(horizontal: 48.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text(
-              'IS LOADING...',
+              'در حال بارگذاری...',
               style: TextStyle(
-                color: Color(0xFFBCC9C8), // on-surface-variant
-                fontSize: 12, // label-sm
+                color: Color(0xFFBCC9C8),
+                fontSize: 12,
                 fontWeight: FontWeight.w700,
-                letterSpacing: 1.2, // tracking-wider
+                letterSpacing: 1.2,
                 fontFamily: 'Manrope',
               ),
             ),
             const SizedBox(height: 12),
             Container(
               width: double.infinity,
-              height: 4, // h-1 in Tailwind
-              constraints: const BoxConstraints(maxWidth: 384), // max-w-sm
+              height: 4,
+              constraints: const BoxConstraints(maxWidth: 384),
               decoration: BoxDecoration(
-                color: const Color(0xFF0C2E3B), // surface-container-high
+                color: const Color(0xFF0C2E3B),
                 borderRadius: BorderRadius.circular(9999),
                 boxShadow: [
                   BoxShadow(
@@ -74,13 +73,12 @@ class _SplashLoadingBarState extends State<SplashLoadingBar> with SingleTickerPr
               child: AnimatedBuilder(
                 animation: _progressController,
                 builder: (context, child) {
-                  // شبیه‌سازی انیمیشن CSS: در 50٪ زمان، طول آن 60٪ می‌شود
                   double progress = _progressController.value;
                   double mappedProgress;
                   if (progress <= 0.5) {
-                    mappedProgress = progress * 1.2; // 0 to 0.6
+                    mappedProgress = progress * 1.2;
                   } else {
-                    mappedProgress = 0.6 + ((progress - 0.5) * 0.8); // 0.6 to 1.0
+                    mappedProgress = 0.6 + ((progress - 0.5) * 0.8);
                   }
                   
                   return FractionallySizedBox(
@@ -91,8 +89,8 @@ class _SplashLoadingBarState extends State<SplashLoadingBar> with SingleTickerPr
                         borderRadius: BorderRadius.circular(9999),
                         gradient: const LinearGradient(
                           colors: [
-                            Color(0xFFFFB1C2), // from-tertiary
-                            Color(0xFF29B5B5), // to-primary-container
+                            Color(0xFFFFB1C2),
+                            Color(0xFF29B5B5),
                           ],
                         ),
                         boxShadow: [

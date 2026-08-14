@@ -34,14 +34,13 @@ class _PopularMoviesScreenState extends State<PopularMoviesScreen> {
     setState(() {
       _currentNavIndex = index;
     });
-    // TODO: Handle navigation based on index
   }
 
     void _onScroll() {
     if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
       if (!context.read<MediaPresenter>().isLoading) {
         _currentPage++;
-        context.read<MediaPresenter>().getPopularMovies(/* page: _currentPage */); // pass page if supported
+        context.read<MediaPresenter>().getPopularMovies(/* page: _currentPage */);
       }
     }
   }
@@ -77,7 +76,7 @@ class _PopularMoviesScreenState extends State<PopularMoviesScreen> {
                   Icon(Icons.movie_filter, color: Color(0xFF5AD9D9)),
                   SizedBox(width: 12),
                   Text(
-                    'Popular Movies',
+                    'فیلم‌های محبوب',
                     style: TextStyle(
                       color: Color(0xFF5AD9D9),
                       fontSize: 24,
@@ -139,7 +138,7 @@ class _PopularMoviesScreenState extends State<PopularMoviesScreen> {
                             fontFamily: 'Manrope',
                           ),
                           decoration: InputDecoration(
-                            hintText: 'Search in Popular Movies...',
+                            hintText: 'جستجو در فیلم‌های محبوب...',
                             hintStyle: TextStyle(color: const Color(0xFFBCC9C8).withOpacity(0.4)),
                             prefixIcon: const Icon(Icons.search, color: Color(0x995AD9D9)),
                             border: InputBorder.none,
@@ -158,7 +157,7 @@ class _PopularMoviesScreenState extends State<PopularMoviesScreen> {
                     const SliverFillRemaining(
                       child: Center(
                         child: Text(
-                          'No movies found.',
+                          'هیچ فیلمی یافت نشد.',
                           style: TextStyle(color: Colors.white54),
                         ),
                       ),

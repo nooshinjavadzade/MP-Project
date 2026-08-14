@@ -40,9 +40,9 @@ class _EpisodeCardState extends State<EpisodeCard> {
         curve: Curves.easeInOut,
         margin: const EdgeInsets.only(bottom: 16),
         decoration: BoxDecoration(
-          color: const Color(0x9900232F), // surface-container/60 glass card
+          color: const Color(0x9900232F),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0x4D3C4949)), // outline-variant/30
+          border: Border.all(color: const Color(0x4D3C4949)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -51,7 +51,6 @@ class _EpisodeCardState extends State<EpisodeCard> {
               padding: const EdgeInsets.all(16.0),
               child: Row(
                 children: [
-                  // Image
                   Container(
                     width: 128,
                     height: 80,
@@ -64,7 +63,7 @@ class _EpisodeCardState extends State<EpisodeCard> {
                               fit: BoxFit.cover,
                             )
                           : null,
-                      color: const Color(0xFF193846), // fallback surface-variant
+                      color: const Color(0xFF193846),
                     ),
                     child: Stack(
                       children: [
@@ -81,13 +80,12 @@ class _EpisodeCardState extends State<EpisodeCard> {
                   ),
                   const SizedBox(width: 16),
                   
-                  // Info
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'E${widget.episodeNumber.toString().padLeft(2, '0')} • ${widget.title.toUpperCase()} • ${widget.runtime ?? 0} min',
+                          'قسمت ${widget.episodeNumber.toString().padLeft(2, '0')} • ${widget.title.toUpperCase()} • ${widget.runtime ?? 0} دقیقه',
                           style: TextStyle(
                             color: _isExpanded ? const Color(0xFFF08DA5) : const Color(0xFFBCC9C8),
                             fontSize: 12,
@@ -100,7 +98,6 @@ class _EpisodeCardState extends State<EpisodeCard> {
                     ),
                   ),
                   
-                  // Checkbox
                   GestureDetector(
                     onTap: widget.onToggleWatched,
                     child: Container(
@@ -123,7 +120,6 @@ class _EpisodeCardState extends State<EpisodeCard> {
               ),
             ),
             
-            // Description (Expanded state)
             if (widget.overview != null && widget.overview!.isNotEmpty)
               ClipRect(
                 child: AnimatedAlign(
@@ -135,7 +131,7 @@ class _EpisodeCardState extends State<EpisodeCard> {
                     child: Text(
                       widget.overview!,
                       style: const TextStyle(
-                        color: Color(0xFFBCC9C8), // on-surface-variant
+                        color: Color(0xFFBCC9C8),
                         fontSize: 14,
                         fontFamily: 'Manrope',
                       ),

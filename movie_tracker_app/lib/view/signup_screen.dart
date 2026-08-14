@@ -13,8 +13,8 @@ class SignUpScreen extends StatelessWidget {
             center: Alignment.topRight,
             radius: 1.5,
             colors: [
-              Color(0xFF0F5F66), // primary mix
-              Color(0xFF00161F), // surface
+              Color(0xFF0F5F66),
+              Color(0xFF00161F),
             ],
             stops: [0.0, 0.7],
           ),
@@ -28,7 +28,6 @@ class SignUpScreen extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Header Section
                     Container(
                       width: 80,
                       height: 80,
@@ -41,29 +40,28 @@ class SignUpScreen extends StatelessWidget {
                     const Text(
                       'TV TIME',
                       style: TextStyle(
-                        fontSize: 24, // headline-lg-mobile
+                        fontSize: 24,
                         fontWeight: FontWeight.w800,
                         fontFamily: 'Plus Jakarta Sans',
-                        color: Color(0xFF5AD9D9), // primary
+                        color: Color(0xFF5AD9D9),
                         letterSpacing: 1.2,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Your cinematic journey starts here',
+                      'سفر سینمایی شما از اینجا شروع می‌شود',
                       style: TextStyle(
                         fontSize: 16,
-                        color: const Color(0xFFBCC9C8).withOpacity(0.8), // on-surface-variant/80
+                        color: const Color(0xFFBCC9C8).withOpacity(0.8),
                         fontFamily: 'Manrope',
                       ),
                     ),
                     const SizedBox(height: 40),
 
-                    // Registration Form Container
                     Container(
                       padding: const EdgeInsets.all(24.0),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF0F5F66).withOpacity(0.15), // glass-panel approximation
+                        color: const Color(0xFF0F5F66).withOpacity(0.15),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
                           color: Colors.white.withOpacity(0.05),
@@ -81,26 +79,25 @@ class SignUpScreen extends StatelessWidget {
 
                     const SizedBox(height: 24),
                     
-                    // Footer Link
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Text(
-                          'Already have an account? ',
+                          'از قبل حساب کاربری دارید؟ ',
                           style: TextStyle(
-                            color: Color(0xFFBCC9C8), // on-surface-variant
+                            color: Color(0xFFBCC9C8),
                             fontSize: 16,
                             fontFamily: 'Manrope',
                           ),
                         ),
                         GestureDetector(
                           onTap: () {
-                            Navigator.pop(context); // Back to login
+                            Navigator.pop(context);
                           },
                           child: const Text(
-                            'Log In',
+                            'ورود',
                             style: TextStyle(
-                              color: Color(0xFF5AD9D9), // primary
+                              color: Color(0xFF5AD9D9),
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                               fontFamily: 'Manrope',

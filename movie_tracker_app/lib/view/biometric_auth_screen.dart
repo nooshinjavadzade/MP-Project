@@ -65,7 +65,6 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> with SingleTi
       backgroundColor: const Color(0xFF00161F),
       body: Stack(
         children: [
-          // Background Radial Gradient
           Center(
             child: Container(
               width: MediaQuery.of(context).size.width * 0.8,
@@ -75,7 +74,7 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> with SingleTi
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    Color(0x2629B5B5), // rgba(41, 181, 181, 0.15)
+                    Color(0x2629B5B5),
                     Colors.transparent,
                   ],
                   stops: [0.0, 0.7],
@@ -88,14 +87,12 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> with SingleTi
             child: Column(
               children: [
                 const SizedBox(height: 64),
-                // Header Logo placeholder
                 const SizedBox(height: 128),
                 
                 Expanded(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Biometric Icon Container with glow and tilt
                       MouseRegion(
                         onEnter: (_) => setState(() => _isHovering = true),
                         onExit: (_) => setState(() {
@@ -104,7 +101,6 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> with SingleTi
                         }),
                         onHover: (event) {
                           setState(() {
-                            // Calculate local position relative to center of the 160x160 box
                             final renderBox = context.findRenderObject() as RenderBox?;
                             if (renderBox != null) {
                               _mousePosition = event.localPosition - const Offset(80, 80);
@@ -116,12 +112,11 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> with SingleTi
                           child: AnimatedBuilder(
                             animation: _animationController,
                             builder: (context, child) {
-                              // Tilt effect logic
                               final double rotateX = _isHovering ? -_mousePosition.dy / 300 : 0;
                               final double rotateY = _isHovering ? _mousePosition.dx / 300 : 0;
                               
                               final transform = Matrix4.identity()
-                                ..setEntry(3, 2, 0.001) // perspective
+                                ..setEntry(3, 2, 0.001)
                                 ..rotateX(rotateX)
                                 ..rotateY(rotateY)
                                 ..scale(_scaleAnimation.value);
@@ -134,9 +129,9 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> with SingleTi
                                   height: 160,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: const Color(0xFF0C2E3B).withOpacity(0.8), // surface-container-high
+                                    color: const Color(0xFF0C2E3B).withOpacity(0.8),
                                     border: Border.all(
-                                      color: const Color(0xFF5AD9D9).withOpacity(0.2), // primary/20
+                                      color: const Color(0xFF5AD9D9).withOpacity(0.2),
                                     ),
                                     boxShadow: [
                                       BoxShadow(
@@ -167,25 +162,24 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> with SingleTi
                       ),
                       const SizedBox(height: 40),
                       
-                      // Prompt Text
                       const Text(
-                        'Authenticate to continue',
+                        'برای ادامه، احراز هویت کنید',
                         style: TextStyle(
                           fontFamily: 'Manrope',
                           fontSize: 20,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFFC7E7F8), // on-background
+                          color: Color(0xFFC7E7F8),
                           letterSpacing: 0.5,
                         ),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 8),
                       const Text(
-                        'Confirm your identity to access TV Time',
+                        'برای دسترسی به TV Time، هویت خود را تأیید کنید',
                         style: TextStyle(
                           fontFamily: 'Manrope',
                           fontSize: 16,
-                          color: Color(0xFFBCC9C8), // on-surface-variant
+                          color: Color(0xFFBCC9C8),
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -193,7 +187,6 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> with SingleTi
                   ),
                 ),
                 
-                // Footer Actions
                 Padding(
                   padding: const EdgeInsets.only(bottom: 40),
                   child: OutlinedButton.icon(
@@ -204,9 +197,9 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> with SingleTi
                       );
                     },
                     icon: const Icon(Icons.password, size: 20),
-                    label: const Text('USE PASSWORD'),
+                    label: const Text('استفاده از رمز عبور'),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFF5AD9D9), // primary
+                      foregroundColor: const Color(0xFF5AD9D9),
                       side: BorderSide(
                         color: const Color(0xFF5AD9D9).withOpacity(0.3),
                       ),

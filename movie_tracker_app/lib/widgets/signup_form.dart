@@ -34,11 +34,10 @@ class _SignUpFormState extends State<SignUpForm> {
     final username = _usernameController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text;
-    // Bio is collected but auth_presenter does not currently accept it.
     
     if (username.isEmpty || email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill in all required fields.')),
+        const SnackBar(content: Text('لطفاً تمام فیلدهای الزامی را پر کنید.')),
       );
       return;
     }
@@ -55,9 +54,9 @@ class _SignUpFormState extends State<SignUpForm> {
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Welcome Aboard! Account created.')),
+          const SnackBar(content: Text('خوش آمدید! حساب کاربری ایجاد شد.')),
         );
-        Navigator.pop(context); // Go back to login
+        Navigator.pop(context);
       }
     }
   }
@@ -67,21 +66,21 @@ class _SignUpFormState extends State<SignUpForm> {
     return Column(
       children: [
         AuthTextField(
-          label: 'Full Name',
-          hint: 'John Doe',
+          label: 'نام کامل',
+          hint: 'نام و نام خانوادگی',
           icon: Icons.person_outline,
           controller: _fullNameController,
         ),
         const SizedBox(height: 16),
         AuthTextField(
-          label: 'Username',
-          hint: 'johndoe123',
+          label: 'نام کاربری',
+          hint: 'نام کاربری خود را وارد کنید',
           icon: Icons.account_circle_outlined,
           controller: _usernameController,
         ),
         const SizedBox(height: 16),
         AuthTextField(
-          label: 'Email Address',
+          label: 'آدرس ایمیل',
           hint: 'name@example.com',
           icon: Icons.mail_outline,
           controller: _emailController,
@@ -89,15 +88,15 @@ class _SignUpFormState extends State<SignUpForm> {
         ),
         const SizedBox(height: 16),
         AuthPasswordField(
-          label: 'Password',
+          label: 'رمز عبور',
           hint: '••••••••',
           icon: Icons.lock_outline,
           controller: _passwordController,
         ),
         const SizedBox(height: 16),
         AuthTextField(
-          label: 'Biography',
-          hint: 'Tell us about your movie tastes...',
+          label: 'بیوگرافی',
+          hint: 'از علاقه‌مندی‌های سینمایی خود بگویید...',
           icon: Icons.edit_note_outlined,
           controller: _bioController,
           maxLines: 3,
@@ -132,17 +131,17 @@ class _SignUpFormState extends State<SignUpForm> {
                             height: 24,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: Color(0xFF5B152D), // on-tertiary
+                              color: Color(0xFF5B152D),
                             ),
                           )
                         : const Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                'Sign Up',
+                                'ثبت‌نام',
                                 style: TextStyle(
                                   color: Color(0xFF5B152D),
-                                  fontSize: 24, // headline-lg-mobile
+                                  fontSize: 24,
                                   fontWeight: FontWeight.bold,
                                   fontFamily: 'Plus Jakarta Sans',
                                 ),

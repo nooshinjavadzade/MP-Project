@@ -18,15 +18,15 @@ class MovieSynopsisCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(32),
           decoration: BoxDecoration(
-            color: const Color(0x9900232F), // rgba(0, 35, 47, 0.6)
-            border: Border.all(color: const Color(0x33869393)), // outline/20
+            color: const Color(0x9900232F),
+            border: Border.all(color: const Color(0x33869393)),
             borderRadius: BorderRadius.circular(24),
           ),
           child: Container(
             decoration: const BoxDecoration(
               border: Border(
                 left: BorderSide(
-                  color: Color(0xFF5AD9D9), // primary
+                  color: Color(0xFF5AD9D9),
                   width: 4,
                 ),
               ),
@@ -36,7 +36,7 @@ class MovieSynopsisCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Synopsis',
+                  'خلاصه داستان',
                   style: TextStyle(
                     color: Color(0xFF5AD9D9),
                     fontSize: 20,
@@ -46,11 +46,11 @@ class MovieSynopsisCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  synopsis.isNotEmpty ? synopsis : 'No synopsis available.',
+                  synopsis.isNotEmpty ? synopsis : 'خلاصه‌ای در دسترس نیست.',
                   style: const TextStyle(
-                    color: Color(0xFFBCC9C8), // on-surface-variant
+                    color: Color(0xFFBCC9C8),
                     fontSize: 18,
-                    height: 1.55, // leading-relaxed
+                    height: 1.55,
                     fontFamily: 'Manrope',
                   ),
                 ),

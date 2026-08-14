@@ -14,7 +14,6 @@ class _WelcomeLogoState extends State<WelcomeLogo> with SingleTickerProviderStat
   @override
   void initState() {
     super.initState();
-    // انیمیشن شناور شدن (Float)
     _floatController = AnimationController(
       duration: const Duration(seconds: 3),
       vsync: this,
@@ -43,13 +42,11 @@ class _WelcomeLogoState extends State<WelcomeLogo> with SingleTickerProviderStat
       },
       child: Column(
         children: [
-          // بخش لوگو
           Container(
-            margin: const EdgeInsets.only(bottom: 40), // mb-lg
+            margin: const EdgeInsets.only(bottom: 40),
             child: Stack(
               alignment: Alignment.center,
               children: [
-                // هاله درخشان پشت لوگو (Glow)
                 Container(
                   width: 160,
                   height: 160,
@@ -57,17 +54,16 @@ class _WelcomeLogoState extends State<WelcomeLogo> with SingleTickerProviderStat
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF5AD9D9).withOpacity(0.2), // bg-primary/20
+                        color: const Color(0xFF5AD9D9).withOpacity(0.2),
                         blurRadius: 40,
                         spreadRadius: 10,
                       ),
                     ],
                   ),
                 ),
-                // عکس لوگو
                 Image.asset(
                   'assets/logo.jpg',
-                  width: 160, // w-32 md:w-40
+                  width: 160,
                   height: 160,
                   fit: BoxFit.contain,
                 ),
@@ -75,31 +71,29 @@ class _WelcomeLogoState extends State<WelcomeLogo> with SingleTickerProviderStat
             ),
           ),
 
-          // نام برنامه
           const Text(
             'TV Time',
             style: TextStyle(
-              color: Color(0xFFC7E7F8), // text-on-background
-              fontSize: 32, // headline-lg
+              color: Color(0xFFC7E7F8),
+              fontSize: 32,
               fontWeight: FontWeight.w600,
               fontFamily: 'Plus Jakarta Sans',
-              letterSpacing: -0.5, // tracking-tight
+              letterSpacing: -0.5,
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 8), // space-y-xs
+          const SizedBox(height: 8),
           
-          // توضیحات زیر نام برنامه
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 24.0),
             child: Text(
-              'Track your journey through the cinematic deep.',
+              'سفر خود را در اعماق سینما دنبال کنید.',
               style: TextStyle(
-                color: Color(0xFFBCC9C8), // text-on-surface-variant
-                fontSize: 16, // body-md
+                color: Color(0xFFBCC9C8),
+                fontSize: 16,
                 fontWeight: FontWeight.w400,
                 fontFamily: 'Manrope',
-                height: 1.625, // leading-relaxed
+                height: 1.625,
               ),
               textAlign: TextAlign.center,
             ),

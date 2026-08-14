@@ -14,16 +14,16 @@ class CustomBottomNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(12)), // rounded-t-xl
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: const Color(0xFF00232F).withOpacity(0.8), // surface-container/80
+            color: const Color(0xFF00232F).withOpacity(0.8),
             border: const Border(
               top: BorderSide(
-                color: Color(0x33193846), // border-surface-variant/20
+                color: Color(0x33193846),
                 width: 1,
               ),
             ),
@@ -36,19 +36,19 @@ class CustomBottomNavBar extends StatelessWidget {
                   context,
                   index: 0,
                   icon: Icons.home_filled,
-                  label: 'Home',
+                  label: 'خانه',
                 ),
                 _buildNavItem(
                   context,
                   index: 1,
                   icon: Icons.bookmark_outline,
-                  label: 'Watchlist',
+                  label: 'لیست تماشا',
                 ),
                 _buildNavItem(
                   context,
                   index: 2,
                   icon: Icons.person_outline,
-                  label: 'Profile',
+                  label: 'پروفایل',
                 ),
               ],
             ),
@@ -60,7 +60,7 @@ class CustomBottomNavBar extends StatelessWidget {
 
   Widget _buildNavItem(BuildContext context, {required int index, required IconData icon, required String label}) {
     final isSelected = currentIndex == index;
-    final color = isSelected ? const Color(0xFFF08DA5) : const Color(0xFFBCC9C8).withOpacity(0.6); // coral-pink or on-surface-variant/60
+    final color = isSelected ? const Color(0xFFF08DA5) : const Color(0xFFBCC9C8).withOpacity(0.6);
 
     return GestureDetector(
       onTap: () => onTap(index),
@@ -78,7 +78,7 @@ class CustomBottomNavBar extends StatelessWidget {
             label,
             style: TextStyle(
               color: color,
-              fontSize: 10, // text-[10px]
+              fontSize: 10,
               fontWeight: FontWeight.w700,
               fontFamily: 'Manrope',
             ),

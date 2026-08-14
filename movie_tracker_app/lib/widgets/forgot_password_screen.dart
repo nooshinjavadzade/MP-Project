@@ -36,7 +36,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Password reset instructions sent to your email.')),
+          const SnackBar(content: Text('دستورالعمل‌های بازنشانی رمز عبور به ایمیل شما ارسال شد.')),
         );
         Navigator.push(
           context,
@@ -61,7 +61,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       extendBodyBehindAppBar: true,
       body: Stack(
         children: [
-          // Background Orbs
           Positioned(
             top: -100,
             left: -100,
@@ -95,7 +94,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             ),
           ),
 
-          // Main Content
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
@@ -105,16 +103,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Icon/Logo
                       const Icon(
                         Icons.lock_reset,
                         size: 80,
                         color: Color(0xFF5AD9D9),
                       ),
                       const SizedBox(height: 24),
-                      // Title
                       const Text(
-                        'Reset Password',
+                        'بازنشانی رمز عبور',
                         style: TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.w800,
@@ -130,7 +126,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       ),
                       const SizedBox(height: 16),
                       const Text(
-                        'Enter your email address and we will send you instructions to reset your password.',
+                        'آدرس ایمیل خود را وارد کنید تا دستورالعمل‌های بازنشانی رمز عبور برای شما ارسال شود.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 16,
@@ -140,7 +136,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       ),
                       const SizedBox(height: 48),
 
-                      // Form Card
                       ClipRRect(
                         borderRadius: BorderRadius.circular(12),
                         child: BackdropFilter(
@@ -158,7 +153,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 _buildTextField(
-                                  label: 'Email Address',
+                                  label: 'آدرس ایمیل',
                                   hint: 'name@example.com',
                                   icon: Icons.mail_outline,
                                   controller: _emailController,
@@ -166,7 +161,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                 ),
                                 const SizedBox(height: 32),
                                 
-                                // Submit Button
                                 Consumer<AuthPresenter>(
                                   builder: (context, presenter, _) {
                                     return SizedBox(
@@ -196,7 +190,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                                 mainAxisAlignment: MainAxisAlignment.center,
                                                 children: [
                                                   Text(
-                                                    'Send Reset Link',
+                                                    'ارسال لینک بازنشانی',
                                                     style: TextStyle(
                                                       fontSize: 18,
                                                       fontWeight: FontWeight.bold,

@@ -35,8 +35,8 @@ class MediaGridCard extends StatelessWidget {
                 filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: const Color(0x330F5F66), // rgba(15, 95, 102, 0.2)
-                    border: Border.all(color: const Color(0x1A5AD9D9)), // rgba(90, 217, 217, 0.1)
+                    color: const Color(0x330F5F66),
+                    border: Border.all(color: const Color(0x1A5AD9D9)),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Stack(
@@ -51,7 +51,6 @@ class MediaGridCard extends StatelessWidget {
                       else
                         Container(color: const Color(0xFF193846)),
                       
-                      // Bottom gradient
                       Positioned(
                         left: 0,
                         right: 0,
@@ -71,7 +70,6 @@ class MediaGridCard extends StatelessWidget {
                         ),
                       ),
                       
-                      // Rating
                       if (rating > 0)
                         Positioned(
                           top: 8,
@@ -82,7 +80,7 @@ class MediaGridCard extends StatelessWidget {
                               filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                color: const Color(0xCC00161F), // bg-surface/80
+                                color: const Color(0xCC00161F),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [

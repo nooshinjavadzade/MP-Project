@@ -26,7 +26,6 @@ class _SplashScreenState extends State<SplashScreen> {
     try {
       final presenter = context.read<AuthPresenter>();
       
-      // اجرای همزمان انیمیشن (۲.۵ ثانیه) و بررسی وضعیت لاگین کاربر
       final results = await Future.wait([
         Future.delayed(const Duration(milliseconds: 2000)),
         presenter.checkAutoLogin(),
@@ -48,7 +47,6 @@ class _SplashScreenState extends State<SplashScreen> {
         );
       }
     } catch (e) {
-      // در صورت بروز هرگونه خطای پیش‌بینی نشده، کاربر را به صفحه لاگین بفرست
       if (!mounted) return;
       Navigator.pushReplacement(
         context,
@@ -63,13 +61,12 @@ class _SplashScreenState extends State<SplashScreen> {
       backgroundColor: const Color(0xFF00161F),
       body: Stack(
         children: [
-          // Radial Glow Background
           Container(
             decoration: const BoxDecoration(
               gradient: RadialGradient(
                 colors: [
-                  Color(0x2629B5B5), // rgba(41, 181, 181, 0.15)
-                  Color(0x0000161F), // transparent
+                  Color(0x2629B5B5),
+                  Color(0x0000161F),
                 ],
                 radius: 0.8,
                 center: Alignment.center,
@@ -81,10 +78,8 @@ class _SplashScreenState extends State<SplashScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Spacer(),
-                // بخش لوگو و عنوان که انیمیشن شناور دارد
                 SplashLogo(),
                 Spacer(),
-                // بخش نوار وضعیت بارگذاری
                 SplashLoadingBar(),
                 SizedBox(height: 64),
               ],

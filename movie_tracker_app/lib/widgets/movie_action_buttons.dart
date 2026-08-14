@@ -57,8 +57,8 @@ class MovieActionButtons extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         gradient: const LinearGradient(
           colors: [
-            Color(0xFFF08DA5), // coral-pink
-            Color(0xFFE8879F), // tertiary-container
+            Color(0xFFF08DA5),
+            Color(0xFFE8879F),
           ],
         ),
         boxShadow: [
@@ -76,10 +76,10 @@ class MovieActionButtons extends StatelessWidget {
           child: const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.bookmark, color: Color(0xFF681F36)), // on-tertiary-container
+              Icon(Icons.bookmark, color: Color(0xFF681F36)),
               SizedBox(width: 8),
               Text(
-                'Add to Watchlist',
+                'افزودن به لیست تماشا',
                 style: TextStyle(
                   color: Color(0xFF681F36),
                   fontSize: 20,
@@ -98,9 +98,9 @@ class MovieActionButtons extends StatelessWidget {
     return Container(
       height: 56,
       decoration: BoxDecoration(
-        color: const Color(0x3329B5B5), // primary-container/20
+        color: const Color(0x3329B5B5),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0x4D5AD9D9)), // primary/30
+        border: Border.all(color: const Color(0x4D5AD9D9)),
       ),
       child: Material(
         color: Colors.transparent,
@@ -113,7 +113,7 @@ class MovieActionButtons extends StatelessWidget {
               Icon(Icons.favorite, color: Color(0xFF5AD9D9)),
               SizedBox(width: 8),
               Text(
-                'Like',
+                'پسندیدن',
                 style: TextStyle(
                   color: Color(0xFF5AD9D9),
                   fontSize: 20,
@@ -132,9 +132,9 @@ class MovieActionButtons extends StatelessWidget {
     return Container(
       height: 56,
       decoration: BoxDecoration(
-        color: const Color(0x66193846), // surface-variant/40
+        color: const Color(0x66193846),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0x4D3C4949)), // outline-variant/30
+        border: Border.all(color: const Color(0x4D3C4949)),
       ),
       child: Material(
         color: Colors.transparent,
@@ -147,7 +147,7 @@ class MovieActionButtons extends StatelessWidget {
               Icon(Icons.report, color: Color(0xFFBCC9C8)),
               SizedBox(width: 8),
               Text(
-                'Report',
+                'گزارش',
                 style: TextStyle(
                   color: Color(0xFFBCC9C8),
                   fontSize: 20,
