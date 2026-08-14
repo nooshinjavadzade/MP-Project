@@ -231,3 +231,5 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> with SingleTi
     );
   }
 }
+
+

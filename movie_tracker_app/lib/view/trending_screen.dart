@@ -188,3 +188,5 @@ class _TrendingScreenState extends State<TrendingScreen> {
     );
   }
 }
+
+

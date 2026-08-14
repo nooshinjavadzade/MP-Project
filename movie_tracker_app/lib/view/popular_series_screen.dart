@@ -199,3 +199,5 @@ class _PopularSeriesScreenState extends State<PopularSeriesScreen> {
     );
   }
 }
+
+

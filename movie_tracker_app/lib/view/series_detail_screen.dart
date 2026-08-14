@@ -415,3 +415,4 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
     );
   }
 }
+
