@@ -126,3 +126,5 @@ class MovieCastCard extends StatelessWidget {
     );
   }
 }
+
+

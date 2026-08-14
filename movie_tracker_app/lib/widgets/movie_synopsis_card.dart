@@ -62,3 +62,5 @@ class MovieSynopsisCard extends StatelessWidget {
     );
   }
 }
+
+

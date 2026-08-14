@@ -202,3 +202,5 @@ class MovieHeroSection extends StatelessWidget {
     );
   }
 }
+
+

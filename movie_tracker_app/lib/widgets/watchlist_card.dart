@@ -219,3 +219,5 @@ class WatchlistCard extends StatelessWidget {
     return const Color(0xFF00232F); 
   }
 }
+
+

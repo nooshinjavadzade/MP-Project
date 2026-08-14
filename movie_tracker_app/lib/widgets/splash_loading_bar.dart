@@ -113,3 +113,5 @@ class _SplashLoadingBarState extends State<SplashLoadingBar> with SingleTickerPr
     );
   }
 }
+
+
