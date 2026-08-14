@@ -1,0 +1,97 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../presenters/auth/auth_presenter.dart';
+import 'home_screen.dart';
+import 'welcome_screen.dart';
+import '../widgets/splash_logo.dart';
+import '../widgets/splash_loading_bar.dart';
+
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeApp();
+    });
+  }
+
+  Future<void> _initializeApp() async {
+    try {
+      final presenter = context.read<AuthPresenter>();
+      
+      // اجرای همزمان انیمیشن (۲.۵ ثانیه) و بررسی وضعیت لاگین کاربر
+      final results = await Future.wait([
+        Future.delayed(const Duration(milliseconds: 2000)),
+        presenter.checkAutoLogin(),
+      ]);
+
+      final isLoggedIn = results[1] as bool;
+
+      if (!mounted) return;
+
+      if (isLoggedIn) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const WelcomeScreen()),
+        );
+      }
+    } catch (e) {
+      // در صورت بروز هرگونه خطای پیش‌بینی نشده، کاربر را به صفحه لاگین بفرست
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const WelcomeScreen()),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF00161F),
+      body: Stack(
+        children: [
+          // Radial Glow Background
+          Container(
+            decoration: const BoxDecoration(
+              gradient: RadialGradient(
+                colors: [
+                  Color(0x2629B5B5), // rgba(41, 181, 181, 0.15)
+                  Color(0x0000161F), // transparent
+                ],
+                radius: 0.8,
+                center: Alignment.center,
+              ),
+            ),
+          ),
+          const SafeArea(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Spacer(),
+                // بخش لوگو و عنوان که انیمیشن شناور دارد
+                SplashLogo(),
+                Spacer(),
+                // بخش نوار وضعیت بارگذاری
+                SplashLoadingBar(),
+                SizedBox(height: 64),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
