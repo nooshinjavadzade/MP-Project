@@ -39,9 +39,9 @@ void main() async {
   final profileService = ProfileService(apiClient);
 
   // 3. Instantiate Local Services
-  final biometricService = BiometricService();
   final localStorageService = LocalStorageService();
   await localStorageService.init();
+  final biometricService = BiometricService(localStorageService: localStorageService);
 
   runApp(
     MultiProvider(

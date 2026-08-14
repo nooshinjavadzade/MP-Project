@@ -1,10 +1,12 @@
 import 'package:flutter/foundation.dart';
 import '../../models/user_content/personal_list.dart';
 import '../../services/api/interactions_service.dart';
+import '../../services/local/local_storage_service.dart';
 import 'i_interactions_presenter.dart';
 
 class InteractionsPresenter extends ChangeNotifier implements IInteractionsPresenter {
   final InteractionsService _interactionsService;
+  final LocalStorageService _localStorageService;
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -14,7 +16,10 @@ class InteractionsPresenter extends ChangeNotifier implements IInteractionsPrese
   PersonalListResponse? _currentListResponse;
   PersonalListItemResponse? _currentListItemResponse;
 
-  InteractionsPresenter(this._interactionsService);
+  InteractionsPresenter(
+      this._interactionsService, {
+        LocalStorageService? localStorageService,
+      }) : _localStorageService = localStorageService ?? LocalStorageService();
 
   @override
   bool get isLoading => _isLoading;
@@ -40,6 +45,9 @@ class InteractionsPresenter extends ChangeNotifier implements IInteractionsPrese
     try {
       final request = PersonalListCreate(name: name, description: description);
       _currentListResponse = await _interactionsService.createList(request);
+      if (_currentListResponse != null) {
+        _userLists.add(_currentListResponse!);
+      }
       _errorMessage = null;
     } catch (e) {
       _errorMessage = e.toString();
@@ -87,6 +95,12 @@ class InteractionsPresenter extends ChangeNotifier implements IInteractionsPrese
         listId: listId,
         request: request,
       );
+      if (_currentListResponse != null) {
+        final index = _userLists.indexWhere((element) => element.id == listId);
+        if (index != -1) {
+          _userLists[index] = _currentListResponse!;
+        }
+      }
       _errorMessage = null;
     } catch (e) {
       _errorMessage = e.toString();
@@ -100,6 +114,10 @@ class InteractionsPresenter extends ChangeNotifier implements IInteractionsPrese
     _setLoading(true);
     try {
       await _interactionsService.deleteList(listId);
+      _userLists.removeWhere((element) => element.id == listId);
+      if (_selectedListWithItems?.id == listId) {
+        _selectedListWithItems = null;
+      }
       _errorMessage = null;
     } catch (e) {
       _errorMessage = e.toString();
@@ -116,6 +134,10 @@ class InteractionsPresenter extends ChangeNotifier implements IInteractionsPrese
         listId: listId,
         mediaId: mediaId,
       );
+      if (_selectedListWithItems?.id == listId) {
+        await getListWithItems(listId);
+        return;
+      }
       _errorMessage = null;
     } catch (e) {
       _errorMessage = e.toString();
@@ -132,6 +154,9 @@ class InteractionsPresenter extends ChangeNotifier implements IInteractionsPrese
         listId: listId,
         mediaId: mediaId,
       );
+      if (_selectedListWithItems?.id == listId) {
+        _selectedListWithItems?.items.removeWhere((item) => item.mediaId == mediaId);
+      }
       _errorMessage = null;
     } catch (e) {
       _errorMessage = e.toString();

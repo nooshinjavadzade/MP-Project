@@ -11,7 +11,12 @@ import '../../models/auth/user.dart';
 import '../../models/common/media_base.dart';
 
 class LocalStorageService {
-  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage(
+    aOptions: AndroidOptions(
+      encryptedSharedPreferences: true,
+      resetOnError: true,
+    ),
+  );
   final DefaultCacheManager _cacheManager = DefaultCacheManager();
   SharedPreferences? _prefs;
 
@@ -83,7 +88,9 @@ class LocalStorageService {
   }
 
   Future<void> saveAuthToken(String token, {int? expiresInSeconds}) async {
-    await _secureStorage.write(key: _keyAuthToken, value: token);
+    try {
+      await _secureStorage.write(key: _keyAuthToken, value: token);
+    } catch (_) {}
     if (expiresInSeconds != null) {
       final expiryTime = DateTime.now().add(Duration(seconds: expiresInSeconds)).millisecondsSinceEpoch;
       await _instance.setInt(_keyTokenExpiry, expiryTime);
@@ -93,7 +100,11 @@ class LocalStorageService {
   }
 
   Future<String?> getAuthToken() async {
-    return await _secureStorage.read(key: _keyAuthToken);
+    try {
+      return await _secureStorage.read(key: _keyAuthToken);
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<bool> isTokenExpired() async {
@@ -103,16 +114,24 @@ class LocalStorageService {
   }
 
   Future<void> saveRefreshToken(String token) async {
-    await _secureStorage.write(key: _keyRefreshToken, value: token);
+    try {
+      await _secureStorage.write(key: _keyRefreshToken, value: token);
+    } catch (_) {}
   }
 
   Future<String?> getRefreshToken() async {
-    return await _secureStorage.read(key: _keyRefreshToken);
+    try {
+      return await _secureStorage.read(key: _keyRefreshToken);
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<void> clearTokens() async {
-    await _secureStorage.delete(key: _keyAuthToken);
-    await _secureStorage.delete(key: _keyRefreshToken);
+    try {
+      await _secureStorage.delete(key: _keyAuthToken);
+      await _secureStorage.delete(key: _keyRefreshToken);
+    } catch (_) {}
     await _instance.remove(_keyTokenExpiry);
   }
 
@@ -588,7 +607,9 @@ class LocalStorageService {
   }
 
   Future<void> clearAllData() async {
-    await _secureStorage.deleteAll();
+    try {
+      await _secureStorage.deleteAll();
+    } catch (_) {}
     await _cacheManager.emptyCache();
     await _instance.clear();
   }
