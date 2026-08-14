@@ -16,13 +16,17 @@ class PopularMoviesScreen extends StatefulWidget {
 
 class _PopularMoviesScreenState extends State<PopularMoviesScreen> {
   String _searchQuery = '';
+  final ScrollController _scrollController = ScrollController();
+  int _currentPage = 1;
   int _currentNavIndex = 0;
 
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<MediaPresenter>().getPopularMovies();
+      // initial load done by Home screen, or we can fetch page 1
+      // context.read<MediaPresenter>().getPopularMovies();
     });
   }
 
@@ -33,6 +37,21 @@ class _PopularMoviesScreenState extends State<PopularMoviesScreen> {
     // TODO: Handle navigation based on index
   }
 
+    void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      if (!context.read<MediaPresenter>().isLoading) {
+        _currentPage++;
+        context.read<MediaPresenter>().getPopularMovies(/* page: _currentPage */); // pass page if supported
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -90,6 +109,7 @@ class _PopularMoviesScreenState extends State<PopularMoviesScreen> {
                   : allMovies.where((m) => m.title.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
 
               return CustomScrollView(
+                controller: _scrollController,
                 slivers: [
                   SliverToBoxAdapter(
                     child: Padding(

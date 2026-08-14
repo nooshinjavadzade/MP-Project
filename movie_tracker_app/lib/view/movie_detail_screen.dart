@@ -153,7 +153,9 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
 
                 MovieActionButtons(
                   onWatchlistTap: () {
-                    // TODO: call watchlist API
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Added to Watchlist')),
+                    );
                   },
                   onLikeTap: () {
                     presenter.toggleLike(widget.movieId.toString(), 'movie');

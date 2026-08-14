@@ -28,7 +28,7 @@ class _SplashScreenState extends State<SplashScreen> {
       
       // اجرای همزمان انیمیشن (۲.۵ ثانیه) و بررسی وضعیت لاگین کاربر
       final results = await Future.wait([
-        Future.delayed(const Duration(milliseconds: 500)),
+        Future.delayed(const Duration(milliseconds: 2000)),
         presenter.checkAutoLogin(),
       ]);
 

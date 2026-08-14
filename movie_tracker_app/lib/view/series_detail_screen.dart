@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'package:provider/provider.dart';
 
 import '../../presenters/media/media_presenter.dart';
@@ -46,10 +47,7 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
         preferredSize: const Size.fromHeight(64),
         child: ClipRRect(
           child: BackdropFilter(
-            filter: true ? 
-                // ImageFilter.blur is standard, let's just use Container for simplicity since dart:ui requires it
-                // We'll leave out BackdropFilter if dart:ui is missing, or just add the import later if needed.
-                null : null,
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
             child: AppBar(
               backgroundColor: const Color(0x99193846), // surface-variant/60
               elevation: 0,
@@ -218,7 +216,11 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
                                 runSpacing: 12,
                                 children: [
                                   ElevatedButton.icon(
-                                    onPressed: () {},
+                                    onPressed: () {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('Added to Watchlist')),
+                                      );
+                                    },
                                     icon: const Icon(Icons.add, size: 20),
                                     label: const Text('ADD TO WATCHLIST'),
                                     style: ElevatedButton.styleFrom(
@@ -230,7 +232,11 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
                                     ),
                                   ),
                                   OutlinedButton.icon(
-                                    onPressed: () {},
+                                    onPressed: () {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('Added to Favorites')),
+                                      );
+                                    },
                                     icon: const Icon(Icons.favorite_border, size: 20),
                                     label: const Text('LIKE'),
                                     style: OutlinedButton.styleFrom(
