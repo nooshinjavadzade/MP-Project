@@ -29,7 +29,15 @@ class _SearchScreenState extends State<SearchScreen> {
   void _onSearchChanged(String value) {
     if (value.isNotEmpty) {
       context.read<MediaPresenter>().searchMedia(value);
+    } else {
+      setState(() {});
     }
+  }
+
+  void _onHistoryTapped(String query) {
+    _searchController.text = query;
+    context.read<MediaPresenter>().searchMedia(query);
+    setState(() {});
   }
 
   void _onNavTapped(int index) {
@@ -88,7 +96,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 16),
-                  
+
                   Container(
                     decoration: BoxDecoration(
                       color: const Color(0x330F5F66),
@@ -119,7 +127,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
@@ -136,13 +144,13 @@ class _SearchScreenState extends State<SearchScreen> {
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                               decoration: BoxDecoration(
-                                color: isSelected 
+                                color: isSelected
                                     ? const Color(0xFFF08DA5)
                                     : const Color(0xFF193846).withOpacity(0.4),
                                 borderRadius: BorderRadius.circular(9999),
                                 border: Border.all(
-                                  color: isSelected 
-                                      ? const Color(0xFFF08DA5) 
+                                  color: isSelected
+                                      ? const Color(0xFFF08DA5)
                                       : Colors.white.withOpacity(0.1),
                                 ),
                                 boxShadow: isSelected ? [
@@ -168,7 +176,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  
+
                   Expanded(
                     child: Consumer<MediaPresenter>(
                       builder: (context, presenter, child) {
@@ -177,8 +185,17 @@ class _SearchScreenState extends State<SearchScreen> {
                             child: CircularProgressIndicator(color: Color(0xFFF08DA5)),
                           );
                         }
-                        
+
                         if (_searchController.text.isEmpty) {
+                          final history = presenter.searchHistory;
+                          if (history.isEmpty) {
+                            return const Center(
+                              child: Text(
+                                'تاریخچه جستجویی وجود ندارد.',
+                                style: TextStyle(color: Colors.white54),
+                              ),
+                            );
+                          }
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -195,7 +212,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                     ),
                                   ),
                                   TextButton(
-                                    onPressed: () {},
+                                    onPressed: () => presenter.clearSearchHistory(),
                                     child: const Text(
                                       'پاک کردن همه',
                                       style: TextStyle(
@@ -206,6 +223,36 @@ class _SearchScreenState extends State<SearchScreen> {
                                     ),
                                   ),
                                 ],
+                              ),
+                              const SizedBox(height: 8),
+                              Expanded(
+                                child: ListView.separated(
+                                  itemCount: history.length,
+                                  separatorBuilder: (_, __) => Divider(
+                                    color: Colors.white.withOpacity(0.05),
+                                    height: 1,
+                                  ),
+                                  itemBuilder: (context, index) {
+                                    final query = history[index];
+                                    return ListTile(
+                                      contentPadding: EdgeInsets.zero,
+                                      leading: const Icon(Icons.history, color: Colors.white54, size: 20),
+                                      title: Text(
+                                        query,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 14,
+                                          fontFamily: 'Manrope',
+                                        ),
+                                      ),
+                                      trailing: IconButton(
+                                        icon: const Icon(Icons.close, color: Colors.white38, size: 18),
+                                        onPressed: () => presenter.removeSearchQuery(query),
+                                      ),
+                                      onTap: () => _onHistoryTapped(query),
+                                    );
+                                  },
+                                ),
                               ),
                             ],
                           );
@@ -221,7 +268,7 @@ class _SearchScreenState extends State<SearchScreen> {
                             ),
                           );
                         }
-                        
+
                         return GridView.builder(
                           padding: const EdgeInsets.only(bottom: 120),
                           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(

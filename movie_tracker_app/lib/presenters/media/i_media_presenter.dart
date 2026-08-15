@@ -19,6 +19,7 @@ abstract class IMediaPresenter {
   RatingResponse? get lastRatingResponse;
   ReviewResponse? get lastCreatedReview;
   List<ReviewResponse> get reviews;
+  List<String> get searchHistory;
 
   Future<void> searchMedia(String query, {int page = 1});
   Future<void> getTrending({String mediaType = 'all', String timeWindow = 'week'});
@@ -32,4 +33,7 @@ abstract class IMediaPresenter {
   Future<void> rateMedia(String tmdbId, String mediaType, double rating);
   Future<void> createReview(String tmdbId, String mediaType, String review, bool containsSpoiler);
   Future<void> getReviews(String tmdbId, String mediaType, {int page = 1, int perPage = 20});
+  Future<void> loadSearchHistory();
+  Future<void> removeSearchQuery(String query);
+  Future<void> clearSearchHistory();
 }
