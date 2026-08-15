@@ -51,14 +51,24 @@ class ProfilePresenter extends ChangeNotifier implements IProfilePresenter {
   @override
   Future<void> getProfile() async {
     _setLoading(true);
+
+    final freshCachedProfile = _localStorageService?.getUserProfile(checkTtl: true);
+    if (freshCachedProfile != null) {
+      _profileResponse = freshCachedProfile;
+      _user = User.fromJson(freshCachedProfile.toJson());
+      _errorMessage = null;
+      _setLoading(false);
+      return;
+    }
+
     try {
       _user = await _profileService.getProfile();
       _errorMessage = null;
     } catch (e) {
-      final cachedProfile = _localStorageService?.getUserProfile(checkTtl: false);
-      if (cachedProfile != null) {
-        _profileResponse = cachedProfile;
-        _user = User.fromJson(cachedProfile.toJson());
+      final staleCachedProfile = _localStorageService?.getUserProfile(checkTtl: false);
+      if (staleCachedProfile != null) {
+        _profileResponse = staleCachedProfile;
+        _user = User.fromJson(staleCachedProfile.toJson());
         _errorMessage = null;
       } else {
         _errorMessage = e.toString();

@@ -20,6 +20,7 @@ dependencies:
   local_auth: ^3.0.2
   shared_preferences: ^2.5.5
   flutter_cache_manager: ^3.4.2
+  cached_network_image: ^3.4.1
 
 dev_dependencies:
   flutter_test:

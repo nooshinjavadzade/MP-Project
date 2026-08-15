@@ -1,5 +1,7 @@
 import 'dart:ui';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import '../../../models/common/media_base.dart';
 
 class MediaGridCard extends StatelessWidget {
@@ -27,7 +29,6 @@ class MediaGridCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 🔹 قبلاً AspectRatio بود؛ الان Expanded می‌گیره تا با هر ارتفاعی از گرید سازگار باشه
           Expanded(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
@@ -43,10 +44,12 @@ class MediaGridCard extends StatelessWidget {
                     fit: StackFit.expand,
                     children: [
                       if (posterUrl != null && posterUrl.isNotEmpty)
-                        Image.network(
-                          posterUrl,
+                        CachedNetworkImage(
+                          imageUrl: posterUrl,
+                          cacheManager: DefaultCacheManager(),
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Container(color: const Color(0xFF193846)),
+                          placeholder: (_, __) => Container(color: const Color(0xFF193846)),
+                          errorWidget: (_, __, ___) => Container(color: const Color(0xFF193846)),
                         )
                       else
                         Container(color: const Color(0xFF193846)),

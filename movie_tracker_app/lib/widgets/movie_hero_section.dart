@@ -1,4 +1,6 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 class MovieHeroSection extends StatelessWidget {
   final String title;
@@ -38,10 +40,12 @@ class MovieHeroSection extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           if (finalBackdrop.isNotEmpty)
-            Image.network(
-              finalBackdrop,
+            CachedNetworkImage(
+              imageUrl: finalBackdrop,
+              cacheManager: DefaultCacheManager(),
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(color: const Color(0xFF193846)),
+              placeholder: (_, __) => Container(color: const Color(0xFF193846)),
+              errorWidget: (_, __, ___) => Container(color: const Color(0xFF193846)),
             )
           else
             Container(color: const Color(0xFF193846)),
@@ -77,12 +81,12 @@ class MovieHeroSection extends StatelessWidget {
                     return Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                       decoration: BoxDecoration(
-                        color: isFirst 
+                        color: isFirst
                             ? const Color(0x3329B5B5)
                             : const Color(0x336C5FA6),
                         border: Border.all(
-                          color: isFirst 
-                              ? const Color(0x4D5AD9D9) 
+                          color: isFirst
+                              ? const Color(0x4D5AD9D9)
                               : const Color(0x4D6C5FA6),
                         ),
                         borderRadius: BorderRadius.circular(9999),
@@ -100,7 +104,7 @@ class MovieHeroSection extends StatelessWidget {
                   }).toList(),
                 ),
                 const SizedBox(height: 16),
-                
+
                 Text(
                   year.isNotEmpty ? '$title ($year)' : title,
                   style: const TextStyle(
@@ -148,7 +152,7 @@ class MovieHeroSection extends StatelessWidget {
                           ],
                         ),
                       ),
-                    
+
                     if (userRating > 0)
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),

@@ -102,6 +102,15 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
   Future<void> getTrending({String mediaType = 'all', String timeWindow = 'week'}) async {
     _setLoading(true);
     final cacheKey = 'cached_trending_${mediaType}_$timeWindow';
+
+    final freshCachedItems = _localStorageService?.getMediaList(cacheKey, checkTtl: true) ?? [];
+    if (freshCachedItems.isNotEmpty) {
+      _trendingItems = freshCachedItems;
+      _errorMessage = null;
+      _setLoading(false);
+      return;
+    }
+
     try {
       final items = await _mediaService.getTrending(mediaType: mediaType, timeWindow: timeWindow);
       _prefetchPosters(items);
@@ -109,9 +118,9 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
       _trendingItems = items;
       _errorMessage = null;
     } catch (e) {
-      final cachedItems = _localStorageService?.getMediaList(cacheKey, checkTtl: false) ?? [];
-      if (cachedItems.isNotEmpty) {
-        _trendingItems = cachedItems;
+      final staleItems = _localStorageService?.getMediaList(cacheKey, checkTtl: false) ?? [];
+      if (staleItems.isNotEmpty) {
+        _trendingItems = staleItems;
         _errorMessage = null;
       } else {
         _errorMessage = e.toString();
@@ -125,6 +134,17 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
   Future<void> getPopularMovies({int page = 1}) async {
     _setLoading(true);
     final cacheKey = 'cached_popular_movies_page_$page';
+
+    if (page == 1) {
+      final freshCachedItems = _localStorageService?.getMediaList(cacheKey, checkTtl: true) ?? [];
+      if (freshCachedItems.isNotEmpty) {
+        _popularMovies = freshCachedItems;
+        _errorMessage = null;
+        _setLoading(false);
+        return;
+      }
+    }
+
     try {
       final items = await _mediaService.getPopularMovies(page: page);
       _prefetchPosters(items);
@@ -135,9 +155,9 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
       _errorMessage = null;
     } catch (e) {
       if (page == 1) {
-        final cachedItems = _localStorageService?.getMediaList(cacheKey, checkTtl: false) ?? [];
-        if (cachedItems.isNotEmpty) {
-          _popularMovies = cachedItems;
+        final staleItems = _localStorageService?.getMediaList(cacheKey, checkTtl: false) ?? [];
+        if (staleItems.isNotEmpty) {
+          _popularMovies = staleItems;
           _errorMessage = null;
           _setLoading(false);
           return;
@@ -153,6 +173,17 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
   Future<void> getPopularSeries({int page = 1}) async {
     _setLoading(true);
     final cacheKey = 'cached_popular_series_page_$page';
+
+    if (page == 1) {
+      final freshCachedItems = _localStorageService?.getMediaList(cacheKey, checkTtl: true) ?? [];
+      if (freshCachedItems.isNotEmpty) {
+        _popularSeries = freshCachedItems;
+        _errorMessage = null;
+        _setLoading(false);
+        return;
+      }
+    }
+
     try {
       final items = await _mediaService.getPopularSeries(page: page);
       _prefetchPosters(items);
@@ -163,9 +194,9 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
       _errorMessage = null;
     } catch (e) {
       if (page == 1) {
-        final cachedItems = _localStorageService?.getMediaList(cacheKey, checkTtl: false) ?? [];
-        if (cachedItems.isNotEmpty) {
-          _popularSeries = cachedItems;
+        final staleItems = _localStorageService?.getMediaList(cacheKey, checkTtl: false) ?? [];
+        if (staleItems.isNotEmpty) {
+          _popularSeries = staleItems;
           _errorMessage = null;
           _setLoading(false);
           return;
@@ -179,6 +210,16 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
 
   Future<void> getTopMovies({int page = 1, int perPage = 20}) async {
     _setLoading(true);
+
+    if (page == 1) {
+      final freshCachedItems = _localStorageService?.getHomeSection('top_movies', checkTtl: true) ?? [];
+      if (freshCachedItems.isNotEmpty) {
+        _errorMessage = null;
+        _setLoading(false);
+        return;
+      }
+    }
+
     try {
       final result = await _mediaService.getTopMovies(page: page, perPage: perPage);
       if (page == 1) {
@@ -192,8 +233,8 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
       _errorMessage = null;
     } catch (e) {
       if (page == 1) {
-        final cachedItems = _localStorageService?.getHomeSection('top_movies');
-        if (cachedItems != null && cachedItems.isNotEmpty) {
+        final staleItems = _localStorageService?.getHomeSection('top_movies', checkTtl: false);
+        if (staleItems != null && staleItems.isNotEmpty) {
           _errorMessage = null;
           _setLoading(false);
           return;
@@ -207,6 +248,16 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
 
   Future<void> getTopSeries({int page = 1, int perPage = 20}) async {
     _setLoading(true);
+
+    if (page == 1) {
+      final freshCachedItems = _localStorageService?.getHomeSection('top_series', checkTtl: true) ?? [];
+      if (freshCachedItems.isNotEmpty) {
+        _errorMessage = null;
+        _setLoading(false);
+        return;
+      }
+    }
+
     try {
       final result = await _mediaService.getTopSeries(page: page, perPage: perPage);
       if (page == 1) {
@@ -220,8 +271,8 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
       _errorMessage = null;
     } catch (e) {
       if (page == 1) {
-        final cachedItems = _localStorageService?.getHomeSection('top_series');
-        if (cachedItems != null && cachedItems.isNotEmpty) {
+        final staleItems = _localStorageService?.getHomeSection('top_series', checkTtl: false);
+        if (staleItems != null && staleItems.isNotEmpty) {
           _errorMessage = null;
           _setLoading(false);
           return;
@@ -236,7 +287,15 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
   @override
   Future<void> getMovieDetails(int tmdbId) async {
     _setLoading(true);
-    final cached = _localStorageService?.getMovieDetails(tmdbId.toString());
+
+    final freshCached = _localStorageService?.getMovieDetails(tmdbId.toString(), checkTtl: true);
+    if (freshCached != null) {
+      _movieDetails = freshCached;
+      _errorMessage = null;
+      _setLoading(false);
+      return;
+    }
+
     try {
       final details = await _mediaService.getMovieDetails(tmdbId);
       await _localStorageService?.saveMovieDetails(tmdbId.toString(), details);
@@ -249,8 +308,9 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
       _movieDetails = details;
       _errorMessage = null;
     } catch (e) {
-      if (cached != null) {
-        _movieDetails = cached;
+      final staleCached = _localStorageService?.getMovieDetails(tmdbId.toString(), checkTtl: false);
+      if (staleCached != null) {
+        _movieDetails = staleCached;
         _errorMessage = null;
       } else {
         _errorMessage = e.toString();
@@ -263,7 +323,15 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
   @override
   Future<void> getSeriesDetails(int tmdbId) async {
     _setLoading(true);
-    final cached = _localStorageService?.getSeriesDetails(tmdbId.toString());
+
+    final freshCached = _localStorageService?.getSeriesDetails(tmdbId.toString(), checkTtl: true);
+    if (freshCached != null) {
+      _seriesDetails = freshCached;
+      _errorMessage = null;
+      _setLoading(false);
+      return;
+    }
+
     try {
       final details = await _mediaService.getSeriesDetails(tmdbId);
       await _localStorageService?.saveSeriesDetails(tmdbId.toString(), details);
@@ -276,17 +344,17 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
       _seriesDetails = details;
       _errorMessage = null;
 
-      // ---- DEBUG ----
       debugPrint('=== [Presenter.getSeriesDetails] seasons parsed: ${details.seasons.length} ===');
       for (final s in details.seasons) {
         debugPrint('  -> season ${s.seasonNumber} "${s.title}" episodes: ${s.episodes.length}');
       }
-      // ---- END DEBUG ----
     } catch (e, stack) {
       debugPrint('=== [Presenter.getSeriesDetails] ERROR: $e ===');
       debugPrint(stack.toString());
-      if (cached != null) {
-        _seriesDetails = cached;
+
+      final staleCached = _localStorageService?.getSeriesDetails(tmdbId.toString(), checkTtl: false);
+      if (staleCached != null) {
+        _seriesDetails = staleCached;
         _errorMessage = null;
       } else {
         _errorMessage = e.toString();
@@ -299,7 +367,16 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
   @override
   Future<void> getSeasonDetails(int tmdbId, int seasonNumber) async {
     _setLoading(true);
-    final cachedEpisodes = _localStorageService?.getSeasonEpisodes(tmdbId.toString(), seasonNumber);
+
+    final freshCachedEpisodes = _localStorageService?.getSeasonEpisodes(tmdbId.toString(), seasonNumber, checkTtl: true);
+    if (freshCachedEpisodes != null && freshCachedEpisodes.isNotEmpty) {
+      final episodes = freshCachedEpisodes.map((e) => Episode.fromJson(e)).toList();
+      _seasonDetails = Season(seasonNumber: seasonNumber, episodes: episodes);
+      _errorMessage = null;
+      _setLoading(false);
+      return;
+    }
+
     try {
       final season = await _mediaService.getSeasonDetails(tmdbId, seasonNumber);
       final episodeJsonList = season.episodes.map((e) => e.toJson()).toList();
@@ -307,17 +384,14 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
       _seasonDetails = season;
       _errorMessage = null;
 
-      // ---- DEBUG ----
       debugPrint('=== [Presenter.getSeasonDetails] tmdbId=$tmdbId season=$seasonNumber -> episodes: ${season.episodes.length} ===');
-      // ---- END DEBUG ----
     } catch (e, stack) {
-      // ---- DEBUG ----
       debugPrint('=== [Presenter.getSeasonDetails] ERROR for tmdbId=$tmdbId season=$seasonNumber: $e ===');
       debugPrint(stack.toString());
-      // ---- END DEBUG ----
 
-      if (cachedEpisodes != null && cachedEpisodes.isNotEmpty) {
-        final episodes = cachedEpisodes.map((e) => Episode.fromJson(e)).toList();
+      final staleCachedEpisodes = _localStorageService?.getSeasonEpisodes(tmdbId.toString(), seasonNumber, checkTtl: false);
+      if (staleCachedEpisodes != null && staleCachedEpisodes.isNotEmpty) {
+        final episodes = staleCachedEpisodes.map((e) => Episode.fromJson(e)).toList();
         _seasonDetails = Season(seasonNumber: seasonNumber, episodes: episodes);
         _errorMessage = null;
       } else {
@@ -331,13 +405,28 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
   @override
   Future<void> getEpisodeDetails(int tmdbId, int seasonNumber, int episodeNumber) async {
     _setLoading(true);
+
+    final freshCachedEpisodes = _localStorageService?.getSeasonEpisodes(tmdbId.toString(), seasonNumber, checkTtl: true);
+    if (freshCachedEpisodes != null && freshCachedEpisodes.isNotEmpty) {
+      final matching = freshCachedEpisodes.firstWhere(
+            (e) => e['episode_number'] == episodeNumber,
+        orElse: () => <String, dynamic>{},
+      );
+      if (matching.isNotEmpty) {
+        _episodeDetails = Episode.fromJson(matching);
+        _errorMessage = null;
+        _setLoading(false);
+        return;
+      }
+    }
+
     try {
       _episodeDetails = await _mediaService.getEpisodeDetails(tmdbId, seasonNumber, episodeNumber);
       _errorMessage = null;
     } catch (e) {
-      final cachedEpisodes = _localStorageService?.getSeasonEpisodes(tmdbId.toString(), seasonNumber);
-      if (cachedEpisodes != null && cachedEpisodes.isNotEmpty) {
-        final matching = cachedEpisodes.firstWhere(
+      final staleCachedEpisodes = _localStorageService?.getSeasonEpisodes(tmdbId.toString(), seasonNumber, checkTtl: false);
+      if (staleCachedEpisodes != null && staleCachedEpisodes.isNotEmpty) {
+        final matching = staleCachedEpisodes.firstWhere(
               (e) => e['episode_number'] == episodeNumber,
           orElse: () => <String, dynamic>{},
         );
@@ -427,7 +516,15 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
   @override
   Future<void> getReviews(String tmdbId, String mediaType, {int page = 1, int perPage = 20}) async {
     _setLoading(true);
-    final cachedReviews = _localStorageService?.getMediaReviews(tmdbId);
+
+    final freshCachedReviews = _localStorageService?.getMediaReviews(tmdbId, checkTtl: true);
+    if (freshCachedReviews != null && freshCachedReviews.isNotEmpty) {
+      _reviews = freshCachedReviews.map((e) => ReviewResponse.fromJson(e)).toList();
+      _errorMessage = null;
+      _setLoading(false);
+      return;
+    }
+
     try {
       final reviews = await _mediaService.getReviews(
         tmdbId: tmdbId,
@@ -440,8 +537,9 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
       _reviews = reviews;
       _errorMessage = null;
     } catch (e) {
-      if (cachedReviews != null && cachedReviews.isNotEmpty) {
-        _reviews = cachedReviews.map((e) => ReviewResponse.fromJson(e)).toList();
+      final staleCachedReviews = _localStorageService?.getMediaReviews(tmdbId, checkTtl: false);
+      if (staleCachedReviews != null && staleCachedReviews.isNotEmpty) {
+        _reviews = staleCachedReviews.map((e) => ReviewResponse.fromJson(e)).toList();
         _errorMessage = null;
       } else {
         _errorMessage = e.toString();
