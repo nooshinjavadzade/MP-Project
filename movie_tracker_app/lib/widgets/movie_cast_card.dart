@@ -1,19 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
-
-class CastMember {
-  final String name;
-  final String role;
-  final String? imageUrl;
-  final Color borderColor;
-
-  CastMember({
-    required this.name, 
-    required this.role, 
-    this.imageUrl,
-    required this.borderColor,
-  });
-}
+import '../../models/common/cast_member.dart';
 
 class MovieCastCard extends StatelessWidget {
   final List<CastMember> cast;
@@ -22,6 +9,13 @@ class MovieCastCard extends StatelessWidget {
     super.key,
     required this.cast,
   });
+
+  static const List<Color> _borderColors = [
+    Color(0xFFF08DA5),
+    Color(0xFF5AD9D9),
+    Color(0xFFC7E7F8),
+    Color(0xFFBCC9C8),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -64,58 +58,64 @@ class MovieCastCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 Column(
-                  children: cast.map((member) => Padding(
-                    padding: const EdgeInsets.only(bottom: 16.0),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: member.borderColor.withOpacity(0.3),
-                              width: 2,
+                  children: cast.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final member = entry.value;
+                    final borderColor = _borderColors[index % _borderColors.length];
+
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 16.0),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: borderColor.withOpacity(0.3),
+                                width: 2,
+                              ),
+                            ),
+                            child: ClipOval(
+                              child: member.profileImageUrl != null
+                                  ? Image.network(
+                                      member.profileImageUrl!,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) => Container(color: Colors.grey),
+                                    )
+                                  : Container(color: Colors.grey),
                             ),
                           ),
-                          child: ClipOval(
-                            child: member.imageUrl != null
-                              ? Image.network(
-                                  member.imageUrl!,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => Container(color: Colors.grey),
-                                )
-                              : Container(color: Colors.grey),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                member.name,
-                                style: const TextStyle(
-                                  color: Color(0xFFC7E7F8),
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: 'Manrope',
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  member.name,
+                                  style: const TextStyle(
+                                    color: Color(0xFFC7E7F8),
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: 'Manrope',
+                                  ),
                                 ),
-                              ),
-                              Text(
-                                member.role,
-                                style: const TextStyle(
-                                  color: Color(0xFFBCC9C8),
-                                  fontSize: 12,
-                                  fontFamily: 'Manrope',
+                                Text(
+                                  member.role,
+                                  style: const TextStyle(
+                                    color: Color(0xFFBCC9C8),
+                                    fontSize: 12,
+                                    fontFamily: 'Manrope',
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  )).toList(),
+                        ],
+                      ),
+                    );
+                  }).toList(),
                 ),
               ],
             ),

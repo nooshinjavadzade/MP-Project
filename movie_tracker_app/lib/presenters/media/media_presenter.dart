@@ -455,4 +455,25 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
     _isLoading = value;
     notifyListeners();
   }
+
+  String _episodeKey(int seasonNumber, int episodeNumber) => 'S${seasonNumber}E$episodeNumber';
+
+  bool isEpisodeWatched(String seriesId, int seasonNumber, int episodeNumber) {
+    final watched = _localStorageService?.getWatchedEpisodes(seriesId) ?? [];
+    return watched.contains(_episodeKey(seasonNumber, episodeNumber));
+  }
+
+  int watchedEpisodeCount(String seriesId) {
+    return _localStorageService?.getWatchedEpisodes(seriesId).length ?? 0;
+  }
+
+  Future<void> toggleEpisodeWatched(String seriesId, int seasonNumber, int episodeNumber) async {
+    final currentlyWatched = isEpisodeWatched(seriesId, seasonNumber, episodeNumber);
+    await _localStorageService?.setEpisodeWatched(
+      seriesId,
+      _episodeKey(seasonNumber, episodeNumber),
+      !currentlyWatched,
+    );
+    notifyListeners();
+  }
 }

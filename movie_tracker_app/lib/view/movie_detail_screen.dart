@@ -212,6 +212,8 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
           final String duration = '';
           final String country = '';
           final String synopsis = details?.overview ?? '';
+          // 🔹 لیست واقعی بازیگرها از details.cast (قبلاً همیشه [] پاس داده می‌شد)
+          final cast = details?.cast ?? [];
 
           return SingleChildScrollView(
             padding: const EdgeInsets.only(bottom: 120),
@@ -252,9 +254,9 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                               child: MovieSynopsisCard(synopsis: synopsis),
                             ),
                             const SizedBox(width: 24),
-                            const Expanded(
+                            Expanded(
                               flex: 1,
-                              child: MovieCastCard(cast: []),
+                              child: MovieCastCard(cast: cast),
                             ),
                           ],
                         );
@@ -263,7 +265,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                           children: [
                             MovieSynopsisCard(synopsis: synopsis),
                             const SizedBox(height: 24),
-                            const MovieCastCard(cast: []),
+                            MovieCastCard(cast: cast),
                           ],
                         );
                       }

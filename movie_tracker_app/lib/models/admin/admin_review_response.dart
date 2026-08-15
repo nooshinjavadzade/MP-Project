@@ -10,8 +10,9 @@ class AdminReviewResponse {
   final bool containsSpoiler;
   final DateTime createdAt;
   final DateTime? updatedAt;
-  final User user;
-  final MediaBase media;
+
+  final User? user;
+  final MediaBase? media;
 
   const AdminReviewResponse({
     required this.id,
@@ -21,8 +22,8 @@ class AdminReviewResponse {
     required this.containsSpoiler,
     required this.createdAt,
     this.updatedAt,
-    required this.user,
-    required this.media,
+    this.user,
+    this.media,
   });
 
   factory AdminReviewResponse.fromJson(Map<String, dynamic> json) {
@@ -36,8 +37,14 @@ class AdminReviewResponse {
       updatedAt: json['updated_at'] != null
           ? DateTime.parse(json['updated_at'])
           : null,
-      user: User.fromJson(json['user']),
-      media: MediaBase.fromJson(json['media']),
+      // TODO(backend): وقتی بک‌اند این فیلدها رو nested برگردوند،
+      // می‌تونیم دوباره اینا رو required کنیم.
+      user: json['user'] is Map<String, dynamic>
+          ? User.fromJson(json['user'] as Map<String, dynamic>)
+          : null,
+      media: json['media'] is Map<String, dynamic>
+          ? MediaBase.fromJson(json['media'] as Map<String, dynamic>)
+          : null,
     );
   }
 
@@ -49,8 +56,8 @@ class AdminReviewResponse {
     'contains_spoiler': containsSpoiler,
     'created_at': createdAt.toIso8601String(),
     'updated_at': updatedAt?.toIso8601String(),
-    'user': user.toJson(),
-    'media': media.toJson(),
+    'user': user?.toJson(),
+    'media': media?.toJson(),
   };
 }
 

@@ -3,7 +3,10 @@ import 'dart:ui';
 import 'package:provider/provider.dart';
 
 import '../../presenters/media/media_presenter.dart';
+import '../../presenters/interactions/interactions_presenter.dart';
+import '../../models/user_content/personal_list.dart';
 import '../widgets/movie_synopsis_card.dart';
+import '../widgets/movie_cast_card.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
 import '../widgets/review_section.dart';
 import '../widgets/episode_card.dart';
@@ -24,6 +27,11 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
   int _selectedSeasonIndex = 0;
   int _currentNavIndex = 0;
 
+  static const String _inProgressListName = 'در حال تماشا';
+  static const String _watchedListName = 'تماشا شده';
+
+  String get _seriesId => widget.tmdbId.toString();
+
   @override
   void initState() {
     super.initState();
@@ -31,7 +39,6 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
       final presenter = context.read<MediaPresenter>();
       await presenter.getSeriesDetails(widget.tmdbId);
 
-      // بعد از گرفتن جزئیات سریال، قسمت‌های فصل پیش‌فرض (اولین فصل) رو می‌گیریم
       final seasons = presenter.seriesDetails?.seasons;
       if (seasons != null && seasons.isNotEmpty) {
         final defaultSeason = seasons[_selectedSeasonIndex];
@@ -53,6 +60,47 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
       _selectedSeasonIndex = index;
     });
     context.read<MediaPresenter>().getSeasonDetails(widget.tmdbId, seasonNumber);
+  }
+
+  PersonalListResponse? _findListByName(List<PersonalListResponse> lists, String name) {
+    for (final list in lists) {
+      if (list.name == name) return list;
+    }
+    return null;
+  }
+
+  // 🔹 تیک‌زدن قسمت + آپدیت خودکار عضویت سریال در «در حال تماشا» / «تماشا شده»
+  Future<void> _onToggleEpisodeWatched(int seasonNumber, int episodeNumber) async {
+    final mediaPresenter = context.read<MediaPresenter>();
+    await mediaPresenter.toggleEpisodeWatched(_seriesId, seasonNumber, episodeNumber);
+
+    final details = mediaPresenter.seriesDetails;
+    final totalEpisodes = details?.episodeCount;
+    // 🔹 اگه مجموع قسمت‌ها رو نداریم، نمی‌تونیم درصد پیشرفت رو حساب کنیم؛ فقط تیک محلی ثبت می‌مونه
+    if (details == null || totalEpisodes == null || totalEpisodes <= 0) return;
+
+    final watchedCount = mediaPresenter.watchedEpisodeCount(_seriesId);
+
+    final interactions = context.read<InteractionsPresenter>();
+    if (interactions.userLists.isEmpty) {
+      await interactions.getUserLists();
+    }
+
+    final inProgressList = _findListByName(interactions.userLists, _inProgressListName);
+    final watchedList = _findListByName(interactions.userLists, _watchedListName);
+
+    if (watchedCount >= totalEpisodes) {
+      if (inProgressList != null) {
+        await interactions.removeMediaFromList(inProgressList.id, widget.tmdbId);
+      }
+      if (watchedList != null) {
+        await interactions.addMediaToList(watchedList.id, widget.tmdbId);
+      }
+    } else if (watchedCount > 0) {
+      if (inProgressList != null) {
+        await interactions.addMediaToList(inProgressList.id, widget.tmdbId);
+      }
+    }
   }
 
   @override
@@ -137,6 +185,7 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
           final String synopsis = details.overview ?? '';
           final String? backdropUrl = details.backdropUrl;
           final double imdbRating = details.tmdbRating ?? 0.0;
+          final cast = details.cast;
 
           final seasons = details.seasons;
 
@@ -277,10 +326,38 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
 
                 const SizedBox(height: 16),
 
-                if (synopsis.isNotEmpty)
+                if (synopsis.isNotEmpty || cast.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: MovieSynopsisCard(synopsis: synopsis),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final isMd = constraints.maxWidth >= 768;
+                        if (isMd) {
+                          return Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                flex: 2,
+                                child: MovieSynopsisCard(synopsis: synopsis),
+                              ),
+                              const SizedBox(width: 24),
+                              Expanded(
+                                flex: 1,
+                                child: MovieCastCard(cast: cast),
+                              ),
+                            ],
+                          );
+                        } else {
+                          return Column(
+                            children: [
+                              MovieSynopsisCard(synopsis: synopsis),
+                              const SizedBox(height: 24),
+                              MovieCastCard(cast: cast),
+                            ],
+                          );
+                        }
+                      },
+                    ),
                   ),
 
                 const SizedBox(height: 32),
@@ -366,8 +443,6 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // لیست قسمت‌های فصل انتخاب‌شده — از presenter.seasonDetails خونده می‌شه
-                  // چون endpoint اصلی سریال شامل episodes نمی‌شه و باید جدا فچ بشه
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Builder(
@@ -386,8 +461,6 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
                         final currentSeasonNumber = seasons[_selectedSeasonIndex].seasonNumber;
                         final seasonDetails = presenter.seasonDetails;
 
-                        // اگه اطلاعات فصلِ فعلاً بارگذاری‌شده متعلق به فصل انتخاب‌شده نباشه
-                        // (مثلاً هنوز کال جدید تموم نشده)، از قسمت‌های قدیمی استفاده نکن
                         final episodes = (seasonDetails != null && seasonDetails.seasonNumber == currentSeasonNumber)
                             ? seasonDetails.episodes
                             : const [];
@@ -406,15 +479,22 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
 
                         return Column(
                           children: episodes.map((episode) {
+                            final isWatched = presenter.isEpisodeWatched(
+                              _seriesId,
+                              currentSeasonNumber,
+                              episode.episodeNumber,
+                            );
                             return EpisodeCard(
                               episodeNumber: episode.episodeNumber,
                               title: episode.title,
                               overview: episode.overview,
                               runtime: episode.runtime,
                               imageUrl: null,
-                              onToggleWatched: () {
-                                // TODO: Implement watch toggle functionality
-                              },
+                              isWatched: isWatched,
+                              onToggleWatched: () => _onToggleEpisodeWatched(
+                                currentSeasonNumber,
+                                episode.episodeNumber,
+                              ),
                             );
                           }).toList(),
                         );
