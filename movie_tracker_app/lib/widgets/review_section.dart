@@ -95,7 +95,7 @@ class _ReviewSectionState extends State<ReviewSection> {
     return Column(
       children: reviews.map((reviewObj) {
         final dynamic review = reviewObj;
-        final String authorName = review.user?.username ?? review.user?.name ?? 'User';
+        final String authorName = 'کاربر #${review.userId}';
         final String content = review.review ?? '';
         final bool isSpoiler = review.containsSpoiler ?? false;
         

@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 
 class MovieActionButtons extends StatelessWidget {
   final VoidCallback onWatchlistTap;
+  final VoidCallback onWatchedTap; // 🔹 جدید
   final VoidCallback onLikeTap;
   final VoidCallback onReportTap;
 
   const MovieActionButtons({
     super.key,
     required this.onWatchlistTap,
+    required this.onWatchedTap, // 🔹 جدید
     required this.onLikeTap,
     required this.onReportTap,
   });
@@ -19,11 +21,17 @@ class MovieActionButtons extends StatelessWidget {
       child: LayoutBuilder(
         builder: (context, constraints) {
           final isSmallScreen = constraints.maxWidth < 600;
-          
+
           if (isSmallScreen) {
             return Column(
               children: [
-                _buildWatchlistBtn(),
+                Row(
+                  children: [
+                    Expanded(child: _buildWatchlistBtn()),
+                    const SizedBox(width: 16),
+                    Expanded(child: _buildWatchedBtn()), // 🔹 جدید
+                  ],
+                ),
                 const SizedBox(height: 16),
                 Row(
                   children: [
@@ -38,6 +46,8 @@ class MovieActionButtons extends StatelessWidget {
             return Row(
               children: [
                 Expanded(child: _buildWatchlistBtn()),
+                const SizedBox(width: 16),
+                Expanded(child: _buildWatchedBtn()), // 🔹 جدید
                 const SizedBox(width: 16),
                 Expanded(child: _buildLikeBtn()),
                 const SizedBox(width: 16),
@@ -78,13 +88,54 @@ class MovieActionButtons extends StatelessWidget {
             children: [
               Icon(Icons.bookmark, color: Color(0xFF681F36)),
               SizedBox(width: 8),
-              Text(
-                'افزودن به لیست تماشا',
-                style: TextStyle(
-                  color: Color(0xFF681F36),
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Manrope',
+              Flexible(
+                child: Text(
+                  'خواهم دید',
+                  style: TextStyle(
+                    color: Color(0xFF681F36),
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Manrope',
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 🔹 دکمه‌ی جدید: دیده شده
+  Widget _buildWatchedBtn() {
+    return Container(
+      height: 56,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: const Color(0x3329B5B5),
+        border: Border.all(color: const Color(0x4D5AD9D9)),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: onWatchedTap,
+          child: const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.check_circle, color: Color(0xFF5AD9D9)),
+              SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  'دیده شده',
+                  style: TextStyle(
+                    color: Color(0xFF5AD9D9),
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Manrope',
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],

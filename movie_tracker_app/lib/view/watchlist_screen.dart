@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../presenters/auth/auth_presenter.dart';
 import '../../presenters/interactions/interactions_presenter.dart';
+import '../../presenters/profile/profile_presenter.dart';
 import '../../models/user_content/personal_list.dart';
 import 'login_screen.dart';
 import '../widgets/watchlist_card.dart';
+import '../widgets/media_grid_card.dart';
 
 class WatchlistScreen extends StatefulWidget {
   const WatchlistScreen({super.key});
@@ -16,16 +18,65 @@ class WatchlistScreen extends StatefulWidget {
 class _WatchlistScreenState extends State<WatchlistScreen> {
   int _selectedTabIndex = 0;
   final List<String> _tabs = ['در حال تماشا', 'تماشا شده', 'خواهم دید', 'علاقه‌مندی‌ها'];
+  static const int _favoritesTabIndex = 3;
+  // 🔹 فقط سه تب اول لیست شخصی واقعی هستن (تب چهارم = لایک‌ها)
+  static const List<String> _defaultListNames = ['در حال تماشا', 'تماشا شده', 'خواهم دید'];
+
+  bool _defaultListsEnsured = false;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       final authPresenter = context.read<AuthPresenter>();
       if (authPresenter.authResponse?.user != null) {
-        context.read<InteractionsPresenter>().getUserLists();
+        await _ensureDefaultLists();
+        _fetchItemsForTab(_selectedTabIndex);
       }
     });
+  }
+
+  // 🔹 هسته‌ی اصلاح: مطمئن می‌شیم هر سه لیست پیش‌فرض وجود دارن؛ هرکدوم نبود، می‌سازیمش
+  Future<void> _ensureDefaultLists() async {
+    if (_defaultListsEnsured) return;
+    final interactions = context.read<InteractionsPresenter>();
+
+    await interactions.getUserLists();
+
+    for (final name in _defaultListNames) {
+      final exists = interactions.userLists.any((l) => l.name == name);
+      if (!exists) {
+        await interactions.createList(name);
+      }
+    }
+
+    _defaultListsEnsured = true;
+  }
+
+  void _fetchItemsForTab(int tabIndex) {
+    if (tabIndex == _favoritesTabIndex) {
+      final profile = context.read<ProfilePresenter>();
+      profile.getLikedMedia();
+      return;
+    }
+
+    final interactions = context.read<InteractionsPresenter>();
+    if (interactions.userLists.isEmpty) return;
+
+    // 🔹 تطبیق بر اساس نام، نه ایندکس
+    final tabName = _tabs[tabIndex];
+    final matchingList = interactions.userLists.where((l) => l.name == tabName);
+    if (matchingList.isEmpty) return;
+
+    interactions.getListWithItems(matchingList.first.id);
+  }
+
+  void _onTabSelected(int index) {
+    if (_selectedTabIndex == index) return;
+    setState(() {
+      _selectedTabIndex = index;
+    });
+    _fetchItemsForTab(index);
   }
 
   @override
@@ -66,20 +117,18 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
 
         return Scaffold(
           backgroundColor: const Color(0xFF00161F),
-          body: Consumer<InteractionsPresenter>(
-            builder: (context, interactionsPresenter, _) {
-              List<PersonalListItemResponse> items = [];
+          body: Consumer2<InteractionsPresenter, ProfilePresenter>(
+            builder: (context, interactionsPresenter, profilePresenter, _) {
+              final bool isFavoritesTab = _selectedTabIndex == _favoritesTabIndex;
+
               final selectedList = interactionsPresenter.selectedListWithItems;
-              
-              if (selectedList != null) {
-                items = selectedList.items;
-              } else if (interactionsPresenter.userLists.isNotEmpty && !interactionsPresenter.isLoading) {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                   context.read<InteractionsPresenter>().getListWithItems(interactionsPresenter.userLists.first.id);
-                });
-              }
-              
-              final isLoading = interactionsPresenter.isLoading;
+              final List<PersonalListItemResponse> listItems = selectedList?.items ?? [];
+              final likedMedia = profilePresenter.likedMedia;
+
+              final int itemCount = isFavoritesTab ? likedMedia.length : listItems.length;
+              final bool isLoading = isFavoritesTab
+                  ? profilePresenter.isLoading
+                  : interactionsPresenter.isLoading;
 
               return CustomScrollView(
                 slivers: [
@@ -112,7 +161,7 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                               return Padding(
                                 padding: const EdgeInsets.only(right: 16.0),
                                 child: InkWell(
-                                  onTap: () => setState(() => _selectedTabIndex = idx),
+                                  onTap: () => _onTabSelected(idx),
                                   borderRadius: BorderRadius.circular(999),
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
@@ -147,7 +196,6 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                           ),
                         ),
                         const SizedBox(height: 24),
-                        
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           crossAxisAlignment: CrossAxisAlignment.end,
@@ -168,9 +216,9 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                                 const SizedBox(height: 4),
                                 Row(
                                   children: [
-                                    const Text(
-                                      'لیست تماشا',
-                                      style: TextStyle(
+                                    Text(
+                                      _tabs[_selectedTabIndex],
+                                      style: const TextStyle(
                                         fontFamily: 'Plus Jakarta Sans',
                                         fontSize: 24,
                                         fontWeight: FontWeight.bold,
@@ -179,7 +227,7 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                                     ),
                                     const SizedBox(width: 8),
                                     Text(
-                                      '(${items.length})',
+                                      '($itemCount)',
                                       style: TextStyle(
                                         fontFamily: 'Plus Jakarta Sans',
                                         fontSize: 24,
@@ -191,22 +239,9 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                                 ),
                               ],
                             ),
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF0C2E3B).withOpacity(0.5),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Icon(
-                                Icons.filter_list,
-                                color: Color(0xFF5AD9D9),
-                                size: 20,
-                              ),
-                            ),
                           ],
                         ),
                         const SizedBox(height: 24),
-
                         if (isLoading)
                           const Padding(
                             padding: EdgeInsets.all(32.0),
@@ -214,13 +249,15 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                               child: CircularProgressIndicator(color: Color(0xFF5AD9D9)),
                             ),
                           )
-                        else if (items.isEmpty)
-                          const Padding(
-                            padding: EdgeInsets.all(32.0),
+                        else if (itemCount == 0)
+                          Padding(
+                            padding: const EdgeInsets.all(32.0),
                             child: Center(
                               child: Text(
-                                'هیچ آیتمی در لیست تماشای شما یافت نشد.',
-                                style: TextStyle(
+                                isFavoritesTab
+                                    ? 'هنوز چیزی لایک نکرده‌اید.'
+                                    : 'هیچ آیتمی در این لیست یافت نشد.',
+                                style: const TextStyle(
                                   fontFamily: 'Manrope',
                                   color: Color(0xFFBCC9C8),
                                 ),
@@ -239,14 +276,20 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                                   crossAxisCount: crossAxisCount,
                                   crossAxisSpacing: 24,
                                   mainAxisSpacing: 24,
-                                  mainAxisExtent: 360, 
+                                  mainAxisExtent: 360,
                                 ),
-                                itemCount: items.length,
+                                itemCount: itemCount,
                                 itemBuilder: (context, index) {
-                                  return WatchlistCard(item: items[index]);
+                                  if (isFavoritesTab) {
+                                    return MediaGridCard(
+                                      media: likedMedia[index],
+                                      onTap: () {},
+                                    );
+                                  }
+                                  return WatchlistCard(item: listItems[index]);
                                 },
                               );
-                            }
+                            },
                           ),
                       ]),
                     ),
