@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 
 import '../../models/user_content.dart';
 import '../../services/api/progress_service.dart';
@@ -243,6 +243,38 @@ class ProgressPresenter extends ChangeNotifier implements IProgressPresenter {
     } finally {
       _setLoading(false);
     }
+  }
+
+  @override
+  double calculateCompletionPercentage(int watchedEpisodes, int totalEpisodes) {
+    if (totalEpisodes <= 0) return 0.0;
+    final pct = (watchedEpisodes / totalEpisodes) * 100.0;
+    return pct.clamp(0.0, 100.0);
+  }
+
+  @override
+  Color getProgressColor({
+    required WatchStatus status,
+    required int watchedEpisodes,
+    required int totalEpisodes,
+    bool isSeriesEnded = false,
+  }) {
+    if (status == WatchStatus.dropped) {
+      return const Color(0xFFE53935);
+    }
+
+    if (totalEpisodes > 0 && watchedEpisodes >= totalEpisodes) {
+      if (isSeriesEnded) {
+        return const Color(0xFF8E24AA);
+      }
+      return const Color(0xFF4CAF50);
+    }
+
+    if (watchedEpisodes > 0 && watchedEpisodes < totalEpisodes) {
+      return const Color(0xFFFFB300);
+    }
+
+    return Colors.transparent;
   }
 
   void _setLoading(bool value) {

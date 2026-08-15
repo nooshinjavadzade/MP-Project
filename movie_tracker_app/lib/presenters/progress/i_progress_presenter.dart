@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import '../../models/user_content.dart';
 
 abstract class IProgressPresenter {
@@ -36,5 +37,14 @@ abstract class IProgressPresenter {
     required int tmdbId,
     required int seasonNumber,
     required int episodeNumber,
+  });
+
+  double calculateCompletionPercentage(int watchedEpisodes, int totalEpisodes);
+
+  Color getProgressColor({
+    required WatchStatus status,
+    required int watchedEpisodes,
+    required int totalEpisodes,
+    bool isSeriesEnded = false,
   });
 }

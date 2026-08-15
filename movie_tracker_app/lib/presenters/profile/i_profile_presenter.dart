@@ -1,4 +1,5 @@
 import '../../models/auth/user.dart';
+import '../../models/auth/profile_response.dart';
 import '../../models/common/media_base.dart';
 import '../../models/user_content/rating_response.dart';
 import '../../models/user_content/review_response.dart';
@@ -8,6 +9,7 @@ abstract class IProfilePresenter {
   String? get errorMessage;
 
   User? get user;
+  ProfileResponse? get profileResponse;
   List<MediaBase> get likedMedia;
   List<RatingResponse> get ratings;
   List<ReviewResponse> get reviews;

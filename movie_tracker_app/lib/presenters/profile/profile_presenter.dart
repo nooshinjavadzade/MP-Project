@@ -16,6 +16,7 @@ class ProfilePresenter extends ChangeNotifier implements IProfilePresenter {
   String? _errorMessage;
 
   User? _user;
+  ProfileResponse? _profileResponse;
   List<MediaBase> _likedMedia = [];
   List<RatingResponse> _ratings = [];
   List<ReviewResponse> _reviews = [];
@@ -31,6 +32,9 @@ class ProfilePresenter extends ChangeNotifier implements IProfilePresenter {
 
   @override
   User? get user => _user;
+
+  @override
+  ProfileResponse? get profileResponse => _profileResponse;
 
   @override
   List<MediaBase> get likedMedia => _likedMedia;
@@ -53,6 +57,7 @@ class ProfilePresenter extends ChangeNotifier implements IProfilePresenter {
     } catch (e) {
       final cachedProfile = _localStorageService?.getUserProfile(checkTtl: false);
       if (cachedProfile != null) {
+        _profileResponse = cachedProfile;
         _user = User.fromJson(cachedProfile.toJson());
         _errorMessage = null;
       } else {
@@ -69,7 +74,9 @@ class ProfilePresenter extends ChangeNotifier implements IProfilePresenter {
     if (checkTtl) {
       final cached = _localStorageService?.getUserProfile(checkTtl: true);
       if (cached != null) {
+        _profileResponse = cached;
         _user = User.fromJson(cached.toJson());
+        _likedMedia = cached.likedMedia;
         _errorMessage = null;
         _setLoading(false);
         return;
@@ -79,12 +86,16 @@ class ProfilePresenter extends ChangeNotifier implements IProfilePresenter {
     try {
       final profile = await _profileService.getProfileFull();
       await _localStorageService?.saveUserProfile(profile);
+      _profileResponse = profile;
       _user = User.fromJson(profile.toJson());
+      _likedMedia = profile.likedMedia;
       _errorMessage = null;
     } catch (e) {
       final cached = _localStorageService?.getUserProfile(checkTtl: false);
       if (cached != null) {
+        _profileResponse = cached;
         _user = User.fromJson(cached.toJson());
+        _likedMedia = cached.likedMedia;
         _errorMessage = null;
       } else {
         _errorMessage = e.toString();
@@ -110,7 +121,8 @@ class ProfilePresenter extends ChangeNotifier implements IProfilePresenter {
         if (fullName != null) updatedJson['full_name'] = fullName;
         if (bio != null) updatedJson['bio'] = bio;
         if (avatarUrl != null) updatedJson['avatar_url'] = avatarUrl;
-        await _localStorageService?.saveUserProfile(ProfileResponse.fromJson(updatedJson));
+        _profileResponse = ProfileResponse.fromJson(updatedJson);
+        await _localStorageService?.saveUserProfile(_profileResponse!);
       }
       _errorMessage = null;
     } catch (e) {

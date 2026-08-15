@@ -2,13 +2,39 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../presenters/auth/auth_presenter.dart';
+import '../../presenters/profile/profile_presenter.dart';
+import '../../presenters/interactions/interactions_presenter.dart';
 import '../../models/auth/user.dart';
+import '../../models/common/media_base.dart';
 import 'login_screen.dart';
 import '../widgets/edit_profile_dialog.dart';
 import 'admin_dashboard_screen.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchData();
+    });
+  }
+
+  Future<void> _fetchData() async {
+    final authPresenter = context.read<AuthPresenter>();
+    if (authPresenter.authResponse?.user != null) {
+      await Future.wait([
+        context.read<ProfilePresenter>().getProfileFull(),
+        context.read<InteractionsPresenter>().getUserLists(),
+      ]);
+    }
+  }
 
   void _showEditProfileDialog(BuildContext context, User user) {
     showDialog(
@@ -19,79 +45,80 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AuthPresenter>(
-      builder: (context, presenter, _) {
-        final user = presenter.authResponse?.user;
-        
-        if (user == null) {
-          return Scaffold(
-            backgroundColor: const Color(0xFF00161F),
-            body: Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const LoginScreen()),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFF08DA5),
-                  foregroundColor: const Color(0xFF3F0018),
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-                child: const Text(
-                  'ورود / ثبت‌نام',
-                  style: TextStyle(
-                    fontFamily: 'Plus Jakarta Sans',
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+    final authPresenter = context.watch<AuthPresenter>();
+    final profilePresenter = context.watch<ProfilePresenter>();
+    final user = authPresenter.authResponse?.user;
+
+    if (user == null) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF00161F),
+        body: Center(
+          child: ElevatedButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFF08DA5),
+              foregroundColor: const Color(0xFF3F0018),
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Text(
+              'ورود / ثبت‌نام',
+              style: TextStyle(
+                fontFamily: 'Plus Jakarta Sans',
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
               ),
             ),
-          );
-        }
-
-        return Scaffold(
-          backgroundColor: const Color(0xFF00161F),
-          body: CustomScrollView(
-            slivers: [
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 64, 16, 120),
-                sliver: SliverList(
-                  delegate: SliverChildListDelegate([
-                    
-                    _buildProfileHeader(context, user),
-                    const SizedBox(height: 40),
-                    
-                    _buildStatsGrid(),
-                    const SizedBox(height: 40),
-                    
-                    _buildSettings(context, user, presenter),
-                    const SizedBox(height: 40),
-
-                    _buildSectionTitle('در حال تماشا'),
-                    const SizedBox(height: 16),
-                    _buildWatchingList(),
-                    const SizedBox(height: 40),
-
-                    _buildSectionTitle('اخیراً تماشا شده'),
-                    const SizedBox(height: 16),
-                    _buildRecentlyWatchedList(),
-                    const SizedBox(height: 40),
-
-                    _buildSectionTitle('کشفیات مورد علاقه'),
-                    const SizedBox(height: 20),
-                    _buildFavoritesGrid(),
-
-                  ]),
-                ),
-              ),
-            ],
           ),
-        );
-      },
+        ),
+      );
+    }
+
+    final profileResponse = profilePresenter.profileResponse;
+    final moviesCount = (profileResponse?.watchedMoviesCount ?? 0).toString();
+    final seriesCount = (profileResponse?.watchedSeriesCount ?? 0).toString();
+    final likedMedia = profilePresenter.likedMedia;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFF00161F),
+      body: CustomScrollView(
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 64, 16, 120),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                _buildProfileHeader(context, user),
+                const SizedBox(height: 40),
+
+                _buildStatsGrid(moviesCount, seriesCount),
+                const SizedBox(height: 40),
+
+                _buildSettings(context, user, authPresenter),
+                const SizedBox(height: 40),
+
+                _buildSectionTitle('در حال تماشا'),
+                const SizedBox(height: 16),
+                _buildWatchingList(likedMedia),
+                const SizedBox(height: 40),
+
+                _buildSectionTitle('اخیراً تماشا شده'),
+                const SizedBox(height: 16),
+                _buildRecentlyWatchedList(likedMedia),
+                const SizedBox(height: 40),
+
+                _buildSectionTitle('کشفیات مورد علاقه'),
+                const SizedBox(height: 20),
+                _buildFavoritesGrid(likedMedia),
+              ]),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -117,12 +144,20 @@ class ProfileScreen extends StatelessWidget {
                     blurRadius: 20,
                   ),
                 ],
+                image: (user.avatarUrl != null && user.avatarUrl!.isNotEmpty)
+                    ? DecorationImage(
+                  image: NetworkImage(user.avatarUrl!),
+                  fit: BoxFit.cover,
+                )
+                    : null,
               ),
-              child: const Icon(
+              child: (user.avatarUrl == null || user.avatarUrl!.isEmpty)
+                  ? const Icon(
                 Icons.person,
                 size: 60,
                 color: Color(0xFF8DE6E3),
-              ),
+              )
+                  : null,
             ),
             GestureDetector(
               onTap: () => _showEditProfileDialog(context, user),
@@ -195,12 +230,12 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsGrid() {
+  Widget _buildStatsGrid(String moviesCount, String seriesCount) {
     return Row(
       children: [
-        Expanded(child: _buildStatCard('124', 'فیلم‌های تماشا شده')),
+        Expanded(child: _buildStatCard(moviesCount, 'فیلم‌های تماشا شده')),
         const SizedBox(width: 16),
-        Expanded(child: _buildStatCard('42', 'سریال‌های تماشا شده')),
+        Expanded(child: _buildStatCard(seriesCount, 'سریال‌های تماشا شده')),
       ],
     );
   }
@@ -370,21 +405,32 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildWatchingList() {
-    final items = [
-      {'title': 'The Expanse', 'progress': 0.65},
-      {'title': 'Foundation', 'progress': 0.20},
-      {'title': 'Dark', 'progress': 0.90},
-    ];
+  Widget _buildWatchingList(List<MediaBase> likedMedia) {
+    if (likedMedia.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: _glassDecoration(),
+        child: const Center(
+          child: Text(
+            'موردی در حال تماشا نیست',
+            style: TextStyle(
+              fontFamily: 'Manrope',
+              fontSize: 12,
+              color: Color(0xFFBCC9C8),
+            ),
+          ),
+        ),
+      );
+    }
 
     return SizedBox(
       height: 220,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        itemCount: items.length,
+        itemCount: likedMedia.length,
         separatorBuilder: (_, __) => const SizedBox(width: 16),
         itemBuilder: (context, index) {
-          final item = items[index];
+          final item = likedMedia[index];
           return SizedBox(
             width: 128,
             child: Column(
@@ -398,7 +444,14 @@ class ProfileScreen extends StatelessWidget {
                     children: [
                       Container(
                         color: const Color(0xFF0C2E3B),
-                        child: Center(
+                        child: item.posterUrl != null
+                            ? Image.network(
+                          item.posterUrl!,
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: double.infinity,
+                        )
+                            : Center(
                           child: Icon(
                             Icons.play_circle_outline,
                             size: 40,
@@ -415,7 +468,7 @@ class ProfileScreen extends StatelessWidget {
                           color: const Color(0xFF00232F),
                           alignment: Alignment.centerLeft,
                           child: FractionallySizedBox(
-                            widthFactor: item['progress'] as double,
+                            widthFactor: 0.5,
                             child: Container(color: const Color(0xFFF08DA5)),
                           ),
                         ),
@@ -425,7 +478,7 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  item['title'] as String,
+                  item.title ?? '',
                   style: const TextStyle(
                     fontFamily: 'Manrope',
                     fontSize: 12,
@@ -443,16 +496,32 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildRecentlyWatchedList() {
-    final items = ['Inception', 'Interstellar', 'Arrival', 'Dune'];
+  Widget _buildRecentlyWatchedList(List<MediaBase> likedMedia) {
+    if (likedMedia.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: _glassDecoration(),
+        child: const Center(
+          child: Text(
+            'موردی یافت نشد',
+            style: TextStyle(
+              fontFamily: 'Manrope',
+              fontSize: 12,
+              color: Color(0xFFBCC9C8),
+            ),
+          ),
+        ),
+      );
+    }
 
     return SizedBox(
       height: 170,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        itemCount: items.length,
+        itemCount: likedMedia.length,
         separatorBuilder: (_, __) => const SizedBox(width: 16),
         itemBuilder: (context, index) {
+          final item = likedMedia[index];
           return SizedBox(
             width: 96,
             child: Column(
@@ -464,7 +533,14 @@ class ProfileScreen extends StatelessWidget {
                   clipBehavior: Clip.hardEdge,
                   child: Container(
                     color: const Color(0xFF0C2E3B),
-                    child: Center(
+                    child: item.posterUrl != null
+                        ? Image.network(
+                      item.posterUrl!,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: double.infinity,
+                    )
+                        : Center(
                       child: Icon(
                         Icons.check_circle_outline,
                         size: 24,
@@ -475,7 +551,7 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  items[index],
+                  item.title ?? '',
                   style: const TextStyle(
                     fontFamily: 'Manrope',
                     fontSize: 10,
@@ -493,11 +569,23 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFavoritesGrid() {
-    final items = [
-      {'title': 'Midnight Echo', 'genre': 'Sci-Fi Thriller'},
-      {'title': 'Abyssal Dreams', 'genre': 'Documentary'},
-    ];
+  Widget _buildFavoritesGrid(List<MediaBase> likedMedia) {
+    if (likedMedia.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(24),
+        decoration: _glassDecoration(),
+        child: const Center(
+          child: Text(
+            'هنوز موردی به علاقه‌مندی‌ها اضافه نشده است',
+            style: TextStyle(
+              fontFamily: 'Manrope',
+              fontSize: 12,
+              color: Color(0xFFBCC9C8),
+            ),
+          ),
+        ),
+      );
+    }
 
     return GridView.builder(
       padding: EdgeInsets.zero,
@@ -509,9 +597,9 @@ class ProfileScreen extends StatelessWidget {
         mainAxisSpacing: 16,
         childAspectRatio: 2 / 3,
       ),
-      itemCount: items.length,
+      itemCount: likedMedia.length,
       itemBuilder: (context, index) {
-        final item = items[index];
+        final item = likedMedia[index];
         return Container(
           decoration: _glassDecoration(),
           clipBehavior: Clip.hardEdge,
@@ -520,7 +608,12 @@ class ProfileScreen extends StatelessWidget {
             children: [
               Container(
                 color: const Color(0xFF0C2E3B),
-                child: Center(
+                child: item.posterUrl != null
+                    ? Image.network(
+                  item.posterUrl!,
+                  fit: BoxFit.cover,
+                )
+                    : Center(
                   child: Icon(
                     Icons.movie_outlined,
                     size: 60,
@@ -545,7 +638,7 @@ class ProfileScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        item['title']!,
+                        item.title ?? '',
                         style: const TextStyle(
                           fontFamily: 'Manrope',
                           fontSize: 14,
@@ -554,7 +647,7 @@ class ProfileScreen extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        item['genre']!,
+                        item.mediaType.name ?? '',
                         style: const TextStyle(
                           fontFamily: 'Manrope',
                           fontSize: 10,

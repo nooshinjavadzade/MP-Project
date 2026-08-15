@@ -13,6 +13,7 @@ import 'services/local/biometric_service.dart';
 import 'services/local/local_storage_service.dart';
 import 'services/api/media_service.dart';
 import 'services/api/profile_service.dart';
+import 'services/api/report_service.dart';
 
 // Presenters
 import 'presenters/admin/admin_presenter.dart';
@@ -21,6 +22,7 @@ import 'presenters/interactions/interactions_presenter.dart';
 import 'presenters/progress/progress_presenter.dart';
 import 'presenters/media/media_presenter.dart';
 import 'presenters/profile/profile_presenter.dart';
+import 'presenters/report/report_presenter.dart';
 
 // Screens
 import 'view/splash_screen.dart';
@@ -37,6 +39,7 @@ void main() async {
   final progressService = ProgressService(apiClient);
   final mediaService = MediaService(apiClient);
   final profileService = ProfileService(apiClient);
+  final reportService = ReportService(apiClient);
 
   // 3. Instantiate Local Services
   final localStorageService = LocalStorageService();
@@ -67,6 +70,9 @@ void main() async {
         ),
         ChangeNotifierProvider<ProfilePresenter>(
           create: (_) => ProfilePresenter(profileService, localStorageService),
+        ),
+        ChangeNotifierProvider<ReportPresenter>(
+          create: (_) => ReportPresenter(reportService),
         ),
       ],
       child: const TVTimeApp(),

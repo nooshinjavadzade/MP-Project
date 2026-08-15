@@ -36,6 +36,8 @@ class ReportPresenter extends ChangeNotifier implements IReportPresenter {
     _setLoading(true);
     try {
       final request = ReportCreate(reason: reason, description: description);
+      print("YYYYYYYYYYYYYYYYYYYYYYYYYYYY");
+      print(request);
       _lastSubmittedReport = await _reportService.submitReport(
         mediaType: mediaType,
         tmdbId: tmdbId,
