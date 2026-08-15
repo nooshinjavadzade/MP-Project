@@ -20,12 +20,37 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       final authPresenter = context.read<AuthPresenter>();
       if (authPresenter.authResponse?.user != null) {
-        context.read<InteractionsPresenter>().getUserLists();
+        final interactions = context.read<InteractionsPresenter>();
+        // ۱. دریافت همه لیست‌های کاربر
+        await interactions.getUserLists();
+        
+        // ۲. لود کردن لیست متناظر با تب اول
+        _fetchItemsForTab(_selectedTabIndex);
       }
     });
+  }
+
+  void _fetchItemsForTab(int tabIndex) {
+    final interactions = context.read<InteractionsPresenter>();
+    if (interactions.userLists.isEmpty) return;
+
+    // پیدا کردن لیست بر اساس اندیس تب یا انتخاب اولین لیست موجود
+    final targetListId = tabIndex < interactions.userLists.length
+        ? interactions.userLists[tabIndex].id
+        : interactions.userLists.first.id;
+
+    interactions.getListWithItems(targetListId);
+  }
+
+  void _onTabSelected(int index) {
+    if (_selectedTabIndex == index) return;
+    setState(() {
+      _selectedTabIndex = index;
+    });
+    _fetchItemsForTab(index);
   }
 
   @override
@@ -68,17 +93,8 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
           backgroundColor: const Color(0xFF00161F),
           body: Consumer<InteractionsPresenter>(
             builder: (context, interactionsPresenter, _) {
-              List<PersonalListItemResponse> items = [];
               final selectedList = interactionsPresenter.selectedListWithItems;
-              
-              if (selectedList != null) {
-                items = selectedList.items;
-              } else if (interactionsPresenter.userLists.isNotEmpty && !interactionsPresenter.isLoading) {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                   context.read<InteractionsPresenter>().getListWithItems(interactionsPresenter.userLists.first.id);
-                });
-              }
-              
+              final List<PersonalListItemResponse> items = selectedList?.items ?? [];
               final isLoading = interactionsPresenter.isLoading;
 
               return CustomScrollView(
@@ -102,6 +118,7 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
                     sliver: SliverList(
                       delegate: SliverChildListDelegate([
+                        // بخش تب‌ها
                         SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           child: Row(
@@ -112,7 +129,7 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                               return Padding(
                                 padding: const EdgeInsets.only(right: 16.0),
                                 child: InkWell(
-                                  onTap: () => setState(() => _selectedTabIndex = idx),
+                                  onTap: () => _onTabSelected(idx),
                                   borderRadius: BorderRadius.circular(999),
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
@@ -147,7 +164,8 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                           ),
                         ),
                         const SizedBox(height: 24),
-                        
+
+                        // عنوان و تعداد آیتم‌ها
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           crossAxisAlignment: CrossAxisAlignment.end,
@@ -168,9 +186,9 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                                 const SizedBox(height: 4),
                                 Row(
                                   children: [
-                                    const Text(
-                                      'لیست تماشا',
-                                      style: TextStyle(
+                                    Text(
+                                      _tabs[_selectedTabIndex],
+                                      style: const TextStyle(
                                         fontFamily: 'Plus Jakarta Sans',
                                         fontSize: 24,
                                         fontWeight: FontWeight.bold,
@@ -191,22 +209,11 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                                 ),
                               ],
                             ),
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF0C2E3B).withOpacity(0.5),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Icon(
-                                Icons.filter_list,
-                                color: Color(0xFF5AD9D9),
-                                size: 20,
-                              ),
-                            ),
                           ],
                         ),
                         const SizedBox(height: 24),
 
+                        // نمایش محتوا / لودینگ / لیست خالی
                         if (isLoading)
                           const Padding(
                             padding: EdgeInsets.all(32.0),
@@ -219,7 +226,7 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                             padding: EdgeInsets.all(32.0),
                             child: Center(
                               child: Text(
-                                'هیچ آیتمی در لیست تماشای شما یافت نشد.',
+                                'هیچ آیتمی در این لیست یافت نشد.',
                                 style: TextStyle(
                                   fontFamily: 'Manrope',
                                   color: Color(0xFFBCC9C8),
@@ -239,14 +246,14 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                                   crossAxisCount: crossAxisCount,
                                   crossAxisSpacing: 24,
                                   mainAxisSpacing: 24,
-                                  mainAxisExtent: 360, 
+                                  mainAxisExtent: 360,
                                 ),
                                 itemCount: items.length,
                                 itemBuilder: (context, index) {
                                   return WatchlistCard(item: items[index]);
                                 },
                               );
-                            }
+                            },
                           ),
                       ]),
                     ),

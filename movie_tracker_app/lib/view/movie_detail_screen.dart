@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
 import '../../../presenters/media/media_presenter.dart';
+import '../../../presenters/interactions/interactions_presenter.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
 import '../widgets/media_grid_card.dart';
 import '../widgets/movie_hero_section.dart';
@@ -30,7 +31,11 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<MediaPresenter>().getMovieDetails(widget.movieId);
+      // ۱. دریافت اطلاعات فیلم
+      final mediaPresenter = context.read<MediaPresenter>();
+      mediaPresenter.getMovieDetails(widget.movieId);
+      // ۲. دریافت نظرات برای جلوگیری از خطای صفحه قرمز
+      mediaPresenter.getReviews(widget.movieId.toString(), 'movie');
     });
   }
 
@@ -91,9 +96,9 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                 child: Container(
                   height: 1,
                   width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: const Color(0x333C4949),
-                    boxShadow: const [
+                  decoration: const BoxDecoration(
+                    color: Color(0x333C4949),
+                    boxShadow: [
                       BoxShadow(
                         color: Color(0x0DF08DA5),
                         blurRadius: 1,
@@ -110,11 +115,18 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
       body: Consumer<MediaPresenter>(
         builder: (context, presenter, child) {
           if (presenter.isLoading && presenter.movieDetails == null) {
-            return const Center(child: CircularProgressIndicator(color: Color(0xFF5AD9D9)));
+            return const Center(
+              child: CircularProgressIndicator(color: Color(0xFF5AD9D9)),
+            );
           }
 
           if (presenter.errorMessage != null && presenter.movieDetails == null) {
-            return Center(child: Text(presenter.errorMessage!, style: const TextStyle(color: Colors.red)));
+            return Center(
+              child: Text(
+                presenter.errorMessage!,
+                style: const TextStyle(color: Colors.red),
+              ),
+            );
           }
 
           final details = presenter.movieDetails;
@@ -123,8 +135,8 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
           final String? backdropUrl = details?.backdropUrl;
           final double imdbRating = details?.tmdbRating ?? 0.0;
           final double userRating = details?.communityRating ?? 0.0;
-          
-          final List<String> genres = []; 
+
+          final List<String> genres = [];
           final String duration = '';
           final String country = '';
           final String synopsis = details?.overview ?? '';
@@ -144,23 +156,60 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                   duration: duration,
                   country: country,
                 ),
-                
                 const SizedBox(height: 32),
-
                 MovieActionButtons(
-                  onWatchlistTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('به لیست تماشا اضافه شد')),
-                    );
+                  onWatchlistTap: () async {
+                    final interactions = context.read<InteractionsPresenter>();
+
+                    // ۱. دریافت لیست‌های کاربر در صورت خالی بودن
+                    if (interactions.userLists.isEmpty) {
+                      await interactions.getUserLists();
+                    }
+
+                    if (interactions.userLists.isNotEmpty) {
+                      // گرفتن شناسه اولین لیست
+                      final firstListId = interactions.userLists.first.id;
+
+                      // ۲. فراخوانی متد با ورودی‌های صحیح
+                      await interactions.addMediaToList(
+                        firstListId,      // listId
+                        widget.movieId,   // mediaId
+                      );
+
+                      if (context.mounted) {
+                        if (interactions.errorMessage != null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('خطا: ${interactions.errorMessage}'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('با موفقیت به لیست اضافه شد'),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        }
+                      }
+                    } else {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('هیچ لیستی یافت نشد. ابتدا یک لیست بسازید.'),
+                          ),
+                        );
+                      }
+                    }
                   },
                   onLikeTap: () {
+                    // تغییر وضعیت لایک در MediaPresenter
                     presenter.toggleLike(widget.movieId.toString(), 'movie');
                   },
                   onReportTap: _showReportDialog,
                 ),
-
                 const SizedBox(height: 32),
-
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: LayoutBuilder(
@@ -190,19 +239,18 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                           ],
                         );
                       }
-                    }
+                    },
                   ),
                 ),
-
                 const SizedBox(height: 32),
-                
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: ReviewSection(tmdbId: widget.movieId, mediaType: 'movie'),
+                  child: ReviewSection(
+                    tmdbId: widget.movieId,
+                    mediaType: 'movie',
+                  ),
                 ),
-
                 const SizedBox(height: 48),
-
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Column(
@@ -222,7 +270,8 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                         padding: EdgeInsets.zero,
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
                           mainAxisSpacing: 16,
                           crossAxisSpacing: 16,
@@ -233,11 +282,14 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                           return MediaGridCard(
                             media: presenter.trendingItems[index],
                             onTap: () {
-                              Navigator.push(context, MaterialPageRoute(
-                                builder: (_) => MovieDetailScreen(
-                                  movieId: presenter.trendingItems[index].id,
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => MovieDetailScreen(
+                                    movieId: presenter.trendingItems[index].id,
+                                  ),
                                 ),
-                              ));
+                              );
                             },
                           );
                         },
