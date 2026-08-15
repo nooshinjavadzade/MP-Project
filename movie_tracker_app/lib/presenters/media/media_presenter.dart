@@ -26,8 +26,11 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
   RatingResponse? _lastRatingResponse;
   ReviewResponse? _lastCreatedReview;
   List<ReviewResponse> _reviews = [];
+  List<String> _searchHistory = [];
 
-  MediaPresenter(this._mediaService, [this._localStorageService]);
+  MediaPresenter(this._mediaService, [this._localStorageService]) {
+    loadSearchHistory();
+  }
 
   @override
   bool get isLoading => _isLoading;
@@ -71,6 +74,9 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
   @override
   List<ReviewResponse> get reviews => _reviews;
 
+  @override
+  List<String> get searchHistory => _searchHistory;
+
   void _prefetchPosters(List<MediaBase> items) {
     for (final item in items) {
       if (item.posterUrl != null) {
@@ -80,11 +86,31 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
   }
 
   @override
+  Future<void> loadSearchHistory() async {
+    _searchHistory = await _localStorageService?.getSearchHistory() ?? [];
+    notifyListeners();
+  }
+
+  @override
+  Future<void> removeSearchQuery(String query) async {
+    await _localStorageService?.removeSearchQuery(query);
+    await loadSearchHistory();
+  }
+
+  @override
+  Future<void> clearSearchHistory() async {
+    await _localStorageService?.clearSearchHistory();
+    _searchHistory = [];
+    notifyListeners();
+  }
+
+  @override
   Future<void> searchMedia(String query, {int page = 1}) async {
     _setLoading(true);
     final trimmedQuery = query.trim();
     if (trimmedQuery.isNotEmpty) {
       await _localStorageService?.addSearchQuery(trimmedQuery);
+      await loadSearchHistory();
     }
     try {
       final result = await _mediaService.searchMedia(query: query, page: page);
