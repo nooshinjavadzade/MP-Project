@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'dart:ui';
 import '../../../presenters/media/media_presenter.dart';
 import '../../../presenters/interactions/interactions_presenter.dart';
+import '../../../models/user_content/personal_list.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
 import '../widgets/media_grid_card.dart';
 import '../widgets/movie_hero_section.dart';
@@ -26,6 +27,10 @@ class MovieDetailScreen extends StatefulWidget {
 
 class _MovieDetailScreenState extends State<MovieDetailScreen> {
   int _currentNavIndex = 0;
+
+  // 🔹 اسم لیست‌های پیش‌فرض؛ باید دقیقاً با اسم تب‌ها تو watchlist_screen.dart یکی باشه
+  static const String _watchlistName = 'خواهم دید';
+  static const String _watchedName = 'تماشا شده';
 
   @override
   void initState() {
@@ -53,6 +58,65 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
         mediaType: 'movie',
       ),
     );
+  }
+
+  // 🔹 پیدا کردن لیست بر اساس نام
+  PersonalListResponse? _findListByName(
+      List<PersonalListResponse> lists, String name) {
+    for (final list in lists) {
+      if (list.name == name) return list;
+    }
+    return null;
+  }
+
+  // 🔹 منطق مشترک برای هر دو دکمه (خواهم دید / دیده شده)
+  Future<void> _addToListByName(String listName) async {
+    final interactions = context.read<InteractionsPresenter>();
+
+    if (interactions.userLists.isEmpty) {
+      await interactions.getUserLists();
+    }
+
+    PersonalListResponse? targetList =
+        _findListByName(interactions.userLists, listName);
+
+    // اگه لیست وجود نداشت، خودکار بسازش
+    if (targetList == null) {
+      await interactions.createList(listName);
+      targetList = _findListByName(interactions.userLists, listName);
+    }
+
+    if (targetList == null) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('خطا در ساخت لیست: ${interactions.errorMessage ?? ''}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
+    await interactions.addMediaToList(targetList.id, widget.movieId);
+
+    if (context.mounted) {
+      if (interactions.errorMessage != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('خطا: ${interactions.errorMessage}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('به «$listName» اضافه شد'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -158,51 +222,8 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                 ),
                 const SizedBox(height: 32),
                 MovieActionButtons(
-                  onWatchlistTap: () async {
-                    final interactions = context.read<InteractionsPresenter>();
-
-                    // ۱. دریافت لیست‌های کاربر در صورت خالی بودن
-                    if (interactions.userLists.isEmpty) {
-                      await interactions.getUserLists();
-                    }
-
-                    if (interactions.userLists.isNotEmpty) {
-                      // گرفتن شناسه اولین لیست
-                      final firstListId = interactions.userLists.first.id;
-
-                      // ۲. فراخوانی متد با ورودی‌های صحیح
-                      await interactions.addMediaToList(
-                        firstListId,      // listId
-                        widget.movieId,   // mediaId
-                      );
-
-                      if (context.mounted) {
-                        if (interactions.errorMessage != null) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('خطا: ${interactions.errorMessage}'),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('با موفقیت به لیست اضافه شد'),
-                              backgroundColor: Colors.green,
-                            ),
-                          );
-                        }
-                      }
-                    } else {
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('هیچ لیستی یافت نشد. ابتدا یک لیست بسازید.'),
-                          ),
-                        );
-                      }
-                    }
-                  },
+                  onWatchlistTap: () => _addToListByName(_watchlistName),
+                  onWatchedTap: () => _addToListByName(_watchedName),
                   onLikeTap: () {
                     // تغییر وضعیت لایک در MediaPresenter
                     presenter.toggleLike(widget.movieId.toString(), 'movie');

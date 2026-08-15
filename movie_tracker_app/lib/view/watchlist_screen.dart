@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../presenters/auth/auth_presenter.dart';
 import '../../presenters/interactions/interactions_presenter.dart';
+import '../../presenters/profile/profile_presenter.dart';
 import '../../models/user_content/personal_list.dart';
 import 'login_screen.dart';
 import '../widgets/watchlist_card.dart';
+import '../widgets/media_grid_card.dart';
 
 class WatchlistScreen extends StatefulWidget {
   const WatchlistScreen({super.key});
@@ -16,6 +18,11 @@ class WatchlistScreen extends StatefulWidget {
 class _WatchlistScreenState extends State<WatchlistScreen> {
   int _selectedTabIndex = 0;
   final List<String> _tabs = ['در حال تماشا', 'تماشا شده', 'خواهم دید', 'علاقه‌مندی‌ها'];
+  static const int _favoritesTabIndex = 3;
+  // 🔹 فقط سه تب اول لیست شخصی واقعی هستن (تب چهارم = لایک‌ها)
+  static const List<String> _defaultListNames = ['در حال تماشا', 'تماشا شده', 'خواهم دید'];
+
+  bool _defaultListsEnsured = false;
 
   @override
   void initState() {
@@ -23,26 +30,45 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final authPresenter = context.read<AuthPresenter>();
       if (authPresenter.authResponse?.user != null) {
-        final interactions = context.read<InteractionsPresenter>();
-        // ۱. دریافت همه لیست‌های کاربر
-        await interactions.getUserLists();
-        
-        // ۲. لود کردن لیست متناظر با تب اول
+        await _ensureDefaultLists();
         _fetchItemsForTab(_selectedTabIndex);
       }
     });
   }
 
+  // 🔹 هسته‌ی اصلاح: مطمئن می‌شیم هر سه لیست پیش‌فرض وجود دارن؛ هرکدوم نبود، می‌سازیمش
+  Future<void> _ensureDefaultLists() async {
+    if (_defaultListsEnsured) return;
+    final interactions = context.read<InteractionsPresenter>();
+
+    await interactions.getUserLists();
+
+    for (final name in _defaultListNames) {
+      final exists = interactions.userLists.any((l) => l.name == name);
+      if (!exists) {
+        await interactions.createList(name);
+      }
+    }
+
+    _defaultListsEnsured = true;
+  }
+
   void _fetchItemsForTab(int tabIndex) {
+    if (tabIndex == _favoritesTabIndex) {
+      final profile = context.read<ProfilePresenter>();
+      profile.getLikedMedia();
+      return;
+    }
+
     final interactions = context.read<InteractionsPresenter>();
     if (interactions.userLists.isEmpty) return;
 
-    // پیدا کردن لیست بر اساس اندیس تب یا انتخاب اولین لیست موجود
-    final targetListId = tabIndex < interactions.userLists.length
-        ? interactions.userLists[tabIndex].id
-        : interactions.userLists.first.id;
+    // 🔹 تطبیق بر اساس نام، نه ایندکس
+    final tabName = _tabs[tabIndex];
+    final matchingList = interactions.userLists.where((l) => l.name == tabName);
+    if (matchingList.isEmpty) return;
 
-    interactions.getListWithItems(targetListId);
+    interactions.getListWithItems(matchingList.first.id);
   }
 
   void _onTabSelected(int index) {
@@ -91,11 +117,18 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
 
         return Scaffold(
           backgroundColor: const Color(0xFF00161F),
-          body: Consumer<InteractionsPresenter>(
-            builder: (context, interactionsPresenter, _) {
+          body: Consumer2<InteractionsPresenter, ProfilePresenter>(
+            builder: (context, interactionsPresenter, profilePresenter, _) {
+              final bool isFavoritesTab = _selectedTabIndex == _favoritesTabIndex;
+
               final selectedList = interactionsPresenter.selectedListWithItems;
-              final List<PersonalListItemResponse> items = selectedList?.items ?? [];
-              final isLoading = interactionsPresenter.isLoading;
+              final List<PersonalListItemResponse> listItems = selectedList?.items ?? [];
+              final likedMedia = profilePresenter.likedMedia;
+
+              final int itemCount = isFavoritesTab ? likedMedia.length : listItems.length;
+              final bool isLoading = isFavoritesTab
+                  ? profilePresenter.isLoading
+                  : interactionsPresenter.isLoading;
 
               return CustomScrollView(
                 slivers: [
@@ -118,7 +151,6 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
                     sliver: SliverList(
                       delegate: SliverChildListDelegate([
-                        // بخش تب‌ها
                         SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           child: Row(
@@ -164,8 +196,6 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                           ),
                         ),
                         const SizedBox(height: 24),
-
-                        // عنوان و تعداد آیتم‌ها
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           crossAxisAlignment: CrossAxisAlignment.end,
@@ -197,7 +227,7 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                                     ),
                                     const SizedBox(width: 8),
                                     Text(
-                                      '(${items.length})',
+                                      '($itemCount)',
                                       style: TextStyle(
                                         fontFamily: 'Plus Jakarta Sans',
                                         fontSize: 24,
@@ -212,8 +242,6 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                           ],
                         ),
                         const SizedBox(height: 24),
-
-                        // نمایش محتوا / لودینگ / لیست خالی
                         if (isLoading)
                           const Padding(
                             padding: EdgeInsets.all(32.0),
@@ -221,13 +249,15 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                               child: CircularProgressIndicator(color: Color(0xFF5AD9D9)),
                             ),
                           )
-                        else if (items.isEmpty)
-                          const Padding(
-                            padding: EdgeInsets.all(32.0),
+                        else if (itemCount == 0)
+                          Padding(
+                            padding: const EdgeInsets.all(32.0),
                             child: Center(
                               child: Text(
-                                'هیچ آیتمی در این لیست یافت نشد.',
-                                style: TextStyle(
+                                isFavoritesTab
+                                    ? 'هنوز چیزی لایک نکرده‌اید.'
+                                    : 'هیچ آیتمی در این لیست یافت نشد.',
+                                style: const TextStyle(
                                   fontFamily: 'Manrope',
                                   color: Color(0xFFBCC9C8),
                                 ),
@@ -248,9 +278,15 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                                   mainAxisSpacing: 24,
                                   mainAxisExtent: 360,
                                 ),
-                                itemCount: items.length,
+                                itemCount: itemCount,
                                 itemBuilder: (context, index) {
-                                  return WatchlistCard(item: items[index]);
+                                  if (isFavoritesTab) {
+                                    return MediaGridCard(
+                                      media: likedMedia[index],
+                                      onTap: () {},
+                                    );
+                                  }
+                                  return WatchlistCard(item: listItems[index]);
                                 },
                               );
                             },
