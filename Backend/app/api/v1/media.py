@@ -210,16 +210,50 @@ async def get_series_details(tmdb_id: int, db: Session = Depends(get_db)):
     if needs_refresh:
         try:
             tmdb_data = await tmdb_client.get_media_details(tmdb_id, media_type="tv")
+            print("=== RAW TMDB DATA KEYS ===", list(tmdb_data.keys()))
+            print("=== seasons in raw tmdb_data ===", tmdb_data.get("seasons"))
+            print("=== genres in raw tmdb_data ===", tmdb_data.get("genres"))
             tmdb_data["media_type"] = "series"
-            await _save_or_update_media(db, tmdb_data, is_full_fetch=True)
+            media = await _save_or_update_media(db, tmdb_data, is_full_fetch=True)
+
+            # فصل‌ها رو هم (بدون قسمت‌ها، چون قسمت‌ها لِیزی از endpoint جدا میان) seed کن
+            for season_summary in tmdb_data.get("seasons", []):
+                if season_summary.get("name") == "Specials":
+                    continue
+                existing_season = (
+                    db.query(Season)
+                    .filter(
+                        Season.media_id == media.id,
+                        Season.season_number == season_summary["season_number"],
+                    )
+                    .first()
+                )
+                if not existing_season:
+                    poster_url = (
+                        f"https://image.tmdb.org/t/p/w500{season_summary['poster_path']}"
+                        if season_summary.get("poster_path")
+                        else None
+                    )
+                    release_date = (
+                        datetime.strptime(season_summary["air_date"], "%Y-%m-%d").date()
+                        if season_summary.get("air_date")
+                        else None
+                    )
+                    db.add(Season(
+                        media_id=media.id,
+                        season_number=season_summary["season_number"],
+                        title=season_summary.get("name"),
+                        overview=season_summary.get("overview"),
+                        release_date=release_date,
+                        tmdb_rating=season_summary.get("vote_average"),
+                    ))
+            db.commit()
 
             media = _get_media_by_tmdb_id_and_type(db, str(tmdb_id), "series")
         except Exception as e:
-            # If TMDB fails and we have cached data, return it
             if _should_fallback_on_tmdb_error(e) and media:
-                pass  # Use existing cached media
+                pass
             elif media is None:
-                # No cached data and TMDB failed
                 raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                                   detail="Service temporarily unavailable. Media not in cache.")
 

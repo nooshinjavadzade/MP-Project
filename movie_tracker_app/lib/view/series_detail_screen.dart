@@ -27,8 +27,18 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<MediaPresenter>().getSeriesDetails(widget.tmdbId);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final presenter = context.read<MediaPresenter>();
+      await presenter.getSeriesDetails(widget.tmdbId);
+
+      // بعد از گرفتن جزئیات سریال، قسمت‌های فصل پیش‌فرض (اولین فصل) رو می‌گیریم
+      final seasons = presenter.seriesDetails?.seasons;
+      if (seasons != null && seasons.isNotEmpty) {
+        final defaultSeason = seasons[_selectedSeasonIndex];
+        if (mounted) {
+          presenter.getSeasonDetails(widget.tmdbId, defaultSeason.seasonNumber);
+        }
+      }
     });
   }
 
@@ -36,6 +46,13 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
     setState(() {
       _currentNavIndex = index;
     });
+  }
+
+  void _onSeasonSelected(int index, int seasonNumber) {
+    setState(() {
+      _selectedSeasonIndex = index;
+    });
+    context.read<MediaPresenter>().getSeasonDetails(widget.tmdbId, seasonNumber);
   }
 
   @override
@@ -120,7 +137,7 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
           final String synopsis = details.overview ?? '';
           final String? backdropUrl = details.backdropUrl;
           final double imdbRating = details.tmdbRating ?? 0.0;
-          
+
           final seasons = details.seasons;
 
           return SingleChildScrollView(
@@ -141,7 +158,7 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
                         )
                       else
                         Container(color: const Color(0xFF193846)),
-                        
+
                       Container(
                         decoration: const BoxDecoration(
                           gradient: LinearGradient(
@@ -156,7 +173,7 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
                           ),
                         ),
                       ),
-                      
+
                       Positioned(
                         bottom: 0,
                         left: 0,
@@ -184,7 +201,11 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
                                   ],
                                   Expanded(
                                     child: Text(
-                                      [if (year.isNotEmpty) year, if (status.isNotEmpty) status, if (country.isNotEmpty) country].join(' • '),
+                                      [
+                                        if (year.isNotEmpty) year,
+                                        if (status.isNotEmpty) status,
+                                        if (country.isNotEmpty) country,
+                                      ].join(' • '),
                                       style: TextStyle(
                                         color: const Color(0xFFBCC9C8).withOpacity(0.7),
                                         fontSize: 12,
@@ -253,9 +274,9 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 if (synopsis.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -301,7 +322,7 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   SizedBox(
                     height: 40,
                     child: ListView.builder(
@@ -311,15 +332,11 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
                       itemBuilder: (context, index) {
                         final season = seasons[index];
                         final isSelected = _selectedSeasonIndex == index;
-                        
+
                         return Padding(
                           padding: const EdgeInsets.only(right: 12.0),
                           child: InkWell(
-                            onTap: () {
-                              setState(() {
-                                _selectedSeasonIndex = index;
-                              });
-                            },
+                            onTap: () => _onSeasonSelected(index, season.seasonNumber),
                             borderRadius: BorderRadius.circular(9999),
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
@@ -348,14 +365,33 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  
+
+                  // لیست قسمت‌های فصل انتخاب‌شده — از presenter.seasonDetails خونده می‌شه
+                  // چون endpoint اصلی سریال شامل episodes نمی‌شه و باید جدا فچ بشه
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Builder(
                       builder: (context) {
-                        final selectedSeason = seasons[_selectedSeasonIndex];
-                        final episodes = selectedSeason.episodes;
-                        
+                        final isSeasonLoading = presenter.isLoading && presenter.seasonDetails == null;
+
+                        if (isSeasonLoading) {
+                          return const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(24.0),
+                              child: CircularProgressIndicator(color: Color(0xFF5AD9D9)),
+                            ),
+                          );
+                        }
+
+                        final currentSeasonNumber = seasons[_selectedSeasonIndex].seasonNumber;
+                        final seasonDetails = presenter.seasonDetails;
+
+                        // اگه اطلاعات فصلِ فعلاً بارگذاری‌شده متعلق به فصل انتخاب‌شده نباشه
+                        // (مثلاً هنوز کال جدید تموم نشده)، از قسمت‌های قدیمی استفاده نکن
+                        final episodes = (seasonDetails != null && seasonDetails.seasonNumber == currentSeasonNumber)
+                            ? seasonDetails.episodes
+                            : const [];
+
                         if (episodes.isEmpty) {
                           return const Center(
                             child: Padding(
@@ -367,7 +403,7 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
                             ),
                           );
                         }
-                        
+
                         return Column(
                           children: episodes.map((episode) {
                             return EpisodeCard(
@@ -375,7 +411,7 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
                               title: episode.title,
                               overview: episode.overview,
                               runtime: episode.runtime,
-                              imageUrl: null, 
+                              imageUrl: null,
                               onToggleWatched: () {
                                 // TODO: Implement watch toggle functionality
                               },
@@ -386,9 +422,9 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
                     ),
                   ),
                 ],
-                
+
                 const SizedBox(height: 32),
-                
+
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: ReviewSection(tmdbId: widget.tmdbId, mediaType: 'series'),

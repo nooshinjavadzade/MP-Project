@@ -27,8 +27,8 @@ class MediaGridCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AspectRatio(
-            aspectRatio: 2 / 3,
+          // 🔹 قبلاً AspectRatio بود؛ الان Expanded می‌گیره تا با هر ارتفاعی از گرید سازگار باشه
+          Expanded(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: BackdropFilter(
@@ -50,7 +50,7 @@ class MediaGridCard extends StatelessWidget {
                         )
                       else
                         Container(color: const Color(0xFF193846)),
-                      
+
                       Positioned(
                         left: 0,
                         right: 0,
@@ -69,7 +69,7 @@ class MediaGridCard extends StatelessWidget {
                           ),
                         ),
                       ),
-                      
+
                       if (rating > 0)
                         Positioned(
                           top: 8,

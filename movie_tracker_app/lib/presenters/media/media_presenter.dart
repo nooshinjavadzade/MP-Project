@@ -275,7 +275,16 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
       }
       _seriesDetails = details;
       _errorMessage = null;
-    } catch (e) {
+
+      // ---- DEBUG ----
+      debugPrint('=== [Presenter.getSeriesDetails] seasons parsed: ${details.seasons.length} ===');
+      for (final s in details.seasons) {
+        debugPrint('  -> season ${s.seasonNumber} "${s.title}" episodes: ${s.episodes.length}');
+      }
+      // ---- END DEBUG ----
+    } catch (e, stack) {
+      debugPrint('=== [Presenter.getSeriesDetails] ERROR: $e ===');
+      debugPrint(stack.toString());
       if (cached != null) {
         _seriesDetails = cached;
         _errorMessage = null;
@@ -297,7 +306,16 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
       await _localStorageService?.saveSeasonEpisodes(tmdbId.toString(), seasonNumber, episodeJsonList);
       _seasonDetails = season;
       _errorMessage = null;
-    } catch (e) {
+
+      // ---- DEBUG ----
+      debugPrint('=== [Presenter.getSeasonDetails] tmdbId=$tmdbId season=$seasonNumber -> episodes: ${season.episodes.length} ===');
+      // ---- END DEBUG ----
+    } catch (e, stack) {
+      // ---- DEBUG ----
+      debugPrint('=== [Presenter.getSeasonDetails] ERROR for tmdbId=$tmdbId season=$seasonNumber: $e ===');
+      debugPrint(stack.toString());
+      // ---- END DEBUG ----
+
       if (cachedEpisodes != null && cachedEpisodes.isNotEmpty) {
         final episodes = cachedEpisodes.map((e) => Episode.fromJson(e)).toList();
         _seasonDetails = Season(seasonNumber: seasonNumber, episodes: episodes);

@@ -27,19 +27,21 @@ class MovieDetailScreen extends StatefulWidget {
 
 class _MovieDetailScreenState extends State<MovieDetailScreen> {
   int _currentNavIndex = 0;
+  bool _isDetailsLoaded = false; // 🔹 برای مطمئن شدن از sync شدن رسانه
 
-  // 🔹 اسم لیست‌های پیش‌فرض؛ باید دقیقاً با اسم تب‌ها تو watchlist_screen.dart یکی باشه
   static const String _watchlistName = 'خواهم دید';
   static const String _watchedName = 'تماشا شده';
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      // ۱. دریافت اطلاعات فیلم
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       final mediaPresenter = context.read<MediaPresenter>();
-      mediaPresenter.getMovieDetails(widget.movieId);
-      // ۲. دریافت نظرات برای جلوگیری از خطای صفحه قرمز
+      // 🔹 حالا await می‌کنیم تا مطمئن بشیم قبل از فعال شدن دکمه‌ها، رسانه لود/sync شده
+      await mediaPresenter.getMovieDetails(widget.movieId);
+      if (mounted) {
+        setState(() => _isDetailsLoaded = true);
+      }
       mediaPresenter.getReviews(widget.movieId.toString(), 'movie');
     });
   }
@@ -60,7 +62,6 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
     );
   }
 
-  // 🔹 پیدا کردن لیست بر اساس نام
   PersonalListResponse? _findListByName(
       List<PersonalListResponse> lists, String name) {
     for (final list in lists) {
@@ -69,8 +70,14 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
     return null;
   }
 
-  // 🔹 منطق مشترک برای هر دو دکمه (خواهم دید / دیده شده)
   Future<void> _addToListByName(String listName) async {
+    // 🔹 اگه هنوز جزییات فیلم لود نشده، صبر می‌کنیم (که مطمئن باشیم رسانه سمت سرور sync شده)
+    if (!_isDetailsLoaded) {
+      final mediaPresenter = context.read<MediaPresenter>();
+      await mediaPresenter.getMovieDetails(widget.movieId);
+      if (mounted) setState(() => _isDetailsLoaded = true);
+    }
+
     final interactions = context.read<InteractionsPresenter>();
 
     if (interactions.userLists.isEmpty) {
@@ -80,7 +87,6 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
     PersonalListResponse? targetList =
         _findListByName(interactions.userLists, listName);
 
-    // اگه لیست وجود نداشت، خودکار بسازش
     if (targetList == null) {
       await interactions.createList(listName);
       targetList = _findListByName(interactions.userLists, listName);
@@ -102,10 +108,12 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
 
     if (context.mounted) {
       if (interactions.errorMessage != null) {
+        // 🔹 پیام خطای واقعی از سرور رو نشون می‌دیم تا اگه بازم fail شد بفهمیم دقیقاً چیه
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('خطا: ${interactions.errorMessage}'),
             backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
           ),
         );
       } else {
@@ -225,7 +233,6 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                   onWatchlistTap: () => _addToListByName(_watchlistName),
                   onWatchedTap: () => _addToListByName(_watchedName),
                   onLikeTap: () {
-                    // تغییر وضعیت لایک در MediaPresenter
                     presenter.toggleLike(widget.movieId.toString(), 'movie');
                   },
                   onReportTap: _showReportDialog,

@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../models/common.dart';
 import '../../models/movie.dart';
@@ -163,11 +164,30 @@ class MediaService {
     try {
       final response = await _apiClient.dio.get('$_baseEndpoint/series/$tmdbId');
 
+      // ---- DEBUG ----
+      debugPrint('=== [getSeriesDetails] RAW RESPONSE for tmdbId=$tmdbId ===');
+      debugPrint(response.data.toString());
+      if (response.data is Map && (response.data as Map).containsKey('seasons')) {
+        debugPrint('=== [getSeriesDetails] seasons field: ===');
+        debugPrint((response.data['seasons']).toString());
+      } else {
+        debugPrint('=== [getSeriesDetails] WARNING: no "seasons" key in response ===');
+      }
+      // ---- END DEBUG ----
+
       if (response.statusCode == 200) {
-        return SeriesDetails.fromJson(response.data);
+        try {
+          return SeriesDetails.fromJson(response.data);
+        } catch (parseError, stack) {
+          debugPrint('=== [getSeriesDetails] PARSE ERROR: $parseError ===');
+          debugPrint(stack.toString());
+          rethrow;
+        }
       }
       throw ErrorHandler.handleError(response);
     } on DioException catch (e) {
+      debugPrint('=== [getSeriesDetails] DIO ERROR: ${e.message} ===');
+      debugPrint('=== response data: ${e.response?.data} ===');
       throw ErrorHandler.handleDioError(e);
     }
   }
@@ -178,11 +198,32 @@ class MediaService {
         '$_baseEndpoint/series/$tmdbId/season/$seasonNumber',
       );
 
+      // ---- DEBUG ----
+      debugPrint('=== [getSeasonDetails] RAW RESPONSE for tmdbId=$tmdbId season=$seasonNumber ===');
+      debugPrint('status code: ${response.statusCode}');
+      debugPrint(response.data.toString());
+      if (response.data is Map && (response.data as Map).containsKey('episodes')) {
+        final episodesRaw = response.data['episodes'];
+        debugPrint('=== [getSeasonDetails] episodes count: ${(episodesRaw as List?)?.length} ===');
+      } else {
+        debugPrint('=== [getSeasonDetails] WARNING: no "episodes" key in response ===');
+      }
+      // ---- END DEBUG ----
+
       if (response.statusCode == 200) {
-        return Season.fromJson(response.data);
+        try {
+          return Season.fromJson(response.data);
+        } catch (parseError, stack) {
+          debugPrint('=== [getSeasonDetails] PARSE ERROR: $parseError ===');
+          debugPrint(stack.toString());
+          rethrow;
+        }
       }
       throw ErrorHandler.handleError(response);
     } on DioException catch (e) {
+      debugPrint('=== [getSeasonDetails] DIO ERROR: ${e.message} ===');
+      debugPrint('=== status code: ${e.response?.statusCode} ===');
+      debugPrint('=== response data: ${e.response?.data} ===');
       throw ErrorHandler.handleDioError(e);
     }
   }
