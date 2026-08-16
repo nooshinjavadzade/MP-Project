@@ -1,24 +1,24 @@
 enum ReportReason {
-  inappropriateContent('inappropriate_content'),
-  spam('spam'),
-  copyright('copyright'),
-  incorrectInfo('incorrect_info'),
-  other('other');
+  inappropriateContent('Inappropriate Content'),
+  spam('Spam'),
+  copyright('Copyright'),
+  incorrectInfo('Incorrect Information'),
+  other('Other');
 
   const ReportReason(this.value);
   final String value;
 
   static ReportReason fromString(String value) {
     switch (value) {
-      case 'inappropriate_content':
+      case 'Inappropriate Content':
         return ReportReason.inappropriateContent;
-      case 'spam':
+      case 'Spam':
         return ReportReason.spam;
-      case 'copyright':
+      case 'Copyright':
         return ReportReason.copyright;
-      case 'incorrect_info':
+      case 'Incorrect Information':
         return ReportReason.incorrectInfo;
-      case 'other':
+      case 'Other':
         return ReportReason.other;
       default:
         return ReportReason.other;
@@ -27,20 +27,20 @@ enum ReportReason {
 }
 
 enum ReportStatus {
-  pending('pending'),
-  resolved('resolved'),
-  dismissed('dismissed');
+  pending('Pending'),
+  resolved('Resolved'),
+  dismissed('Dismissed');
 
   const ReportStatus(this.value);
   final String value;
 
   static ReportStatus fromString(String value) {
     switch (value) {
-      case 'pending':
+      case 'Pending':
         return ReportStatus.pending;
-      case 'resolved':
+      case 'Resolved':
         return ReportStatus.resolved;
-      case 'dismissed':
+      case 'Dismissed':
         return ReportStatus.dismissed;
       default:
         return ReportStatus.pending;
