@@ -13,7 +13,7 @@ enum ReportReason {
   final String value;
 
   static ReportReason fromString(String value) {
-    switch (value) {
+    switch (value.toLowerCase()) {
       case 'inappropriate_content':
         return ReportReason.inappropriateContent;
       case 'spam':
@@ -39,7 +39,7 @@ enum ReportStatus {
   final String value;
 
   static ReportStatus fromString(String value) {
-    switch (value) {
+    switch (value.toLowerCase()) {
       case 'pending':
         return ReportStatus.pending;
       case 'resolved':
@@ -62,8 +62,8 @@ class AdminReportResponse {
   final String? adminNote;
   final DateTime createdAt;
   final DateTime? resolvedAt;
-  final User user;
-  final MediaBase media;
+  final User? user;
+  final MediaBase? media;
 
   const AdminReportResponse({
     required this.id,
@@ -75,13 +75,13 @@ class AdminReportResponse {
     this.adminNote,
     required this.createdAt,
     this.resolvedAt,
-    required this.user,
-    required this.media,
+    this.user,
+    this.media,
   });
 
-  String get userName => user.fullName ?? user.username;
-  String get userEmail => user.email;
-  String get mediaTitle => media.title;
+  String get userName => user?.fullName ?? user?.username ?? 'کاربر #$userId';
+  String get userEmail => user?.email ?? 'بدون ایمیل';
+  String get mediaTitle => media?.title ?? 'مدیا #$mediaId';
 
   factory AdminReportResponse.fromJson(Map<String, dynamic> json) {
     return AdminReportResponse(
@@ -96,8 +96,8 @@ class AdminReportResponse {
       resolvedAt: json['resolved_at'] != null
           ? DateTime.parse(json['resolved_at'])
           : null,
-      user: User.fromJson(json['user']),
-      media: MediaBase.fromJson(json['media']),
+      user: json['user'] != null ? User.fromJson(json['user']) : null,
+      media: json['media'] != null ? MediaBase.fromJson(json['media']) : null,
     );
   }
 
@@ -111,9 +111,25 @@ class AdminReportResponse {
     'admin_note': adminNote,
     'created_at': createdAt.toIso8601String(),
     'resolved_at': resolvedAt?.toIso8601String(),
-    'user': user.toJson(),
-    'media': media.toJson(),
+    'user': user?.toJson(),
+    'media': media?.toJson(),
   };
+
+  AdminReportResponse copyWith({User? user, MediaBase? media}) {
+  return AdminReportResponse(
+    id: id,
+    mediaId: mediaId,
+    userId: userId,
+    reason: reason,
+    description: description,
+    status: status,
+    adminNote: adminNote,
+    createdAt: createdAt,
+    resolvedAt: resolvedAt,
+    user: user ?? this.user,
+    media: media ?? this.media,
+  );
+}
 }
 
 class AdminReportUpdate {
@@ -162,3 +178,4 @@ class AdminReportListResponse {
     'pagination': pagination.toJson(),
   };
 }
+

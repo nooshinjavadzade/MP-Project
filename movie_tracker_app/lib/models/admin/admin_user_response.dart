@@ -1,4 +1,5 @@
 import '../common/pagination.dart';
+import '../auth/user.dart';
 
 class AdminUserResponse {
   final int id;
@@ -56,7 +57,21 @@ class AdminUserResponse {
     'watched_movies_count': watchedMoviesCount,
     'watched_series_count': watchedSeriesCount,
   };
-}
+
+  // ✅ اینجا، داخل همین کلاس، درست جاشه
+  User toUser() {
+    return User(
+      id: id,
+      username: username,
+      email: email,
+      fullName: fullName,
+      avatarUrl: avatarUrl,
+      isAdmin: isAdmin,
+      isVerified: isVerified,
+      createdAt: createdAt,
+    );
+  }
+} // ← کلاس AdminUserResponse اینجا بسته میشه
 
 class AdminUserListResponse {
   final List<AdminUserResponse> items;
@@ -81,4 +96,4 @@ class AdminUserListResponse {
     'items': items.map((e) => e.toJson()).toList(),
     'pagination': pagination.toJson(),
   };
-}
+} // ← دیگه توی این کلاس هیچی اضافه نیست، toUser() اینجا نباید باشه

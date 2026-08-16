@@ -132,19 +132,19 @@ class _ManageReportsScreenState extends State<ManageReportsScreen> {
                   )
                 else
                   ...items.map((report) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 16.0),
-                      child: _ReportCard(
-                        userName: report.user.username,
-                        email: report.user.email,
-                        reportedType: report.media.title ?? report.media.mediaType?.toString() ?? 'Media Item',
-                        reason: report.description ?? report.reason.value,
-                        adminNote: report.adminNote,
-                        status: report.status.value,
-                        onTap: () => _showResolveDialog(context, presenter, report),
-                      ),
-                    );
-                  }).toList(),
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 16.0),
+                        child: _ReportCard(
+                          userName: report.userName,        // قبلاً: report.user.username
+                          email: report.userEmail,           // قبلاً: report.user.email
+                          reportedType: report.mediaTitle,   // قبلاً: report.media.title ?? report.media.mediaType?.toString() ?? 'Media Item'
+                          reason: report.description ?? report.reason.value,
+                          adminNote: report.adminNote,
+                          status: report.status.value,
+                          onTap: () => _showResolveDialog(context, presenter, report),
+                        ),
+                      );
+                    }).toList(),
               ],
             );
           },

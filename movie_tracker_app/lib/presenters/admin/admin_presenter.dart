@@ -132,20 +132,40 @@ class AdminPresenter extends ChangeNotifier implements IAdminPresenter {
 
   @override
   Future<void> getReports({int page = 1, int perPage = 20}) async {
-    _setLoading(true);
-    try {
-      _reportListResponse = await _adminService.getReports(
-        page: page,
-        perPage: perPage,
-      );
-      _errorMessage = null;
-    } catch (e) {
-      debugPrint('Error: $e');
-      _errorMessage = e.toString();
-    } finally {
-      _setLoading(false);
-    }
+  _setLoading(true);
+  try {
+    _reportListResponse = await _adminService.getReports(page: page, perPage: perPage);
+    await _enrichReportsWithUsers();
+    _errorMessage = null;
+  } catch (e) {
+    debugPrint('Error: $e');
+    _errorMessage = e.toString();
+  } finally {
+    _setLoading(false);
   }
+}
+
+Future<void> _enrichReportsWithUsers() async {
+  final reports = _reportListResponse?.items;
+  if (reports == null || reports.isEmpty) return;
+
+  if (_userListResponse == null) {
+    _userListResponse = await _adminService.getUsers(page: 1, perPage: 100);
+  }
+
+  final usersById = <int, User>{
+    for (final u in _userListResponse!.items) u.id: u.toUser(),
+  };
+
+  _reportListResponse = AdminReportListResponse(
+    items: reports.map((r) {
+      final matchedUser = usersById[r.userId];
+      if (matchedUser == null) return r;
+      return r.copyWith(user: matchedUser);
+    }).toList(),
+    pagination: _reportListResponse!.pagination,
+  );
+}
 
   @override
   Future<void> updateReport(int reportId, AdminReportUpdate request) async {
@@ -229,21 +249,21 @@ class AdminPresenter extends ChangeNotifier implements IAdminPresenter {
   }
 
   @override
-  String getUserNameForReport(int reportId) {
-    final report = _findReport(reportId);
-    if (report == null) return 'ناشناس';
-    return report.user.fullName ?? report.user.username;
-  }
+String getUserNameForReport(int reportId) {
+  final report = _findReport(reportId);
+  if (report == null) return 'ناشناس';
+  return report.userName;   // به‌جای report.user.fullName ?? report.user.username
+}
 
-  @override
-  String getUserEmailForReport(int reportId) {
-    return _findReport(reportId)?.user.email ?? 'بدون ایمیل';
-  }
+@override
+String getUserEmailForReport(int reportId) {
+  return _findReport(reportId)?.userEmail ?? 'بدون ایمیل';
+}
 
-  @override
-  String getMediaTitleForReport(int reportId) {
-    return _findReport(reportId)?.media.title ?? 'بدون عنوان';
-  }
+@override
+String getMediaTitleForReport(int reportId) {
+  return _findReport(reportId)?.mediaTitle ?? 'بدون عنوان';
+}
 
   @override
   User? getUserForReview(int reviewId) {
