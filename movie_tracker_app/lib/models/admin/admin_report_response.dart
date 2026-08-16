@@ -79,6 +79,10 @@ class AdminReportResponse {
     required this.media,
   });
 
+  String get userName => user.fullName ?? user.username;
+  String get userEmail => user.email;
+  String get mediaTitle => media.title;
+
   factory AdminReportResponse.fromJson(Map<String, dynamic> json) {
     return AdminReportResponse(
       id: json['id'],
@@ -146,8 +150,8 @@ class AdminReportListResponse {
   factory AdminReportListResponse.fromJson(Map<String, dynamic> json) {
     return AdminReportListResponse(
       items: (json['items'] as List<dynamic>?)
-              ?.map((e) => AdminReportResponse.fromJson(e))
-              .toList() ??
+          ?.map((e) => AdminReportResponse.fromJson(e))
+          .toList() ??
           const [],
       pagination: Pagination.fromJson(json['pagination']),
     );

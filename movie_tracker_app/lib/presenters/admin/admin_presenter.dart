@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../../models/admin.dart';
+import '../../models/auth/user.dart';
+import '../../models/common/media_base.dart';
 import '../../services/api/admin_service.dart';
 import 'i_admin_presenter.dart';
 
@@ -212,6 +214,76 @@ class AdminPresenter extends ChangeNotifier implements IAdminPresenter {
       _errorMessage = e.toString();
     } finally {
       _setLoading(false);
+    }
+  }
+
+  @override
+  User? getUserForReport(int reportId) {
+    return _findReport(reportId)?.user;
+  }
+
+  @override
+  MediaBase? getMediaForReport(int reportId) {
+    return _findReport(reportId)?.media;
+  }
+
+  @override
+  String getUserNameForReport(int reportId) {
+    final report = _findReport(reportId);
+    if (report == null) return 'ناشناس';
+    return report.user.fullName ?? report.user.username;
+  }
+
+  @override
+  String getUserEmailForReport(int reportId) {
+    return _findReport(reportId)?.user.email ?? 'بدون ایمیل';
+  }
+
+  @override
+  String getMediaTitleForReport(int reportId) {
+    return _findReport(reportId)?.media.title ?? 'بدون عنوان';
+  }
+
+  @override
+  User? getUserForReview(int reviewId) {
+    return _findReview(reviewId)?.user;
+  }
+
+  @override
+  MediaBase? getMediaForReview(int reviewId) {
+    return _findReview(reviewId)?.media;
+  }
+
+  @override
+  String getUserNameForReview(int reviewId) {
+    final review = _findReview(reviewId);
+    if (review == null || review.user == null) return 'ناشناس';
+    return review.user!.fullName ?? review.user!.username;
+  }
+
+  @override
+  String getUserEmailForReview(int reviewId) {
+    return _findReview(reviewId)?.user?.email ?? 'بدون ایمیل';
+  }
+
+  @override
+  String getMediaTitleForReview(int reviewId) {
+    return _findReview(reviewId)?.media?.title ?? 'بدون عنوان';
+  }
+
+  AdminReportResponse? _findReport(int reportId) {
+    try {
+      return _reportListResponse?.items.firstWhere((r) => r.id == reportId);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  AdminReviewResponse? _findReview(int reviewId) {
+    try {
+      return _reviewListResponse?.items.firstWhere((r) => r.id == reviewId);
+    } catch (_) {
+      return null;
     }
   }
 

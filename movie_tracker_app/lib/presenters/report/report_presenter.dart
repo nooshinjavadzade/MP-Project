@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../../models/report.dart';
+import '../../models/auth/user.dart';
+import '../../models/common/media_base.dart';
 import '../../services/api/report_service.dart';
 import 'i_report_presenter.dart';
 
@@ -26,8 +28,6 @@ class ReportPresenter extends ChangeNotifier implements IReportPresenter {
   @override
   ReportListResponse? get myReportsResponse => _myReportsResponse;
 
-  
-
   @override
   Future<void> submitReport({
     required String mediaType,
@@ -38,8 +38,6 @@ class ReportPresenter extends ChangeNotifier implements IReportPresenter {
     _setLoading(true);
     try {
       final request = ReportCreate(reason: reason, description: description);
-      print("YYYYYYYYYYYYYYYYYYYYYYYYYYYY");
-      print(request);
       _lastSubmittedReport = await _reportService.submitReport(
         mediaType: mediaType,
         tmdbId: tmdbId,
@@ -101,12 +99,43 @@ class ReportPresenter extends ChangeNotifier implements IReportPresenter {
     notifyListeners();
   }
 
+  @override
+  User? getUserForReport(int reportId) {
+    return _findReport(reportId)?.user;
+  }
 
+  @override
+  MediaBase? getMediaForReport(int reportId) {
+    return _findReport(reportId)?.media;
+  }
+
+  @override
+  String getUserNameForReport(int reportId) {
+    final report = _findReport(reportId);
+    if (report == null || report.user == null) return 'ناشناس';
+    return report.user!.fullName ?? report.user!.username;
+  }
+
+  @override
+  String getUserEmailForReport(int reportId) {
+    return _findReport(reportId)?.user?.email ?? 'بدون ایمیل';
+  }
+
+  @override
+  String getMediaTitleForReport(int reportId) {
+    return _findReport(reportId)?.media?.title ?? 'بدون عنوان';
+  }
+
+  ReportResponse? _findReport(int reportId) {
+    try {
+      return _myReportsResponse?.items.firstWhere((r) => r.id == reportId);
+    } catch (_) {
+      return null;
+    }
+  }
 
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
   }
-
-  
 }

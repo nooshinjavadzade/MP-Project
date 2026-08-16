@@ -1,4 +1,6 @@
 import '../../models/admin.dart';
+import '../../models/auth/user.dart';
+import '../../models/common/media_base.dart';
 
 abstract class IAdminPresenter {
   bool get isLoading;
@@ -29,4 +31,16 @@ abstract class IAdminPresenter {
   Future<void> deleteCachedMedia(int mediaId);
 
   Future<void> getStats();
+
+  User? getUserForReport(int reportId);
+  MediaBase? getMediaForReport(int reportId);
+  String getUserNameForReport(int reportId);
+  String getUserEmailForReport(int reportId);
+  String getMediaTitleForReport(int reportId);
+
+  User? getUserForReview(int reviewId);
+  MediaBase? getMediaForReview(int reviewId);
+  String getUserNameForReview(int reviewId);
+  String getUserEmailForReview(int reviewId);
+  String getMediaTitleForReview(int reviewId);
 }

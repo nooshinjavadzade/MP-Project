@@ -1,5 +1,7 @@
-import 'report_enums.dart';
+import '../auth/user.dart';
+import '../common/media_base.dart';
 import '../common/pagination.dart';
+import 'report_enums.dart';
 
 class ReportCreate {
   final ReportReason reason;
@@ -33,6 +35,8 @@ class ReportResponse {
   final String? adminNote;
   final DateTime createdAt;
   final DateTime? resolvedAt;
+  final User? user;
+  final MediaBase? media;
 
   const ReportResponse({
     required this.id,
@@ -44,7 +48,13 @@ class ReportResponse {
     this.adminNote,
     required this.createdAt,
     this.resolvedAt,
+    this.user,
+    this.media,
   });
+
+  String? get userName => user?.fullName ?? user?.username;
+  String? get userEmail => user?.email;
+  String? get mediaTitle => media?.title;
 
   factory ReportResponse.fromJson(Map<String, dynamic> json) {
     return ReportResponse(
@@ -59,6 +69,12 @@ class ReportResponse {
       resolvedAt: json['resolved_at'] != null
           ? DateTime.parse(json['resolved_at'])
           : null,
+      user: json['user'] is Map<String, dynamic>
+          ? User.fromJson(json['user'] as Map<String, dynamic>)
+          : null,
+      media: json['media'] is Map<String, dynamic>
+          ? MediaBase.fromJson(json['media'] as Map<String, dynamic>)
+          : null,
     );
   }
 
@@ -72,6 +88,8 @@ class ReportResponse {
     'admin_note': adminNote,
     'created_at': createdAt.toIso8601String(),
     'resolved_at': resolvedAt?.toIso8601String(),
+    'user': user?.toJson(),
+    'media': media?.toJson(),
   };
 }
 
@@ -87,8 +105,8 @@ class ReportListResponse {
   factory ReportListResponse.fromJson(Map<String, dynamic> json) {
     return ReportListResponse(
       items: (json['items'] as List<dynamic>?)
-              ?.map((e) => ReportResponse.fromJson(e))
-              .toList() ??
+          ?.map((e) => ReportResponse.fromJson(e))
+          .toList() ??
           const [],
       pagination: Pagination.fromJson(json['pagination']),
     );

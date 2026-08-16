@@ -26,6 +26,10 @@ class AdminReviewResponse {
     this.media,
   });
 
+  String? get userName => user?.fullName ?? user?.username;
+  String? get userEmail => user?.email;
+  String? get mediaTitle => media?.title;
+
   factory AdminReviewResponse.fromJson(Map<String, dynamic> json) {
     return AdminReviewResponse(
       id: json['id'],
@@ -37,8 +41,6 @@ class AdminReviewResponse {
       updatedAt: json['updated_at'] != null
           ? DateTime.parse(json['updated_at'])
           : null,
-      // TODO(backend): وقتی بک‌اند این فیلدها رو nested برگردوند،
-      // می‌تونیم دوباره اینا رو required کنیم.
       user: json['user'] is Map<String, dynamic>
           ? User.fromJson(json['user'] as Map<String, dynamic>)
           : null,
@@ -73,8 +75,8 @@ class AdminReviewListResponse {
   factory AdminReviewListResponse.fromJson(Map<String, dynamic> json) {
     return AdminReviewListResponse(
       items: (json['items'] as List<dynamic>?)
-              ?.map((e) => AdminReviewResponse.fromJson(e))
-              .toList() ??
+          ?.map((e) => AdminReviewResponse.fromJson(e))
+          .toList() ??
           const [],
       pagination: Pagination.fromJson(json['pagination']),
     );
