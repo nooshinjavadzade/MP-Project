@@ -4,7 +4,11 @@ import '../../presenters/auth/auth_presenter.dart';
 import '../../presenters/interactions/interactions_presenter.dart';
 import '../../presenters/profile/profile_presenter.dart';
 import '../../models/user_content/personal_list.dart';
+import '../../models/common/media_base.dart';
+import '../../models/common/media_type.dart';
 import 'login_screen.dart';
+import 'movie_detail_screen.dart';
+import 'series_detail_screen.dart';
 import '../widgets/watchlist_card.dart';
 import '../widgets/media_grid_card.dart';
 
@@ -77,6 +81,31 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
       _selectedTabIndex = index;
     });
     _fetchItemsForTab(index);
+  }
+
+  // 🔹 مسیر درست جزئیات رو بر اساس نوع رسانه (فیلم/سریال) باز می‌کنه
+  // نکته‌ی مهم: باید از media.tmdbId استفاده کنیم نه media.id
+  // چون media.id شناسه‌ی داخلی ردیف دیتابیسه، ولی صفحات جزئیات
+  // بر اساس شناسه‌ی TMDB (tmdb_id) جستجو می‌کنن. این دوتا وقتی
+  // دیتا از دیتابیس (مثل آیتم‌های لیست شخصی) میاد باهم فرق دارن.
+  void _openDetails(MediaBase media) {
+    final tmdbId = int.tryParse(media.tmdbId) ?? media.id;
+
+    if (media.mediaType == MediaType.movie) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => MovieDetailScreen(movieId: tmdbId),
+        ),
+      );
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => SeriesDetailScreen(tmdbId: tmdbId),
+        ),
+      );
+    }
   }
 
   @override
@@ -281,12 +310,17 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
                                 itemCount: itemCount,
                                 itemBuilder: (context, index) {
                                   if (isFavoritesTab) {
+                                    final media = likedMedia[index];
                                     return MediaGridCard(
-                                      media: likedMedia[index],
-                                      onTap: () {},
+                                      media: media,
+                                      onTap: () => _openDetails(media),
                                     );
                                   }
-                                  return WatchlistCard(item: listItems[index]);
+                                  final item = listItems[index];
+                                  return WatchlistCard(
+                                    item: item,
+                                    onTap: () => _openDetails(item.media),
+                                  );
                                 },
                               );
                             },
