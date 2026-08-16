@@ -7,6 +7,8 @@ import '../../presenters/interactions/interactions_presenter.dart';
 import '../../models/user_content/personal_list.dart';
 import '../widgets/movie_synopsis_card.dart';
 import '../widgets/movie_cast_card.dart';
+import '../widgets/movie_action_buttons.dart';
+import '../widgets/report_dialog.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
 import '../widgets/review_section.dart';
 import '../widgets/episode_card.dart';
@@ -26,7 +28,9 @@ class SeriesDetailScreen extends StatefulWidget {
 class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
   int _selectedSeasonIndex = 0;
   int _currentNavIndex = 0;
+  bool _isDetailsLoaded = false;
 
+  static const String _watchlistName = 'خواهم دید';
   static const String _inProgressListName = 'در حال تماشا';
   static const String _watchedListName = 'تماشا شده';
 
@@ -38,6 +42,9 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final presenter = context.read<MediaPresenter>();
       await presenter.getSeriesDetails(widget.tmdbId);
+      if (mounted) {
+        setState(() => _isDetailsLoaded = true);
+      }
 
       final seasons = presenter.seriesDetails?.seasons;
       if (seasons != null && seasons.isNotEmpty) {
@@ -67,6 +74,71 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
       if (list.name == name) return list;
     }
     return null;
+  }
+
+  // 🔹 دقیقاً همون منطق MovieDetailScreen._addToListByName ولی برای سریال
+  Future<void> _addToListByName(String listName) async {
+    if (!_isDetailsLoaded) {
+      final mediaPresenter = context.read<MediaPresenter>();
+      await mediaPresenter.getSeriesDetails(widget.tmdbId);
+      if (mounted) setState(() => _isDetailsLoaded = true);
+    }
+
+    final interactions = context.read<InteractionsPresenter>();
+
+    if (interactions.userLists.isEmpty) {
+      await interactions.getUserLists();
+    }
+
+    PersonalListResponse? targetList = _findListByName(interactions.userLists, listName);
+
+    if (targetList == null) {
+      await interactions.createList(listName);
+      targetList = _findListByName(interactions.userLists, listName);
+    }
+
+    if (targetList == null) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('خطا در ساخت لیست: ${interactions.errorMessage ?? ''}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
+    await interactions.addMediaToList(targetList.id, widget.tmdbId);
+
+    if (context.mounted) {
+      if (interactions.errorMessage != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('خطا: ${interactions.errorMessage}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('به «$listName» اضافه شد'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    }
+  }
+
+  void _showReportDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => ReportDialog(
+        tmdbId: widget.tmdbId,
+        mediaType: 'series',
+      ),
+    );
   }
 
   // 🔹 تیک‌زدن قسمت + آپدیت خودکار عضویت سریال در «در حال تماشا» / «تماشا شده»
@@ -195,7 +267,7 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.65,
+                  height: MediaQuery.of(context).size.height * 0.55,
                   width: double.infinity,
                   child: Stack(
                     fit: StackFit.expand,
@@ -277,51 +349,24 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
                                   height: 1.1,
                                 ),
                               ),
-                              const SizedBox(height: 16),
-                              Wrap(
-                                spacing: 12,
-                                runSpacing: 12,
-                                children: [
-                                  ElevatedButton.icon(
-                                    onPressed: () {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('به لیست تماشا اضافه شد')),
-                                      );
-                                    },
-                                    icon: const Icon(Icons.add, size: 20),
-                                    label: const Text('افزودن به لیست تماشا'),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFFF08DA5),
-                                      foregroundColor: const Color(0xFF3F0018),
-                                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),
-                                      elevation: 0,
-                                    ),
-                                  ),
-                                  OutlinedButton.icon(
-                                    onPressed: () {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('به علاقه‌مندی‌ها اضافه شد')),
-                                      );
-                                    },
-                                    icon: const Icon(Icons.favorite_border, size: 20),
-                                    label: const Text('پسندیدن'),
-                                    style: OutlinedButton.styleFrom(
-                                      foregroundColor: const Color(0xFFC7E7F8),
-                                      side: const BorderSide(color: Color(0x4D3C4949)),
-                                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),
-                                      backgroundColor: const Color(0xFF0C2E3B),
-                                    ),
-                                  ),
-                                ],
-                              ),
                             ],
                           ),
                         ),
                       ),
                     ],
                   ),
+                ),
+
+                const SizedBox(height: 32),
+
+                // 🔹 دکمه‌های واقعی و فعال — دقیقاً همون ویجتی که توی جزییات فیلم استفاده می‌شه
+                MovieActionButtons(
+                  onWatchlistTap: () => _addToListByName(_watchlistName),
+                  onWatchedTap: () => _addToListByName(_watchedListName),
+                  onLikeTap: () {
+                    presenter.toggleLike(widget.tmdbId.toString(), 'series');
+                  },
+                  onReportTap: _showReportDialog,
                 ),
 
                 const SizedBox(height: 16),

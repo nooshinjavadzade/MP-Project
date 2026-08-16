@@ -26,6 +26,8 @@ class ReportPresenter extends ChangeNotifier implements IReportPresenter {
   @override
   ReportListResponse? get myReportsResponse => _myReportsResponse;
 
+  
+
   @override
   Future<void> submitReport({
     required String mediaType,
@@ -44,6 +46,7 @@ class ReportPresenter extends ChangeNotifier implements IReportPresenter {
         request: request,
       );
       _errorMessage = null;
+      resetReportForm();
     } catch (e) {
       _errorMessage = e.toString();
     } finally {
@@ -67,8 +70,43 @@ class ReportPresenter extends ChangeNotifier implements IReportPresenter {
     }
   }
 
+  ReportReason? _selectedReason;
+  String _description = '';
+
+  ReportReason? get selectedReason => _selectedReason;
+  String get description => _description;
+
+  bool get canSubmitReport {
+    if (_selectedReason == null) return false;
+    if (_selectedReason == ReportReason.other && _description.trim().isEmpty) {
+      return false;
+    }
+    return true;
+  }
+
+  void selectReportReason(ReportReason reason) {
+    _selectedReason = reason;
+    notifyListeners();
+  }
+
+  void updateReportDescription(String value) {
+    _description = value;
+    notifyListeners();
+  }
+
+  void resetReportForm() {
+    _selectedReason = null;
+    _description = '';
+    _errorMessage = null;
+    notifyListeners();
+  }
+
+
+
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
   }
+
+  
 }

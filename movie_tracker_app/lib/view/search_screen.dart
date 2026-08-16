@@ -6,6 +6,7 @@ import '../widgets/custom_bottom_nav_bar.dart';
 import '../widgets/background_glows.dart';
 import '../widgets/media_grid_card.dart';
 import 'movie_detail_screen.dart';
+import 'series_detail_screen.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -291,6 +292,14 @@ class _SearchScreenState extends State<SearchScreen> {
                                   );
                                 } else {
                                   // TODO: Navigate to Series Detail
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => SeriesDetailScreen(
+                                        tmdbId: int.parse(results[index].tmdbId),
+                                      ),
+                                    ),
+                                  );
                                 }
                               },
                             );
