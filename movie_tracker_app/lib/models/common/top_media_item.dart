@@ -45,4 +45,26 @@ class TopMediaItem {
     'trend_direction': trendDirection,
     'week_change': weekChange,
   };
+
+  TopMediaItem copyWith({
+    int? rank,
+    MediaBase? media,
+    double? score,
+    int? ratingCount,
+    int? reviewCount,
+    int? watchCount,
+    String? trendDirection,
+    int? weekChange,
+  }) {
+    return TopMediaItem(
+      rank: rank ?? this.rank,
+      media: media ?? this.media,
+      score: score ?? this.score,
+      ratingCount: ratingCount ?? this.ratingCount,
+      reviewCount: reviewCount ?? this.reviewCount,
+      watchCount: watchCount ?? this.watchCount,
+      trendDirection: trendDirection ?? this.trendDirection,
+      weekChange: weekChange ?? this.weekChange,
+    );
+  }
 }

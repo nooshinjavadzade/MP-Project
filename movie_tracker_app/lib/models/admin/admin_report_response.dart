@@ -115,21 +115,33 @@ class AdminReportResponse {
     'media': media?.toJson(),
   };
 
-  AdminReportResponse copyWith({User? user, MediaBase? media}) {
-  return AdminReportResponse(
-    id: id,
-    mediaId: mediaId,
-    userId: userId,
-    reason: reason,
-    description: description,
-    status: status,
-    adminNote: adminNote,
-    createdAt: createdAt,
-    resolvedAt: resolvedAt,
-    user: user ?? this.user,
-    media: media ?? this.media,
-  );
-}
+  AdminReportResponse copyWith({
+    int? id,
+    int? mediaId,
+    int? userId,
+    ReportReason? reason,
+    String? description,
+    ReportStatus? status,
+    String? adminNote,
+    DateTime? createdAt,
+    DateTime? resolvedAt,
+    User? user,
+    MediaBase? media,
+  }) {
+    return AdminReportResponse(
+      id: id ?? this.id,
+      mediaId: mediaId ?? this.mediaId,
+      userId: userId ?? this.userId,
+      reason: reason ?? this.reason,
+      description: description ?? this.description,
+      status: status ?? this.status,
+      adminNote: adminNote ?? this.adminNote,
+      createdAt: createdAt ?? this.createdAt,
+      resolvedAt: resolvedAt ?? this.resolvedAt,
+      user: user ?? this.user,
+      media: media ?? this.media,
+    );
+  }
 }
 
 class AdminReportUpdate {
@@ -152,6 +164,16 @@ class AdminReportUpdate {
     'status': status.value,
     'admin_note': adminNote,
   };
+
+  AdminReportUpdate copyWith({
+    ReportStatus? status,
+    String? adminNote,
+  }) {
+    return AdminReportUpdate(
+      status: status ?? this.status,
+      adminNote: adminNote ?? this.adminNote,
+    );
+  }
 }
 
 class AdminReportListResponse {
@@ -177,5 +199,15 @@ class AdminReportListResponse {
     'items': items.map((e) => e.toJson()).toList(),
     'pagination': pagination.toJson(),
   };
+
+  AdminReportListResponse copyWith({
+    List<AdminReportResponse>? items,
+    Pagination? pagination,
+  }) {
+    return AdminReportListResponse(
+      items: items ?? this.items,
+      pagination: pagination ?? this.pagination,
+    );
+  }
 }
 

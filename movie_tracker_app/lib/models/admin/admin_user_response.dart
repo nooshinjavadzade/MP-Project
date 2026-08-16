@@ -58,6 +58,34 @@ class AdminUserResponse {
     'watched_series_count': watchedSeriesCount,
   };
 
+  AdminUserResponse copyWith({
+    int? id,
+    String? username,
+    String? email,
+    String? fullName,
+    String? avatarUrl,
+    bool? isAdmin,
+    bool? isActive,
+    bool? isVerified,
+    DateTime? createdAt,
+    int? watchedMoviesCount,
+    int? watchedSeriesCount,
+  }) {
+    return AdminUserResponse(
+      id: id ?? this.id,
+      username: username ?? this.username,
+      email: email ?? this.email,
+      fullName: fullName ?? this.fullName,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
+      isAdmin: isAdmin ?? this.isAdmin,
+      isActive: isActive ?? this.isActive,
+      isVerified: isVerified ?? this.isVerified,
+      createdAt: createdAt ?? this.createdAt,
+      watchedMoviesCount: watchedMoviesCount ?? this.watchedMoviesCount,
+      watchedSeriesCount: watchedSeriesCount ?? this.watchedSeriesCount,
+    );
+  }
+
   // ✅ اینجا، داخل همین کلاس، درست جاشه
   User toUser() {
     return User(
@@ -96,4 +124,14 @@ class AdminUserListResponse {
     'items': items.map((e) => e.toJson()).toList(),
     'pagination': pagination.toJson(),
   };
+
+  AdminUserListResponse copyWith({
+    List<AdminUserResponse>? items,
+    Pagination? pagination,
+  }) {
+    return AdminUserListResponse(
+      items: items ?? this.items,
+      pagination: pagination ?? this.pagination,
+    );
+  }
 } // ← دیگه توی این کلاس هیچی اضافه نیست، toUser() اینجا نباید باشه

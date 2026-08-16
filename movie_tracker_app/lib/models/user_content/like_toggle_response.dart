@@ -8,4 +8,10 @@ class LikeToggleResponse {
   }
 
   Map<String, dynamic> toJson() => {'liked': liked};
+
+  LikeToggleResponse copyWith({
+    bool? liked,
+  }) {
+    return LikeToggleResponse(liked: liked ?? this.liked);
+  }
 }

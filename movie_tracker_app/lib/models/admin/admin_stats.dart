@@ -38,6 +38,26 @@ class AdminStats {
     'total_lists': totalLists,
     'cached_media_count': cachedMediaCount,
   };
+
+  AdminStats copyWith({
+    int? totalUsers,
+    int? totalMedia,
+    int? totalReviews,
+    int? totalRatings,
+    int? totalReports,
+    int? totalLists,
+    int? cachedMediaCount,
+  }) {
+    return AdminStats(
+      totalUsers: totalUsers ?? this.totalUsers,
+      totalMedia: totalMedia ?? this.totalMedia,
+      totalReviews: totalReviews ?? this.totalReviews,
+      totalRatings: totalRatings ?? this.totalRatings,
+      totalReports: totalReports ?? this.totalReports,
+      totalLists: totalLists ?? this.totalLists,
+      cachedMediaCount: cachedMediaCount ?? this.cachedMediaCount,
+    );
+  }
 }
 
 class AdminActionResponse {

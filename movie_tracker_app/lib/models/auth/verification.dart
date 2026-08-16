@@ -21,6 +21,16 @@ class PasswordChangeBase {
     'new_password': newPassword,
     'confirm_password': confirmPassword,
   };
+
+  PasswordChangeBase copyWith({
+    String? newPassword,
+    String? confirmPassword,
+  }) {
+    return PasswordChangeBase(
+      newPassword: newPassword ?? this.newPassword,
+      confirmPassword: confirmPassword ?? this.confirmPassword,
+    );
+  }
 }
 
 class VerifyEmailConfirm {
@@ -33,6 +43,12 @@ class VerifyEmailConfirm {
   }
 
   Map<String, dynamic> toJson() => {'otp': otp};
+
+  VerifyEmailConfirm copyWith({
+    String? otp,
+  }) {
+    return VerifyEmailConfirm(otp: otp ?? this.otp);
+  }
 }
 
 class ForgotPasswordRequest {
@@ -45,6 +61,12 @@ class ForgotPasswordRequest {
   }
 
   Map<String, dynamic> toJson() => {'email': email};
+
+  ForgotPasswordRequest copyWith({
+    String? email,
+  }) {
+    return ForgotPasswordRequest(email: email ?? this.email);
+  }
 }
 
 class ResetPasswordConfirm extends PasswordChangeBase {
@@ -73,6 +95,20 @@ class ResetPasswordConfirm extends PasswordChangeBase {
     'email': email,
     'otp': otp,
   };
+
+  ResetPasswordConfirm copyWith({
+    String? email,
+    String? otp,
+    String? newPassword,
+    String? confirmPassword,
+  }) {
+    return ResetPasswordConfirm(
+      email: email ?? this.email,
+      otp: otp ?? this.otp,
+      newPassword: newPassword ?? this.newPassword,
+      confirmPassword: confirmPassword ?? this.confirmPassword,
+    );
+  }
 }
 
 class ChangePasswordRequest extends PasswordChangeBase {
@@ -97,6 +133,18 @@ class ChangePasswordRequest extends PasswordChangeBase {
     ...super.toJson(),
     'current_password': currentPassword,
   };
+
+  ChangePasswordRequest copyWith({
+    String? currentPassword,
+    String? newPassword,
+    String? confirmPassword,
+  }) {
+    return ChangePasswordRequest(
+      currentPassword: currentPassword ?? this.currentPassword,
+      newPassword: newPassword ?? this.newPassword,
+      confirmPassword: confirmPassword ?? this.confirmPassword,
+    );
+  }
 }
 
 class GenericResponse {

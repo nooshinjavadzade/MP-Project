@@ -8,4 +8,10 @@ class RatingCreate {
   }
 
   Map<String, dynamic> toJson() => {'rating': rating};
+
+  RatingCreate copyWith({
+    double? rating,
+  }) {
+    return RatingCreate(rating: rating ?? this.rating);
+  }
 }

@@ -74,4 +74,40 @@ class MovieDetails extends MediaDetails {
       'runtime': runtime,
     };
   }
+
+  MovieDetails copyWithMovieDetails({
+    int? id,
+    String? tmdbId,
+    String? title,
+    String? posterUrl,
+    String? backdropUrl,
+    int? releaseYear,
+    double? tmdbRating,
+    double? communityRating,
+    String? originalTitle,
+    String? overview,
+    String? originalLanguage,
+    String? country,
+    List<CastMember>? cast,
+    List<String>? genres,
+    int? runtime,
+  }) {
+    return MovieDetails(
+      id: id ?? this.id,
+      tmdbId: tmdbId ?? this.tmdbId,
+      title: title ?? this.title,
+      posterUrl: posterUrl ?? this.posterUrl,
+      backdropUrl: backdropUrl ?? this.backdropUrl,
+      releaseYear: releaseYear ?? this.releaseYear,
+      tmdbRating: tmdbRating ?? this.tmdbRating,
+      communityRating: communityRating ?? this.communityRating,
+      originalTitle: originalTitle ?? this.originalTitle,
+      overview: overview ?? this.overview,
+      originalLanguage: originalLanguage ?? this.originalLanguage,
+      country: country ?? this.country,
+      cast: cast ?? this.cast,
+      genres: genres ?? this.genres,
+      runtime: runtime ?? this.runtime,
+    );
+  }
 }

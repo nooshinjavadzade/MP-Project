@@ -33,4 +33,18 @@ class TopMediaListResponse {
     'time_window': timeWindow,
     'generated_at': generatedAt.toIso8601String(),
   };
+
+  TopMediaListResponse copyWith({
+    List<TopMediaItem>? items,
+    Pagination? pagination,
+    String? timeWindow,
+    DateTime? generatedAt,
+  }) {
+    return TopMediaListResponse(
+      items: items ?? this.items,
+      pagination: pagination ?? this.pagination,
+      timeWindow: timeWindow ?? this.timeWindow,
+      generatedAt: generatedAt ?? this.generatedAt,
+    );
+  }
 }

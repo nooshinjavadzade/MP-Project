@@ -40,4 +40,24 @@ class ReviewResponse {
     'created_at': createdAt.toIso8601String(),
     'updated_at': updatedAt?.toIso8601String(),
   };
+
+  ReviewResponse copyWith({
+    int? id,
+    int? mediaId,
+    int? userId,
+    String? review,
+    bool? containsSpoiler,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return ReviewResponse(
+      id: id ?? this.id,
+      mediaId: mediaId ?? this.mediaId,
+      userId: userId ?? this.userId,
+      review: review ?? this.review,
+      containsSpoiler: containsSpoiler ?? this.containsSpoiler,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
 }

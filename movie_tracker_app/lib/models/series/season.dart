@@ -41,4 +41,22 @@ class Season {
     'tmdb_rating': tmdbRating,
     'episodes': episodes.map((e) => e.toJson()).toList(),
   };
+
+  Season copyWith({
+    int? seasonNumber,
+    String? title,
+    String? overview,
+    DateTime? releaseDate,
+    double? tmdbRating,
+    List<Episode>? episodes,
+  }) {
+    return Season(
+      seasonNumber: seasonNumber ?? this.seasonNumber,
+      title: title ?? this.title,
+      overview: overview ?? this.overview,
+      releaseDate: releaseDate ?? this.releaseDate,
+      tmdbRating: tmdbRating ?? this.tmdbRating,
+      episodes: episodes ?? this.episodes,
+    );
+  }
 }

@@ -55,4 +55,28 @@ class MovieProgressResponse {
     'created_at': createdAt.toIso8601String(),
     'updated_at': updatedAt?.toIso8601String(),
   };
+
+  MovieProgressResponse copyWith({
+    int? id,
+    int? userId,
+    int? mediaId,
+    WatchStatus? status,
+    double? progress,
+    int? watchedEpisodes,
+    DateTime? lastWatchedAt,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return MovieProgressResponse(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      mediaId: mediaId ?? this.mediaId,
+      status: status ?? this.status,
+      progress: progress ?? this.progress,
+      watchedEpisodes: watchedEpisodes ?? this.watchedEpisodes,
+      lastWatchedAt: lastWatchedAt ?? this.lastWatchedAt,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
 }

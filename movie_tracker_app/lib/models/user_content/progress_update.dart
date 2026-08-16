@@ -27,4 +27,16 @@ class ProgressUpdate {
     if (status != null) 'status': status!.value,
     if (progress != null) 'progress': progress,
   };
+
+  ProgressUpdate copyWith({
+    int? mediaId,
+    WatchStatus? status,
+    double? progress,
+  }) {
+    return ProgressUpdate(
+      mediaId: mediaId ?? this.mediaId,
+      status: status ?? this.status,
+      progress: progress ?? this.progress,
+    );
+  }
 }

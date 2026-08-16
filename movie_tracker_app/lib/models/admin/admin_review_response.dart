@@ -61,6 +61,30 @@ class AdminReviewResponse {
     'user': user?.toJson(),
     'media': media?.toJson(),
   };
+
+  AdminReviewResponse copyWith({
+    int? id,
+    int? userId,
+    int? mediaId,
+    String? review,
+    bool? containsSpoiler,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    User? user,
+    MediaBase? media,
+  }) {
+    return AdminReviewResponse(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      mediaId: mediaId ?? this.mediaId,
+      review: review ?? this.review,
+      containsSpoiler: containsSpoiler ?? this.containsSpoiler,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      user: user ?? this.user,
+      media: media ?? this.media,
+    );
+  }
 }
 
 class AdminReviewListResponse {
@@ -86,4 +110,14 @@ class AdminReviewListResponse {
     'items': items.map((e) => e.toJson()).toList(),
     'pagination': pagination.toJson(),
   };
+
+  AdminReviewListResponse copyWith({
+    List<AdminReviewResponse>? items,
+    Pagination? pagination,
+  }) {
+    return AdminReviewListResponse(
+      items: items ?? this.items,
+      pagination: pagination ?? this.pagination,
+    );
+  }
 }

@@ -20,4 +20,14 @@ class MediaSearchResult {
     'items': items.map((e) => e.toJson()).toList(),
     'pagination': pagination.toJson(),
   };
+
+  MediaSearchResult copyWith({
+    List<MediaBase>? items,
+    Pagination? pagination,
+  }) {
+    return MediaSearchResult(
+      items: items ?? this.items,
+      pagination: pagination ?? this.pagination,
+    );
+  }
 }

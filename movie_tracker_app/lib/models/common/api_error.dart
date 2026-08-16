@@ -26,4 +26,18 @@ class ApiError {
     'error': error,
     'details': details,
   };
+
+  ApiError copyWith({
+    int? statusCode,
+    String? message,
+    String? error,
+    Map<String, dynamic>? details,
+  }) {
+    return ApiError(
+      statusCode: statusCode ?? this.statusCode,
+      message: message ?? this.message,
+      error: error ?? this.error,
+      details: details ?? this.details,
+    );
+  }
 }

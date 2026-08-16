@@ -21,4 +21,14 @@ class EpisodeProgressUpdateResponse {
     'message': message,
     'episode': episode.toJson(),
   };
+
+  EpisodeProgressUpdateResponse copyWith({
+    String? message,
+    EpisodeProgressResponse? episode,
+  }) {
+    return EpisodeProgressUpdateResponse(
+      message: message ?? this.message,
+      episode: episode ?? this.episode,
+    );
+  }
 }
