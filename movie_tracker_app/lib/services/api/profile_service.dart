@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../models/common/media_base.dart';
 import '../../models/user_content/rating_response.dart';
@@ -66,6 +67,11 @@ class ProfileService {
           'per_page': perPage,
         },
       );
+
+      // ---- DEBUG ----
+      debugPrint('=== [getLikedMedia] RAW RESPONSE ===');
+      debugPrint(response.data.toString());
+      // ---- END DEBUG ----
 
       if (response.statusCode == 200) {
         return (response.data as List)
@@ -165,6 +171,16 @@ class ProfileService {
   Future<ProfileResponse> getProfileFull() async {
     try {
       final response = await _apiClient.dio.get(_baseEndpoint);
+
+      // ---- DEBUG ----
+      debugPrint('=== [getProfileFull] RAW RESPONSE ===');
+      debugPrint(response.data.toString());
+      if (response.data is Map) {
+        debugPrint('=== [getProfileFull] watched_movies_count: ${response.data['watched_movies_count']} ===');
+        debugPrint('=== [getProfileFull] watched_series_count: ${response.data['watched_series_count']} ===');
+        debugPrint('=== [getProfileFull] liked_media: ${response.data['liked_media']} ===');
+      }
+      // ---- END DEBUG ----
 
       if (response.statusCode == 200) {
         return ProfileResponse.fromJson(response.data);

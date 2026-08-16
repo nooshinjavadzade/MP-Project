@@ -110,12 +110,12 @@ class _ManageReviewsScreenState extends State<ManageReviewsScreen> {
                 )
               else
                 ...items.map((review) {
-                  // راه‌حل موقت: چون بک‌اند فعلاً user/media رو nested
-                  // برنمی‌گردونه، از userId/mediaId به‌عنوان fallback استفاده می‌کنیم
-                  // تا وقتی بک‌اند درست شه.
-                  final userName = review.user?.username ?? 'کاربر #${review.userId}';
-                  final email = review.user?.email ?? '';
-                  final mediaTitle = review.media?.title ?? 'رسانه #${review.mediaId}';
+                  // 🔹 presenter خودش تصمیم می‌گیره از nested user/media استفاده کنه
+                  // یا از کش (که با درخواست تکی به ازای userId/mediaId پر شده).
+                  // این اسکرین به جزئیات پیاده‌سازی وابسته نیست.
+                  final userName = presenter.getUserNameForReview(review.id);
+                  final email = presenter.getUserEmailForReview(review.id);
+                  final mediaTitle = presenter.getMediaTitleForReview(review.id);
 
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 16.0),
@@ -196,7 +196,7 @@ class _ReviewCard extends StatelessWidget {
                         color: Color(0xFF5AD9D9),
                       ),
                     ),
-                    if (email.isNotEmpty) ...[
+                    if (email.isNotEmpty && email != 'بدون ایمیل') ...[
                       const SizedBox(height: 4),
                       Text(
                         email,

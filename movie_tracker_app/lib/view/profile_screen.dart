@@ -6,6 +6,7 @@ import '../../presenters/profile/profile_presenter.dart';
 import '../../presenters/interactions/interactions_presenter.dart';
 import '../../models/auth/user.dart';
 import '../../models/common/media_base.dart';
+import '../../models/user_content/review_response.dart';
 import 'login_screen.dart';
 import '../widgets/edit_profile_dialog.dart';
 import 'admin_dashboard_screen.dart';
@@ -18,13 +19,12 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _fetchData();
-    });
-  }
+  // 🔹 چون این صفحه احتمالاً داخل یه IndexedStack (تب پایین) هست،
+  // initState فقط یک‌بار در کل عمر اپ اجرا می‌شه — حتی اگه اون لحظه
+  // کاربر هنوز لاگین نکرده باشه. به همین خاطر دیگه فقط رو initState
+  // تکیه نمی‌کنیم؛ هر بار build صدا زده بشه و کاربر تازه لاگین کرده
+  // باشه (قبلاً null بوده، الان نه)، دیتا رو می‌گیریم.
+  bool _hasFetchedForCurrentUser = false;
 
   Future<void> _fetchData() async {
     final authPresenter = context.read<AuthPresenter>();
@@ -32,6 +32,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       await Future.wait([
         context.read<ProfilePresenter>().getProfileFull(),
         context.read<InteractionsPresenter>().getUserLists(),
+        // 🔹 لیست لایک‌ها و نظرات کاربر رو هم می‌گیریم
+        context.read<ProfilePresenter>().getLikedMedia(),
+        context.read<ProfilePresenter>().getReviews(),
       ]);
     }
   }
@@ -43,11 +46,59 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Future<void> _confirmDeleteReview(BuildContext context, int reviewId) async {
+    final presenter = context.read<ProfilePresenter>();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0C2E3B),
+        title: const Text(
+          'حذف نظر',
+          style: TextStyle(color: Color(0xFF8DE6E3), fontFamily: 'Manrope'),
+        ),
+        content: const Text(
+          'آیا از حذف این نظر مطمئن هستید؟',
+          style: TextStyle(color: Color(0xFFBCC9C8), fontFamily: 'Manrope'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('انصراف', style: TextStyle(color: Color(0xFFBCC9C8))),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('حذف', style: TextStyle(color: Color(0xFFFFB4AB))),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await presenter.deleteReview(reviewId);
+      if (presenter.errorMessage == null) {
+        await presenter.getReviews();
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final authPresenter = context.watch<AuthPresenter>();
     final profilePresenter = context.watch<ProfilePresenter>();
     final user = authPresenter.authResponse?.user;
+
+    // 🔹 هر بار build صدا زده می‌شه چک می‌کنیم: اگه کاربر لاگین شده و
+    // هنوز برای همین کاربر دیتا نگرفتیم، همین الان بگیر. اگه کاربر
+    // خارج شد (logout)، فلگ رو ریست می‌کنیم تا بعد از لاگین دوباره بعدی
+    // fetch انجام بشه.
+    if (user != null && !_hasFetchedForCurrentUser) {
+      _hasFetchedForCurrentUser = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _fetchData();
+      });
+    } else if (user == null && _hasFetchedForCurrentUser) {
+      _hasFetchedForCurrentUser = false;
+    }
 
     if (user == null) {
       return Scaffold(
@@ -83,6 +134,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final moviesCount = (profileResponse?.watchedMoviesCount ?? 0).toString();
     final seriesCount = (profileResponse?.watchedSeriesCount ?? 0).toString();
     final likedMedia = profilePresenter.likedMedia;
+    final reviews = profilePresenter.reviews;
 
     return Scaffold(
       backgroundColor: const Color(0xFF00161F),
@@ -101,19 +153,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 _buildSettings(context, user, authPresenter),
                 const SizedBox(height: 40),
 
-                _buildSectionTitle('در حال تماشا'),
-                const SizedBox(height: 16),
-                _buildWatchingList(likedMedia),
-                const SizedBox(height: 40),
-
-                _buildSectionTitle('اخیراً تماشا شده'),
-                const SizedBox(height: 16),
-                _buildRecentlyWatchedList(likedMedia),
-                const SizedBox(height: 40),
-
-                _buildSectionTitle('کشفیات مورد علاقه'),
+                _buildSectionTitle('لایک‌های من'),
                 const SizedBox(height: 20),
-                _buildFavoritesGrid(likedMedia),
+                _buildLikedMediaGrid(likedMedia),
+                const SizedBox(height: 40),
+
+                _buildSectionTitle('نظرات من'),
+                const SizedBox(height: 16),
+                _buildMyReviewsList(context, reviews),
               ]),
             ),
           ),
@@ -405,178 +452,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildWatchingList(List<MediaBase> likedMedia) {
-    if (likedMedia.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.all(16),
-        decoration: _glassDecoration(),
-        child: const Center(
-          child: Text(
-            'موردی در حال تماشا نیست',
-            style: TextStyle(
-              fontFamily: 'Manrope',
-              fontSize: 12,
-              color: Color(0xFFBCC9C8),
-            ),
-          ),
-        ),
-      );
-    }
-
-    return SizedBox(
-      height: 220,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: likedMedia.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 16),
-        itemBuilder: (context, index) {
-          final item = likedMedia[index];
-          return SizedBox(
-            width: 128,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  height: 192,
-                  decoration: _glassDecoration(),
-                  clipBehavior: Clip.hardEdge,
-                  child: Stack(
-                    children: [
-                      Container(
-                        color: const Color(0xFF0C2E3B),
-                        child: item.posterUrl != null
-                            ? Image.network(
-                          item.posterUrl!,
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                          height: double.infinity,
-                        )
-                            : Center(
-                          child: Icon(
-                            Icons.play_circle_outline,
-                            size: 40,
-                            color: const Color(0xFF6C5FA6).withOpacity(0.4),
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        height: 4,
-                        child: Container(
-                          color: const Color(0xFF00232F),
-                          alignment: Alignment.centerLeft,
-                          child: FractionallySizedBox(
-                            widthFactor: 0.5,
-                            child: Container(color: const Color(0xFFF08DA5)),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  item.title ?? '',
-                  style: const TextStyle(
-                    fontFamily: 'Manrope',
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFFC7E7F8),
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildRecentlyWatchedList(List<MediaBase> likedMedia) {
-    if (likedMedia.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.all(16),
-        decoration: _glassDecoration(),
-        child: const Center(
-          child: Text(
-            'موردی یافت نشد',
-            style: TextStyle(
-              fontFamily: 'Manrope',
-              fontSize: 12,
-              color: Color(0xFFBCC9C8),
-            ),
-          ),
-        ),
-      );
-    }
-
-    return SizedBox(
-      height: 170,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: likedMedia.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 16),
-        itemBuilder: (context, index) {
-          final item = likedMedia[index];
-          return SizedBox(
-            width: 96,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  height: 144,
-                  decoration: _glassDecoration(),
-                  clipBehavior: Clip.hardEdge,
-                  child: Container(
-                    color: const Color(0xFF0C2E3B),
-                    child: item.posterUrl != null
-                        ? Image.network(
-                      item.posterUrl!,
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      height: double.infinity,
-                    )
-                        : Center(
-                      child: Icon(
-                        Icons.check_circle_outline,
-                        size: 24,
-                        color: const Color(0xFF6C5FA6).withOpacity(0.3),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  item.title ?? '',
-                  style: const TextStyle(
-                    fontFamily: 'Manrope',
-                    fontSize: 10,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFFBCC9C8),
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildFavoritesGrid(List<MediaBase> likedMedia) {
+  // 🔹 گرید لایک‌ها — از likedMedia واقعی (که presenter از قبل داره) استفاده می‌کنه
+  Widget _buildLikedMediaGrid(List<MediaBase> likedMedia) {
     if (likedMedia.isEmpty) {
       return Container(
         padding: const EdgeInsets.all(24),
         decoration: _glassDecoration(),
         child: const Center(
           child: Text(
-            'هنوز موردی به علاقه‌مندی‌ها اضافه نشده است',
+            'هنوز چیزی لایک نکرده‌اید',
             style: TextStyle(
               fontFamily: 'Manrope',
               fontSize: 12,
@@ -612,6 +496,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ? Image.network(
                   item.posterUrl!,
                   fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => const Icon(
+                    Icons.broken_image,
+                    color: Colors.white30,
+                  ),
                 )
                     : Center(
                   child: Icon(
@@ -638,16 +526,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        item.title ?? '',
+                        item.title,
                         style: const TextStyle(
                           fontFamily: 'Manrope',
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
                           color: Color(0xFF8DE6E3),
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       Text(
-                        item.mediaType.name ?? '',
+                        item.mediaType.name,
                         style: const TextStyle(
                           fontFamily: 'Manrope',
                           fontSize: 10,
@@ -662,6 +552,112 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         );
       },
+    );
+  }
+
+  // 🔹 لیست نظرات — از ReviewResponse خامه (فقط mediaId داریم، نه عنوان)
+  // چون سرور فعلاً برای این endpoint عنوان رسانه رو nested برنمی‌گردونه،
+  // فعلاً «رسانه #id» نشون داده می‌شه. اگه لازم شد، دقیقاً مثل بخش
+  // ادمین می‌شه یه endpoint عمومی برای گرفتن رسانه با id اضافه کرد.
+  Widget _buildMyReviewsList(BuildContext context, List<ReviewResponse> reviews) {
+    if (reviews.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(24),
+        decoration: _glassDecoration(),
+        child: const Center(
+          child: Text(
+            'هنوز نظری ثبت نکرده‌اید',
+            style: TextStyle(
+              fontFamily: 'Manrope',
+              fontSize: 12,
+              color: Color(0xFFBCC9C8),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      children: reviews.map((review) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16.0),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: _glassDecoration(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'رسانه #${review.mediaId}',
+                        style: const TextStyle(
+                          fontFamily: 'Manrope',
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF8DE6E3),
+                        ),
+                      ),
+                    ),
+                    if (review.containsSpoiler)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFB4AB).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(color: const Color(0xFFFFB4AB).withOpacity(0.3)),
+                        ),
+                        child: const Text(
+                          'اسپویلر',
+                          style: TextStyle(
+                            fontFamily: 'Manrope',
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFFFB4AB),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  review.review,
+                  style: TextStyle(
+                    fontFamily: 'Manrope',
+                    fontSize: 14,
+                    height: 1.5,
+                    color: const Color(0xFFC7E7F8).withOpacity(0.9),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '${review.createdAt.year}-${review.createdAt.month.toString().padLeft(2, '0')}-${review.createdAt.day.toString().padLeft(2, '0')}',
+                      style: const TextStyle(
+                        fontFamily: 'Manrope',
+                        fontSize: 11,
+                        color: Color(0xFFBCC9C8),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => _confirmDeleteReview(context, review.id),
+                      icon: const Icon(Icons.delete_outline, size: 18, color: Color(0xFFFFB4AB)),
+                      constraints: const BoxConstraints(),
+                      padding: EdgeInsets.zero,
+                      splashRadius: 18,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 

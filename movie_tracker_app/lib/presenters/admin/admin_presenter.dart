@@ -140,6 +140,7 @@ class AdminPresenter extends ChangeNotifier implements IAdminPresenter {
       );
       _errorMessage = null;
     } catch (e) {
+      debugPrint('Error: $e');
       _errorMessage = e.toString();
     } finally {
       _setLoading(false);
