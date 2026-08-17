@@ -49,6 +49,18 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+        // 🔸 این نمونه همونیه که بالاتر await init() روش صدا زده شده.
+        // با .value ثبتش می‌کنیم تا خودِ Provider دوباره نسازتش، و هر
+        // ویجتی (مثل WatchlistCard) بتونه با context.read<LocalStorageService>()
+        // دقیقاً همین نمونه‌ی init-شده رو بگیره، نه یه LocalStorageService()
+        // تازه و init-نشده.
+        // 🔸 قبلاً progressService فقط داخل ProgressPresenter تزریق شده بود.
+        // ولی WatchlistCard مستقیماً context.read<ProgressService>() صدا
+        // می‌زنه (بدون واسطه‌ی presenter)، و چون هیچ Provider<ProgressService>
+        // مستقلی ثبت نشده بود، هر بار با خطای "Could not find the correct
+        // Provider<ProgressService>" fail می‌شد.
+        Provider<ProgressService>.value(value: progressService),
+        Provider<LocalStorageService>.value(value: localStorageService),
         ChangeNotifierProvider<AuthPresenter>(
           create: (_) => AuthPresenter(
             authService,

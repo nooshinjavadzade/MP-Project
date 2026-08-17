@@ -35,7 +35,7 @@ class ProgressPresenter extends ChangeNotifier implements IProgressPresenter {
   EpisodeProgressUpdateResponse? get episodeProgress => _episodeProgress;
 
   @override
-  Future<void> upsertMovieProgress({
+  Future<MovieProgressResponse?> upsertMovieProgress({
     required int tmdbId,
     required WatchStatus status,
     double progress = 0.0,
@@ -54,6 +54,7 @@ class ProgressPresenter extends ChangeNotifier implements IProgressPresenter {
         progressCreate: request,
       );
       _errorMessage = null;
+      return _movieProgress;
     } catch (e) {
       if (e is DioException) {
         await _localStorageService?.addOrUpdatePendingAction({
@@ -63,13 +64,14 @@ class ProgressPresenter extends ChangeNotifier implements IProgressPresenter {
         });
       }
       _errorMessage = e.toString();
+      return null;
     } finally {
       _setLoading(false);
     }
   }
 
   @override
-  Future<void> getMovieProgress(int tmdbId) async {
+  Future<MovieProgressResponse?> getMovieProgress(int tmdbId) async {
     _setLoading(true);
     try {
       final result = await _progressService.getMovieProgress(tmdbId);
@@ -81,6 +83,7 @@ class ProgressPresenter extends ChangeNotifier implements IProgressPresenter {
       }
       _movieProgress = result;
       _errorMessage = null;
+      return result;
     } catch (e) {
       final cachedStatusStr = _localStorageService?.getMediaWatchStatus(tmdbId.toString());
       if (cachedStatusStr != null) {
@@ -95,8 +98,10 @@ class ProgressPresenter extends ChangeNotifier implements IProgressPresenter {
           createdAt: DateTime.now(),
         );
         _errorMessage = null;
+        return _movieProgress;
       } else {
         _errorMessage = e.toString();
+        return null;
       }
     } finally {
       _setLoading(false);
@@ -104,7 +109,7 @@ class ProgressPresenter extends ChangeNotifier implements IProgressPresenter {
   }
 
   @override
-  Future<void> upsertEpisodeProgress({
+  Future<EpisodeProgressUpdateResponse?> upsertEpisodeProgress({
     required int tmdbId,
     required int seasonNumber,
     required int episodeNumber,
@@ -131,6 +136,7 @@ class ProgressPresenter extends ChangeNotifier implements IProgressPresenter {
         progressCreate: request,
       );
       _errorMessage = null;
+      return _episodeProgress;
     } catch (e) {
       if (e is DioException) {
         await _localStorageService?.addOrUpdatePendingAction({
@@ -140,13 +146,14 @@ class ProgressPresenter extends ChangeNotifier implements IProgressPresenter {
         });
       }
       _errorMessage = e.toString();
+      return null;
     } finally {
       _setLoading(false);
     }
   }
 
   @override
-  Future<void> getSeriesProgress(int tmdbId) async {
+  Future<SeriesProgressResponse?> getSeriesProgress(int tmdbId) async {
     _setLoading(true);
     try {
       final result = await _progressService.getSeriesProgress(tmdbId);
@@ -156,6 +163,7 @@ class ProgressPresenter extends ChangeNotifier implements IProgressPresenter {
       );
       _seriesProgress = result;
       _errorMessage = null;
+      return result;
     } catch (e) {
       final cachedWatched = _localStorageService?.getWatchedEpisodes(tmdbId.toString()) ?? [];
       final cachedStatusStr = _localStorageService?.getMediaWatchStatus(tmdbId.toString());
@@ -166,14 +174,16 @@ class ProgressPresenter extends ChangeNotifier implements IProgressPresenter {
         _seriesProgress = SeriesProgressResponse(
           mediaId: tmdbId,
           title: '',
-          totalEpisodes: cachedWatched.length,
+          totalEpisodes: cachedWatched.length, // Not completely accurate but best fallback
           watchedEpisodes: cachedWatched.length,
           completionPct: 0.0,
           status: status,
         );
         _errorMessage = null;
+        return _seriesProgress;
       } else {
         _errorMessage = e.toString();
+        return null;
       }
     } finally {
       _setLoading(false);
@@ -181,7 +191,7 @@ class ProgressPresenter extends ChangeNotifier implements IProgressPresenter {
   }
 
   @override
-  Future<void> updateEpisodeProgress({
+  Future<EpisodeProgressUpdateResponse?> updateEpisodeProgress({
     required int tmdbId,
     required int seasonNumber,
     required int episodeNumber,
@@ -208,6 +218,7 @@ class ProgressPresenter extends ChangeNotifier implements IProgressPresenter {
         progressUpdate: request,
       );
       _errorMessage = null;
+      return _episodeProgress;
     } catch (e) {
       if (e is DioException) {
         await _localStorageService?.addOrUpdatePendingAction({
@@ -219,13 +230,14 @@ class ProgressPresenter extends ChangeNotifier implements IProgressPresenter {
         });
       }
       _errorMessage = e.toString();
+      return null;
     } finally {
       _setLoading(false);
     }
   }
 
   @override
-  Future<void> getEpisodeProgress({
+  Future<EpisodeProgressUpdateResponse?> getEpisodeProgress({
     required int tmdbId,
     required int seasonNumber,
     required int episodeNumber,
@@ -238,8 +250,10 @@ class ProgressPresenter extends ChangeNotifier implements IProgressPresenter {
         episodeNumber: episodeNumber,
       );
       _errorMessage = null;
+      return _episodeProgress;
     } catch (e) {
       _errorMessage = e.toString();
+      return null;
     } finally {
       _setLoading(false);
     }
@@ -267,18 +281,21 @@ class ProgressPresenter extends ChangeNotifier implements IProgressPresenter {
       if (isSeriesEnded) {
         return const Color(0xFF8E24AA);
       }
-      return const Color(0xFF4CAF50);
+      return const Color(0xFF4CAF50); // Green
     }
 
     if (watchedEpisodes > 0 && watchedEpisodes < totalEpisodes) {
-      return const Color(0xFFFFB300);
+      return const Color(0xFFFFB300); // Yellow
     }
 
     return Colors.transparent;
   }
 
   void _setLoading(bool value) {
+    // Avoid notifying during build
     _isLoading = value;
-    notifyListeners();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
   }
 }
