@@ -325,7 +325,6 @@ class MediaService {
           'per_page': perPage,
         },
       );
-
       if (response.statusCode == 200) {
         return (response.data as List)
             .map((e) => ReviewResponse.fromJson(e as Map<String, dynamic>))
