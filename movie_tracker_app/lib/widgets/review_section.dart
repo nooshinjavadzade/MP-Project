@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../presenters/media/media_presenter.dart';
+import '../../../../models/user_content/review_response.dart'; // 🔹 ایمپورت مدل ReviewResponse
 
 class ReviewSection extends StatefulWidget {
   final int tmdbId;
@@ -53,7 +54,7 @@ class _ReviewSectionState extends State<ReviewSection> {
         await presenter.createReview(
             widget.tmdbId.toString(), widget.mediaType, _reviewController.text.trim(), false);
       }
-      
+
       _reviewController.clear();
       setState(() => _rating = 0);
       await _loadReviews();
@@ -79,7 +80,7 @@ class _ReviewSectionState extends State<ReviewSection> {
   }
 
   Widget _buildReviewList(MediaPresenter presenter) {
-    final reviews = presenter.reviews;
+    final List<ReviewResponse> reviews = presenter.reviews;
     if (reviews.isEmpty) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 24.0),
@@ -93,12 +94,11 @@ class _ReviewSectionState extends State<ReviewSection> {
     }
 
     return Column(
-      children: reviews.map((reviewObj) {
-        final dynamic review = reviewObj;
-        final String authorName = 'کاربر #${review.userId}';
-        final String content = review.review ?? '';
-        final bool isSpoiler = review.containsSpoiler ?? false;
-        
+      children: reviews.map((review) {
+        final String authorName = review.userName;
+        final String content = review.review;
+        final bool isSpoiler = review.containsSpoiler;
+
         return Container(
           padding: const EdgeInsets.only(bottom: 16.0, top: 16.0),
           decoration: const BoxDecoration(
@@ -183,7 +183,7 @@ class _ReviewSectionState extends State<ReviewSection> {
           ),
         ),
         const SizedBox(height: 16),
-        
+
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
@@ -248,29 +248,29 @@ class _ReviewSectionState extends State<ReviewSection> {
                   ),
                   child: _isLoading
                       ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Color(0xFF3F0018),
-                          ),
-                        )
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Color(0xFF3F0018),
+                    ),
+                  )
                       : const Text(
-                          'ارسال نظر',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.5,
-                            fontFamily: 'Manrope',
-                          ),
-                        ),
+                    'ارسال نظر',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5,
+                      fontFamily: 'Manrope',
+                    ),
+                  ),
                 ),
               ),
             ],
           ),
         ),
         const SizedBox(height: 24),
-        
+
         Consumer<MediaPresenter>(
           builder: (context, presenter, _) {
             if (presenter.isLoading) {
