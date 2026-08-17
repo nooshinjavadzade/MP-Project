@@ -23,6 +23,16 @@ class ReportCreate {
     'reason': reason.value,
     'description': description,
   };
+
+  ReportCreate copyWith({
+    ReportReason? reason,
+    String? description,
+  }) {
+    return ReportCreate(
+      reason: reason ?? this.reason,
+      description: description ?? this.description,
+    );
+  }
 }
 
 class ReportResponse {
@@ -91,6 +101,34 @@ class ReportResponse {
     'user': user?.toJson(),
     'media': media?.toJson(),
   };
+
+  ReportResponse copyWith({
+    int? id,
+    int? mediaId,
+    int? userId,
+    ReportReason? reason,
+    String? description,
+    ReportStatus? status,
+    String? adminNote,
+    DateTime? createdAt,
+    DateTime? resolvedAt,
+    User? user,
+    MediaBase? media,
+  }) {
+    return ReportResponse(
+      id: id ?? this.id,
+      mediaId: mediaId ?? this.mediaId,
+      userId: userId ?? this.userId,
+      reason: reason ?? this.reason,
+      description: description ?? this.description,
+      status: status ?? this.status,
+      adminNote: adminNote ?? this.adminNote,
+      createdAt: createdAt ?? this.createdAt,
+      resolvedAt: resolvedAt ?? this.resolvedAt,
+      user: user ?? this.user,
+      media: media ?? this.media,
+    );
+  }
 }
 
 class ReportListResponse {
@@ -116,4 +154,14 @@ class ReportListResponse {
     'items': items.map((e) => e.toJson()).toList(),
     'pagination': pagination.toJson(),
   };
+
+  ReportListResponse copyWith({
+    List<ReportResponse>? items,
+    Pagination? pagination,
+  }) {
+    return ReportListResponse(
+      items: items ?? this.items,
+      pagination: pagination ?? this.pagination,
+    );
+  }
 }

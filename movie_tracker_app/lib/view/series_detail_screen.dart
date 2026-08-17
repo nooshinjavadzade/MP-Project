@@ -257,6 +257,7 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
           final String synopsis = details.overview ?? '';
           final String? backdropUrl = details.backdropUrl;
           final double imdbRating = details.tmdbRating ?? 0.0;
+          final double userRating = details.communityRating ?? 0.0; // 🔹 User Rating
           final cast = details.cast;
 
           final seasons = details.seasons;
@@ -310,9 +311,23 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
                                     const Icon(Icons.star, color: Color(0xFF5AD9D9), size: 14),
                                     const SizedBox(width: 4),
                                     Text(
-                                      '${imdbRating.toStringAsFixed(1)}/10',
+                                      'IMDb ${imdbRating.toStringAsFixed(1)}',
                                       style: const TextStyle(
                                         color: Color(0xFF5AD9D9),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'Manrope',
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                  ],
+                                  if (userRating >= 0) ...[
+                                    const Icon(Icons.favorite, color: Color(0xFFF08DA5), size: 14),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Users ${userRating.toStringAsFixed(1)}',
+                                      style: const TextStyle(
+                                        color: Color(0xFFF08DA5),
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
                                         fontFamily: 'Manrope',
@@ -359,7 +374,7 @@ class _SeriesDetailScreenState extends State<SeriesDetailScreen> {
 
                 const SizedBox(height: 32),
 
-                // 🔹 دکمه‌های واقعی و فعال — دقیقاً همون ویجتی که توی جزییات فیلم استفاده می‌شه
+                // 🔹 دکمه‌های واقعی و فعال — دقیقاً همون ویجتی که توی جزییات فیلم استفاده میشه
                 MovieActionButtons(
                   onWatchlistTap: () => _addToListByName(_watchlistName),
                   onWatchedTap: () => _addToListByName(_watchedListName),

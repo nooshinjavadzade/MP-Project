@@ -3,13 +3,18 @@ import '../../models/common.dart';
 import '../../models/movie.dart';
 import '../../models/series.dart';
 import '../../models/user_content.dart';
+import '../../models/auth/user.dart';
 import '../../services/api/media_service.dart';
+import '../../services/api/profile_service.dart';
 import '../../services/local/local_storage_service.dart';
 import 'i_media_presenter.dart';
 
 class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
   final MediaService _mediaService;
   final LocalStorageService? _localStorageService;
+  final ProfileService? _profileService;
+
+  final Map<int, User> _userCache = {};
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -28,7 +33,11 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
   List<ReviewResponse> _reviews = [];
   List<String> _searchHistory = [];
 
-  MediaPresenter(this._mediaService, [this._localStorageService]) {
+  MediaPresenter(
+      this._mediaService, [
+        this._localStorageService,
+        this._profileService,
+      ]) {
     loadSearchHistory();
   }
 
@@ -83,6 +92,45 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
         _localStorageService?.prefetchImage(item.posterUrl!);
       }
     }
+  }
+
+  Future<List<ReviewResponse>> _populateReviewUsers(List<ReviewResponse> rawReviews) async {
+    if (_profileService == null) return rawReviews;
+
+    final missingUserIds = rawReviews
+        .where((r) => r.user == null)
+        .map((r) => r.userId)
+        .where((id) => !_userCache.containsKey(id))
+        .toSet();
+
+    for (final userId in missingUserIds) {
+      try {
+        final publicProfile = await _profileService!.getPublicProfile(userId);
+
+        final user = User(
+          id: publicProfile.id,
+          username: publicProfile.username,
+          email: '',
+          fullName: publicProfile.fullName,
+          avatarUrl: publicProfile.avatarUrl,
+          bio: publicProfile.bio,
+          createdAt: publicProfile.createdAt,
+        );
+
+        _userCache[userId] = user;
+      } catch (e) {
+        debugPrint('Error populating user $userId: $e');
+      }
+    }
+
+    return rawReviews.map((review) {
+      if (review.user != null) {
+        _userCache[review.userId] = review.user!;
+        return review;
+      }
+      final cachedUser = _userCache[review.userId];
+      return cachedUser != null ? review.copyWith(user: cachedUser) : review;
+    }).toList();
   }
 
   @override
@@ -369,15 +417,7 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
       }
       _seriesDetails = details;
       _errorMessage = null;
-
-      debugPrint('=== [Presenter.getSeriesDetails] seasons parsed: ${details.seasons.length} ===');
-      for (final s in details.seasons) {
-        debugPrint('  -> season ${s.seasonNumber} "${s.title}" episodes: ${s.episodes.length}');
-      }
-    } catch (e, stack) {
-      debugPrint('=== [Presenter.getSeriesDetails] ERROR: $e ===');
-      debugPrint(stack.toString());
-
+    } catch (e) {
       final staleCached = _localStorageService?.getSeriesDetails(tmdbId.toString(), checkTtl: false);
       if (staleCached != null) {
         _seriesDetails = staleCached;
@@ -409,12 +449,7 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
       await _localStorageService?.saveSeasonEpisodes(tmdbId.toString(), seasonNumber, episodeJsonList);
       _seasonDetails = season;
       _errorMessage = null;
-
-      debugPrint('=== [Presenter.getSeasonDetails] tmdbId=$tmdbId season=$seasonNumber -> episodes: ${season.episodes.length} ===');
-    } catch (e, stack) {
-      debugPrint('=== [Presenter.getSeasonDetails] ERROR for tmdbId=$tmdbId season=$seasonNumber: $e ===');
-      debugPrint(stack.toString());
-
+    } catch (e) {
       final staleCachedEpisodes = _localStorageService?.getSeasonEpisodes(tmdbId.toString(), seasonNumber, checkTtl: false);
       if (staleCachedEpisodes != null && staleCachedEpisodes.isNotEmpty) {
         final episodes = staleCachedEpisodes.map((e) => Episode.fromJson(e)).toList();
@@ -545,27 +580,31 @@ class MediaPresenter extends ChangeNotifier implements IMediaPresenter {
 
     final freshCachedReviews = _localStorageService?.getMediaReviews(tmdbId, checkTtl: true);
     if (freshCachedReviews != null && freshCachedReviews.isNotEmpty) {
-      _reviews = freshCachedReviews.map((e) => ReviewResponse.fromJson(e)).toList();
+      final rawList = freshCachedReviews.map((e) => ReviewResponse.fromJson(e)).toList();
+      _reviews = await _populateReviewUsers(rawList);
+      final jsonList = _reviews.map((e) => e.toJson()).toList();
+      await _localStorageService?.saveMediaReviews(tmdbId, jsonList);
       _errorMessage = null;
       _setLoading(false);
       return;
     }
 
     try {
-      final reviews = await _mediaService.getReviews(
+      final rawReviews = await _mediaService.getReviews(
         tmdbId: tmdbId,
         mediaType: mediaType,
         page: page,
         perPage: perPage,
       );
-      final jsonList = reviews.map((e) => e.toJson()).toList();
+      _reviews = await _populateReviewUsers(rawReviews);
+      final jsonList = _reviews.map((e) => e.toJson()).toList();
       await _localStorageService?.saveMediaReviews(tmdbId, jsonList);
-      _reviews = reviews;
       _errorMessage = null;
     } catch (e) {
       final staleCachedReviews = _localStorageService?.getMediaReviews(tmdbId, checkTtl: false);
       if (staleCachedReviews != null && staleCachedReviews.isNotEmpty) {
-        _reviews = staleCachedReviews.map((e) => ReviewResponse.fromJson(e)).toList();
+        final rawList = staleCachedReviews.map((e) => ReviewResponse.fromJson(e)).toList();
+        _reviews = await _populateReviewUsers(rawList);
         _errorMessage = null;
       } else {
         _errorMessage = e.toString();

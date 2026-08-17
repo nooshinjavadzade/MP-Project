@@ -1,6 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 class MovieHeroSection extends StatelessWidget {
   final String title;
@@ -35,21 +33,21 @@ class MovieHeroSection extends StatelessWidget {
 
     return SizedBox(
       width: double.infinity,
-      height: MediaQuery.of(context).size.height * 0.75,
+      height: MediaQuery.of(context).size.height * 0.75, // شبیه‌سازی h-[618px] md:h-[707px]
       child: Stack(
         fit: StackFit.expand,
         children: [
+          // Background Image
           if (finalBackdrop.isNotEmpty)
-            CachedNetworkImage(
-              imageUrl: finalBackdrop,
-              cacheManager: DefaultCacheManager(),
+            Image.network(
+              finalBackdrop,
               fit: BoxFit.cover,
-              placeholder: (_, __) => Container(color: const Color(0xFF193846)),
-              errorWidget: (_, __, ___) => Container(color: const Color(0xFF193846)),
+              errorBuilder: (_, __, ___) => Container(color: const Color(0xFF193846)),
             )
           else
             Container(color: const Color(0xFF193846)),
 
+          // Gradient Overlay
           DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -65,6 +63,7 @@ class MovieHeroSection extends StatelessWidget {
             ),
           ),
 
+          // Content
           Positioned(
             bottom: 32,
             left: 16,
@@ -73,6 +72,7 @@ class MovieHeroSection extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
+                // Genres
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
@@ -81,12 +81,12 @@ class MovieHeroSection extends StatelessWidget {
                     return Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                       decoration: BoxDecoration(
-                        color: isFirst
-                            ? const Color(0x3329B5B5)
-                            : const Color(0x336C5FA6),
+                        color: isFirst 
+                            ? const Color(0x3329B5B5) // primary-container/20
+                            : const Color(0x336C5FA6), // lavender-shadow/20
                         border: Border.all(
-                          color: isFirst
-                              ? const Color(0x4D5AD9D9)
+                          color: isFirst 
+                              ? const Color(0x4D5AD9D9) 
                               : const Color(0x4D6C5FA6),
                         ),
                         borderRadius: BorderRadius.circular(9999),
@@ -104,12 +104,13 @@ class MovieHeroSection extends StatelessWidget {
                   }).toList(),
                 ),
                 const SizedBox(height: 16),
-
+                
+                // Title
                 Text(
                   year.isNotEmpty ? '$title ($year)' : title,
                   style: const TextStyle(
-                    color: Color(0xFF5AD9D9),
-                    fontSize: 48,
+                    color: Color(0xFF5AD9D9), // primary
+                    fontSize: 48, // display-lg
                     fontWeight: FontWeight.w800,
                     fontFamily: 'Plus Jakarta Sans',
                     letterSpacing: -1,
@@ -123,11 +124,13 @@ class MovieHeroSection extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
 
+                // Info & Ratings
                 Wrap(
                   spacing: 12,
                   runSpacing: 12,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
+                    // IMDb Rating
                     if (imdbRating > 0)
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -142,7 +145,7 @@ class MovieHeroSection extends StatelessWidget {
                             const Icon(Icons.star, color: Color(0xFF5AD9D9), size: 18),
                             const SizedBox(width: 6),
                             Text(
-                              'امتیاز IMDb ${imdbRating.toStringAsFixed(1)}',
+                              'IMDb ${imdbRating.toStringAsFixed(1)}',
                               style: const TextStyle(
                                 color: Color(0xFF5AD9D9),
                                 fontSize: 12,
@@ -152,8 +155,9 @@ class MovieHeroSection extends StatelessWidget {
                           ],
                         ),
                       ),
-
-                    if (userRating > 0)
+                    
+                    // Users Rating
+                    if (userRating >= 0)
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                         decoration: BoxDecoration(
@@ -167,7 +171,7 @@ class MovieHeroSection extends StatelessWidget {
                             const Icon(Icons.favorite, color: Color(0xFFF08DA5), size: 18),
                             const SizedBox(width: 6),
                             Text(
-                              'امتیاز کاربران ${userRating.toStringAsFixed(1)}',
+                              'Users ${userRating.toStringAsFixed(1)}',
                               style: const TextStyle(
                                 color: Color(0xFFF08DA5),
                                 fontSize: 12,
@@ -178,6 +182,7 @@ class MovieHeroSection extends StatelessWidget {
                         ),
                       ),
 
+                    // Country & Duration
                     if (country.isNotEmpty || duration.isNotEmpty)
                       Text(
                         [if (country.isNotEmpty) country, if (duration.isNotEmpty) duration].join(' • '),

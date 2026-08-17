@@ -18,4 +18,14 @@ class LoginRequest {
     'email': email,
     'password': password,
   };
+
+  LoginRequest copyWith({
+    String? email,
+    String? password,
+  }) {
+    return LoginRequest(
+      email: email ?? this.email,
+      password: password ?? this.password,
+    );
+  }
 }

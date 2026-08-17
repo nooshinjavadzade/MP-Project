@@ -30,4 +30,20 @@ class AdminUserUpdate {
     'is_admin': isAdmin,
     'is_active': isActive,
   };
+
+  AdminUserUpdate copyWith({
+    String? username,
+    String? email,
+    String? fullName,
+    bool? isAdmin,
+    bool? isActive,
+  }) {
+    return AdminUserUpdate(
+      username: username ?? this.username,
+      email: email ?? this.email,
+      fullName: fullName ?? this.fullName,
+      isAdmin: isAdmin ?? this.isAdmin,
+      isActive: isActive ?? this.isActive,
+    );
+  }
 }

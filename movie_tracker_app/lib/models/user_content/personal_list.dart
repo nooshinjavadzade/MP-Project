@@ -42,6 +42,16 @@ class PersonalListUpdate {
     'name': name,
     'description': description,
   };
+
+  PersonalListUpdate copyWith({
+    String? name,
+    String? description,
+  }) {
+    return PersonalListUpdate(
+      name: name ?? this.name,
+      description: description ?? this.description,
+    );
+  }
 }
 
 class PersonalListItemAdd {
@@ -54,6 +64,12 @@ class PersonalListItemAdd {
   }
 
   Map<String, dynamic> toJson() => {'media_id': mediaId};
+
+  PersonalListItemAdd copyWith({
+    int? mediaId,
+  }) {
+    return PersonalListItemAdd(mediaId: mediaId ?? this.mediaId);
+  }
 }
 
 class PersonalListResponse {
@@ -97,6 +113,26 @@ class PersonalListResponse {
     'created_at': createdAt.toIso8601String(),
     'updated_at': updatedAt?.toIso8601String(),
   };
+
+  PersonalListResponse copyWith({
+    int? id,
+    int? userId,
+    String? name,
+    String? description,
+    bool? isDefault,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return PersonalListResponse(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      isDefault: isDefault ?? this.isDefault,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
 }
 
 class PersonalListItemResponse {
@@ -131,6 +167,22 @@ class PersonalListItemResponse {
     'media': media.toJson(),
     'added_at': addedAt.toIso8601String(),
   };
+
+  PersonalListItemResponse copyWith({
+    int? id,
+    int? listId,
+    int? mediaId,
+    MediaBase? media,
+    DateTime? addedAt,
+  }) {
+    return PersonalListItemResponse(
+      id: id ?? this.id,
+      listId: listId ?? this.listId,
+      mediaId: mediaId ?? this.mediaId,
+      media: media ?? this.media,
+      addedAt: addedAt ?? this.addedAt,
+    );
+  }
 }
 
 class PersonalListWithItems extends PersonalListResponse {
@@ -173,4 +225,28 @@ class PersonalListWithItems extends PersonalListResponse {
     'items': items.map((e) => e.toJson()).toList(),
     'item_count': itemCount,
   };
+
+  PersonalListWithItems copyWith({
+    int? id,
+    int? userId,
+    String? name,
+    String? description,
+    bool? isDefault,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    List<PersonalListItemResponse>? items,
+    int? itemCount,
+  }) {
+    return PersonalListWithItems(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      isDefault: isDefault ?? this.isDefault,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      items: items ?? this.items,
+      itemCount: itemCount ?? this.itemCount,
+    );
+  }
 }

@@ -36,4 +36,22 @@ class RatingResponse {
     'rated_at': ratedAt.toIso8601String(),
     'updated_at': updatedAt?.toIso8601String(),
   };
+
+  RatingResponse copyWith({
+    int? id,
+    int? mediaId,
+    int? userId,
+    double? rating,
+    DateTime? ratedAt,
+    DateTime? updatedAt,
+  }) {
+    return RatingResponse(
+      id: id ?? this.id,
+      mediaId: mediaId ?? this.mediaId,
+      userId: userId ?? this.userId,
+      rating: rating ?? this.rating,
+      ratedAt: ratedAt ?? this.ratedAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
 }

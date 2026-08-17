@@ -36,6 +36,24 @@ class CachedMediaResponse {
     'poster_url': posterUrl,
     'last_fetched_at': lastFetchedAt.toIso8601String(),
   };
+
+  CachedMediaResponse copyWith({
+    int? id,
+    String? tmdbId,
+    String? mediaType,
+    String? title,
+    String? posterUrl,
+    DateTime? lastFetchedAt,
+  }) {
+    return CachedMediaResponse(
+      id: id ?? this.id,
+      tmdbId: tmdbId ?? this.tmdbId,
+      mediaType: mediaType ?? this.mediaType,
+      title: title ?? this.title,
+      posterUrl: posterUrl ?? this.posterUrl,
+      lastFetchedAt: lastFetchedAt ?? this.lastFetchedAt,
+    );
+  }
 }
 
 class CachedMediaListResponse {
@@ -61,4 +79,14 @@ class CachedMediaListResponse {
     'items': items.map((e) => e.toJson()).toList(),
     'pagination': pagination.toJson(),
   };
+
+  CachedMediaListResponse copyWith({
+    List<CachedMediaResponse>? items,
+    Pagination? pagination,
+  }) {
+    return CachedMediaListResponse(
+      items: items ?? this.items,
+      pagination: pagination ?? this.pagination,
+    );
+  }
 }

@@ -50,4 +50,28 @@ class MediaBase {
       'community_rating': communityRating,
     };
   }
+
+  MediaBase copyWith({
+    int? id,
+    MediaType? mediaType,
+    String? tmdbId,
+    String? title,
+    String? posterUrl,
+    String? backdropUrl,
+    int? releaseYear,
+    double? tmdbRating,
+    double? communityRating,
+  }) {
+    return MediaBase(
+      id: id ?? this.id,
+      mediaType: mediaType ?? this.mediaType,
+      tmdbId: tmdbId ?? this.tmdbId,
+      title: title ?? this.title,
+      posterUrl: posterUrl ?? this.posterUrl,
+      backdropUrl: backdropUrl ?? this.backdropUrl,
+      releaseYear: releaseYear ?? this.releaseYear,
+      tmdbRating: tmdbRating ?? this.tmdbRating,
+      communityRating: communityRating ?? this.communityRating,
+    );
+  }
 }

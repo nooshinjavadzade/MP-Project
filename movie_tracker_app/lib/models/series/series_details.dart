@@ -92,12 +92,55 @@ class SeriesDetails extends MediaDetails {
   Map<String, dynamic> toJson() {
     return {
       ...super.toJson(),
-
       'season_count': seasonCount,
       'episode_count': episodeCount,
       'seasons': seasons.map((e) => e.toJson()).toList(),
       'end_year': endYear,
       'status': status,
     };
+  }
+
+  SeriesDetails copyWithSeriesDetails({
+    int? id,
+    String? tmdbId,
+    String? title,
+    String? posterUrl,
+    String? backdropUrl,
+    int? releaseYear,
+    double? tmdbRating,
+    double? communityRating,
+    String? originalTitle,
+    String? overview,
+    String? originalLanguage,
+    String? country,
+    List<CastMember>? cast,
+    List<String>? genres,
+    int? seasonCount,
+    int? episodeCount,
+    List<Season>? seasons,
+    int? endYear,
+    String? status,
+  }) {
+    return SeriesDetails(
+      id: id ?? this.id,
+      tmdbId: tmdbId ?? this.tmdbId,
+      title: title ?? this.title,
+      posterUrl: posterUrl ?? this.posterUrl,
+      backdropUrl: backdropUrl ?? this.backdropUrl,
+      releaseYear: releaseYear ?? this.releaseYear,
+      tmdbRating: tmdbRating ?? this.tmdbRating,
+      communityRating: communityRating ?? this.communityRating,
+      originalTitle: originalTitle ?? this.originalTitle,
+      overview: overview ?? this.overview,
+      originalLanguage: originalLanguage ?? this.originalLanguage,
+      country: country ?? this.country,
+      cast: cast ?? this.cast,
+      genres: genres ?? this.genres,
+      seasonCount: seasonCount ?? this.seasonCount,
+      episodeCount: episodeCount ?? this.episodeCount,
+      seasons: seasons ?? this.seasons,
+      endYear: endYear ?? this.endYear,
+      status: status ?? this.status,
+    );
   }
 }

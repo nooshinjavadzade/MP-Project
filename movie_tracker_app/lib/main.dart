@@ -78,7 +78,7 @@ void main() async {
           create: (_) => ProgressPresenter(progressService, localStorageService),
         ),
         ChangeNotifierProvider<MediaPresenter>(
-          create: (_) => MediaPresenter(mediaService, localStorageService),
+          create: (_) => MediaPresenter(mediaService, localStorageService, profileService),
         ),
         ChangeNotifierProvider<ProfilePresenter>(
           create: (_) => ProfilePresenter(profileService, localStorageService),

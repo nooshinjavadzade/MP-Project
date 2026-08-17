@@ -26,4 +26,18 @@ class RegisterRequest {
     'password': password,
     'full_name': fullName,
   };
+
+  RegisterRequest copyWith({
+    String? username,
+    String? email,
+    String? password,
+    String? fullName,
+  }) {
+    return RegisterRequest(
+      username: username ?? this.username,
+      email: email ?? this.email,
+      password: password ?? this.password,
+      fullName: fullName ?? this.fullName,
+    );
+  }
 }

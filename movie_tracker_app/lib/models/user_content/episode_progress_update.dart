@@ -19,4 +19,10 @@ class EpisodeProgressUpdate {
   Map<String, dynamic> toJson() => {
     if (status != null) 'status': status!.value,
   };
+
+  EpisodeProgressUpdate copyWith({
+    WatchStatus? status,
+  }) {
+    return EpisodeProgressUpdate(status: status ?? this.status);
+  }
 }

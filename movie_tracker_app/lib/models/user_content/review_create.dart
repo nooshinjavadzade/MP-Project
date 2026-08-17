@@ -18,4 +18,14 @@ class ReviewCreate {
     'review': review,
     'contains_spoiler': containsSpoiler,
   };
+
+  ReviewCreate copyWith({
+    String? review,
+    bool? containsSpoiler,
+  }) {
+    return ReviewCreate(
+      review: review ?? this.review,
+      containsSpoiler: containsSpoiler ?? this.containsSpoiler,
+    );
+  }
 }

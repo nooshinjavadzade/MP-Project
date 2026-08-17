@@ -21,4 +21,14 @@ class MovieProgressCreate {
     'status': status.value,
     'progress': progress,
   };
+
+  MovieProgressCreate copyWith({
+    WatchStatus? status,
+    double? progress,
+  }) {
+    return MovieProgressCreate(
+      status: status ?? this.status,
+      progress: progress ?? this.progress,
+    );
+  }
 }

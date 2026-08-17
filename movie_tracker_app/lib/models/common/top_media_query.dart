@@ -47,4 +47,20 @@ class TopMediaQuery {
     if (timeWindow != null) params['time_window'] = timeWindow!;
     return params;
   }
+
+  TopMediaQuery copyWith({
+    MediaType? mediaType,
+    String? genre,
+    String? timeWindow,
+    int? page,
+    int? perPage,
+  }) {
+    return TopMediaQuery(
+      mediaType: mediaType ?? this.mediaType,
+      genre: genre ?? this.genre,
+      timeWindow: timeWindow ?? this.timeWindow,
+      page: page ?? this.page,
+      perPage: perPage ?? this.perPage,
+    );
+  }
 }

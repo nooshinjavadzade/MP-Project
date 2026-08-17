@@ -56,6 +56,30 @@ class ProgressModel {
     'updated_at': updatedAt?.toIso8601String(),
   };
 
+  ProgressModel copyWith({
+    int? id,
+    int? userId,
+    int? mediaId,
+    WatchStatus? status,
+    double? progress,
+    int? watchedEpisodes,
+    DateTime? lastWatchedAt,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return ProgressModel(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      mediaId: mediaId ?? this.mediaId,
+      status: status ?? this.status,
+      progress: progress ?? this.progress,
+      watchedEpisodes: watchedEpisodes ?? this.watchedEpisodes,
+      lastWatchedAt: lastWatchedAt ?? this.lastWatchedAt,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
   /// Check if the media is completed
   bool get isCompleted => status == WatchStatus.completed || progress >= 100;
 

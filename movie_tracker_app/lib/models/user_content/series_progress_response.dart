@@ -41,4 +41,24 @@ class SeriesProgressResponse {
     'status': status.value,
     'next_episode': nextEpisode,
   };
+
+  SeriesProgressResponse copyWith({
+    int? mediaId,
+    String? title,
+    int? totalEpisodes,
+    int? watchedEpisodes,
+    double? completionPct,
+    WatchStatus? status,
+    Map<String, dynamic>? nextEpisode,
+  }) {
+    return SeriesProgressResponse(
+      mediaId: mediaId ?? this.mediaId,
+      title: title ?? this.title,
+      totalEpisodes: totalEpisodes ?? this.totalEpisodes,
+      watchedEpisodes: watchedEpisodes ?? this.watchedEpisodes,
+      completionPct: completionPct ?? this.completionPct,
+      status: status ?? this.status,
+      nextEpisode: nextEpisode ?? this.nextEpisode,
+    );
+  }
 }

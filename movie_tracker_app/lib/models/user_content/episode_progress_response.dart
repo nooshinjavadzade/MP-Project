@@ -49,4 +49,26 @@ class EpisodeProgressResponse {
     'created_at': createdAt.toIso8601String(),
     'updated_at': updatedAt?.toIso8601String(),
   };
+
+  EpisodeProgressResponse copyWith({
+    int? userId,
+    int? mediaId,
+    int? seasonNumber,
+    int? episodeNumber,
+    WatchStatus? status,
+    DateTime? watchedAt,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return EpisodeProgressResponse(
+      userId: userId ?? this.userId,
+      mediaId: mediaId ?? this.mediaId,
+      seasonNumber: seasonNumber ?? this.seasonNumber,
+      episodeNumber: episodeNumber ?? this.episodeNumber,
+      status: status ?? this.status,
+      watchedAt: watchedAt ?? this.watchedAt,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
 }

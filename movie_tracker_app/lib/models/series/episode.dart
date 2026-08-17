@@ -36,4 +36,22 @@ class Episode {
     'runtime': runtime,
     'tmdb_rating': tmdbRating,
   };
+
+  Episode copyWith({
+    int? episodeNumber,
+    String? title,
+    String? overview,
+    DateTime? releaseDate,
+    int? runtime,
+    double? tmdbRating,
+  }) {
+    return Episode(
+      episodeNumber: episodeNumber ?? this.episodeNumber,
+      title: title ?? this.title,
+      overview: overview ?? this.overview,
+      releaseDate: releaseDate ?? this.releaseDate,
+      runtime: runtime ?? this.runtime,
+      tmdbRating: tmdbRating ?? this.tmdbRating,
+    );
+  }
 }

@@ -36,6 +36,24 @@ class ProfileStats {
     'reviews_count': reviewsCount,
     'lists_count': listsCount,
   };
+
+  ProfileStats copyWith({
+    int? watchedMoviesCount,
+    int? watchedSeriesCount,
+    int? likedMediaCount,
+    int? ratingsCount,
+    int? reviewsCount,
+    int? listsCount,
+  }) {
+    return ProfileStats(
+      watchedMoviesCount: watchedMoviesCount ?? this.watchedMoviesCount,
+      watchedSeriesCount: watchedSeriesCount ?? this.watchedSeriesCount,
+      likedMediaCount: likedMediaCount ?? this.likedMediaCount,
+      ratingsCount: ratingsCount ?? this.ratingsCount,
+      reviewsCount: reviewsCount ?? this.reviewsCount,
+      listsCount: listsCount ?? this.listsCount,
+    );
+  }
 }
 
 class PublicUser {
@@ -74,6 +92,24 @@ class PublicUser {
     'bio': bio,
     'created_at': createdAt.toIso8601String(),
   };
+
+  PublicUser copyWith({
+    int? id,
+    String? username,
+    String? fullName,
+    String? avatarUrl,
+    String? bio,
+    DateTime? createdAt,
+  }) {
+    return PublicUser(
+      id: id ?? this.id,
+      username: username ?? this.username,
+      fullName: fullName ?? this.fullName,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
+      bio: bio ?? this.bio,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
 }
 
 class ProfileResponse extends PublicUser {
@@ -129,6 +165,36 @@ class ProfileResponse extends PublicUser {
     'reviews_count': reviewsCount,
     'lists_count': listsCount,
   };
+
+  ProfileResponse copyWith({
+    int? id,
+    String? username,
+    String? fullName,
+    String? avatarUrl,
+    String? bio,
+    DateTime? createdAt,
+    int? watchedMoviesCount,
+    int? watchedSeriesCount,
+    List<MediaBase>? likedMedia,
+    int? ratingsCount,
+    int? reviewsCount,
+    int? listsCount,
+  }) {
+    return ProfileResponse(
+      id: id ?? this.id,
+      username: username ?? this.username,
+      fullName: fullName ?? this.fullName,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
+      bio: bio ?? this.bio,
+      createdAt: createdAt ?? this.createdAt,
+      watchedMoviesCount: watchedMoviesCount ?? this.watchedMoviesCount,
+      watchedSeriesCount: watchedSeriesCount ?? this.watchedSeriesCount,
+      likedMedia: likedMedia ?? this.likedMedia,
+      ratingsCount: ratingsCount ?? this.ratingsCount,
+      reviewsCount: reviewsCount ?? this.reviewsCount,
+      listsCount: listsCount ?? this.listsCount,
+    );
+  }
 }
 
 class PublicProfileResponse extends PublicUser {
@@ -184,6 +250,36 @@ class PublicProfileResponse extends PublicUser {
     'reviews_count': reviewsCount,
     'lists_count': listsCount,
   };
+
+  PublicProfileResponse copyWith({
+    int? id,
+    String? username,
+    String? fullName,
+    String? avatarUrl,
+    String? bio,
+    DateTime? createdAt,
+    int? watchedMoviesCount,
+    int? watchedSeriesCount,
+    List<MediaBase>? likedMedia,
+    int? ratingsCount,
+    int? reviewsCount,
+    int? listsCount,
+  }) {
+    return PublicProfileResponse(
+      id: id ?? this.id,
+      username: username ?? this.username,
+      fullName: fullName ?? this.fullName,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
+      bio: bio ?? this.bio,
+      createdAt: createdAt ?? this.createdAt,
+      watchedMoviesCount: watchedMoviesCount ?? this.watchedMoviesCount,
+      watchedSeriesCount: watchedSeriesCount ?? this.watchedSeriesCount,
+      likedMedia: likedMedia ?? this.likedMedia,
+      ratingsCount: ratingsCount ?? this.ratingsCount,
+      reviewsCount: reviewsCount ?? this.reviewsCount,
+      listsCount: listsCount ?? this.listsCount,
+    );
+  }
 }
 
 class UserLogin {
@@ -206,4 +302,14 @@ class UserLogin {
     'email': email,
     'password': password,
   };
+
+  UserLogin copyWith({
+    String? email,
+    String? password,
+  }) {
+    return UserLogin(
+      email: email ?? this.email,
+      password: password ?? this.password,
+    );
+  }
 }
